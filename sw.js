@@ -1,6 +1,6 @@
 const version = 'v0.1.0'
 
-self.addEventListener('install', event => {
+self.addEventListener('install', event => { // TODO cache dynamically
   event.waitUntil((async () => {
     const cache = await caches.open(version)
     return await cache.addAll([
@@ -56,7 +56,7 @@ self.addEventListener('fetch', event => {
         })
       } catch (error) {
         const cache = await caches.open(version)
-        const cachedResponse = await cache.match('index.html')
+        const cachedResponse = await cache.match('index.html') // TODO respond with desired app
         return cachedResponse
       }
     })())
