@@ -5,14 +5,14 @@ self.addEventListener('install', event => {
     const cache = await caches.open(version)
     return await cache.addAll([
       'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/js/halfmoon.min.js',
-      './build/bundle.js',
-      './build/bundle.js.map',
-      './build/bundle.css',
-      './favicon.png',
+      '../img-viewer/public/build/bundle.js',
+      '../img-viewer/public/build/bundle.js.map',
+      '../img-viewer/public/build/bundle.css',
+      '../img-viewer/public/favicon.png',
       'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/css/halfmoon-variables.min.css',
       'https://fonts.googleapis.com/icon?family=Material+Icons',
       'https://fonts.gstatic.com/s/materialicons/v98/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2',
-      './index.html'
+      '../img-viewer/public/index.html'
     ])
   })())
 })

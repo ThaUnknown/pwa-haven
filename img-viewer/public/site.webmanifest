@@ -1,7 +1,7 @@
 {
   "name": "Image Viewer",
   "short_name": "Images",
-  "start_url": "/",
+  "start_url": ".",
   "display": "fullscreen",
   "lang": "en-US",
   "orientation": "landscape",
@@ -23,13 +23,13 @@
   ],
   "intent_filters": {
     "scope_url_scheme": "https",
-    "scope_url_host": "image.pages.dev",
+    "scope_url_host": "haven.pages.dev/img-viewer/public/",
     "scope_url_path": "/"
   },
   "capture_links": "new-client",
   "url_handlers": [
     {
-      "origin": "https://image.pages.dev"
+      "origin": "https://haven.pages.dev/img-viewer/public/"
     }
   ],
   "file_handlers": [

@@ -111,9 +111,6 @@
       setSource(await launchParams.files[0].getFile());
     });
   }
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js');
-  }
 
   // UI
   function toggleBlur() {
