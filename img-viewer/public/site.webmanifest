@@ -1,0 +1,103 @@
+{
+  "name": "Image Viewer",
+  "short_name": "Images",
+  "start_url": "/",
+  "display": "fullscreen",
+  "lang": "en-US",
+  "orientation": "landscape",
+  "background_color": "#191c20",
+  "theme_color": "#191c20",
+  "scope": "/",
+  "description": "Simple, fast image viewer.",
+  "icons": [
+    {
+      "src": "./favicon.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "./logo400.png",
+      "sizes": "400x400",
+      "type": "image/png"
+    }
+  ],
+  "intent_filters": {
+    "scope_url_scheme": "https",
+    "scope_url_host": "image.pages.dev",
+    "scope_url_path": "/"
+  },
+  "capture_links": "new-client",
+  "url_handlers": [
+    {
+      "origin": "https://image.pages.dev"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/",
+      "accept": {
+        "image/apng": ".apng"
+      }
+    },
+    {
+      "action": "/",
+      "accept": {
+        "image/avif": ".avif"
+      }
+    },
+    {
+      "action": "/",
+      "accept": {
+        "image/bmp": ".bmp"
+      }
+    },
+    {
+      "action": "/",
+      "accept": {
+        "image/gif": ".gif"
+      }
+    },
+    {
+      "action": "/",
+      "accept": {
+        "image/jpeg": [
+          ".jpg",
+          ".jpeg",
+          ".jfif",
+          ".pjpeg",
+          ".pjp"
+        ]
+      }
+    },
+    {
+      "action": "/",
+      "accept": {
+        "image/png": ".png"
+      }
+    },
+    {
+      "action": "/",
+      "accept": {
+        "image/svg+xml": ".svg"
+      }
+    },
+    {
+      "action": "/",
+      "accept": {
+        "image/tiff": [".tif" ,".tiff"]
+      }
+    },
+    {
+      "action": "/",
+      "accept": {
+        "image/webp": ".webp"
+      }
+    },
+    {
+      "action": "/",
+      "accept": {
+        "image/vnd.microsoft.icon": ".ico"
+      }
+    }
+  ]
+}
