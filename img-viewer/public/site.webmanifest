@@ -7,7 +7,7 @@
   "orientation": "landscape",
   "background_color": "#191c20",
   "theme_color": "#191c20",
-  "scope": "/",
+  "scope": "/img-viewer/public/",
   "description": "Simple, fast image viewer.",
   "icons": [
     {
@@ -34,31 +34,31 @@
   ],
   "file_handlers": [
     {
-      "action": "/",
+      "action": "/img-viewer/public/",
       "accept": {
         "image/apng": ".apng"
       }
     },
     {
-      "action": "/",
+      "action": "/img-viewer/public/",
       "accept": {
         "image/avif": ".avif"
       }
     },
     {
-      "action": "/",
+      "action": "/img-viewer/public/",
       "accept": {
         "image/bmp": ".bmp"
       }
     },
     {
-      "action": "/",
+      "action": "/img-viewer/public/",
       "accept": {
         "image/gif": ".gif"
       }
     },
     {
-      "action": "/",
+      "action": "/img-viewer/public/",
       "accept": {
         "image/jpeg": [
           ".jpg",
@@ -70,31 +70,31 @@
       }
     },
     {
-      "action": "/",
+      "action": "/img-viewer/public/",
       "accept": {
         "image/png": ".png"
       }
     },
     {
-      "action": "/",
+      "action": "/img-viewer/public/",
       "accept": {
         "image/svg+xml": ".svg"
       }
     },
     {
-      "action": "/",
+      "action": "/img-viewer/public/",
       "accept": {
         "image/tiff": [".tif" ,".tiff"]
       }
     },
     {
-      "action": "/",
+      "action": "/img-viewer/public/",
       "accept": {
         "image/webp": ".webp"
       }
     },
     {
-      "action": "/",
+      "action": "/img-viewer/public/",
       "accept": {
         "image/vnd.microsoft.icon": ".ico"
       }
