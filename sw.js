@@ -58,8 +58,7 @@ self.addEventListener('fetch', event => {
     if (!match) { // not in cache
       const url = event.request.url
       if (url.indexOf(self.registration.scope) !== -1) { // in origin
-        const url = event.request.url
-        const path = url.slice(self.registration.scope.length).slice()
+        const path = url.slice(self.registration.scope.length)
         const app = path.slice(0, path.indexOf('/'))
         if (cacheList[app]) { // in cachelist
           const keys = await caches.keys()
