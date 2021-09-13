@@ -35,6 +35,9 @@ var app = (function () {
     function is_empty(obj) {
         return Object.keys(obj).length === 0;
     }
+
+    const is_client = typeof window !== 'undefined';
+    let raf = is_client ? cb => requestAnimationFrame(cb) : noop;
     function append(target, node) {
         target.appendChild(node);
     }
@@ -70,8 +73,17 @@ var app = (function () {
         else if (node.getAttribute(attribute) !== value)
             node.setAttribute(attribute, value);
     }
+    function to_number(value) {
+        return value === '' ? null : +value;
+    }
     function children(element) {
         return Array.from(element.childNodes);
+    }
+    function set_input_value(input, value) {
+        input.value = value == null ? '' : value;
+    }
+    function set_style(node, key, value, important) {
+        node.style.setProperty(key, value, important ? 'important' : '');
     }
     function custom_event(type, detail, bubbles = false) {
         const e = document.createEvent('CustomEvent');
@@ -331,6 +343,13 @@ var app = (function () {
         else
             dispatch_dev('SvelteDOMSetAttribute', { node, attribute, value });
     }
+    function set_data_dev(text, data) {
+        data = '' + data;
+        if (text.wholeText === data)
+            return;
+        dispatch_dev('SvelteDOMSetData', { node: text, data });
+        text.data = data;
+    }
     function validate_slots(name, slot, keys) {
         for (const slot_key of Object.keys(slot)) {
             if (!~keys.indexOf(slot_key)) {
@@ -364,63 +383,201 @@ var app = (function () {
     const file = "src\\App.svelte";
 
     function create_fragment(ctx) {
-    	let div;
     	let audio_1;
     	let audio_1_src_value;
-    	let t;
+    	let audio_1_updating = false;
+    	let audio_1_animationframe;
+    	let audio_1_is_paused = true;
+    	let t0;
+    	let div4;
+    	let div0;
+    	let t1;
+    	let nav;
+    	let div1;
+    	let input0;
+    	let t2;
+    	let div3;
+    	let div2;
+    	let span;
+    	let t3_value = (/*paused*/ ctx[6] ? 'play_arrow' : 'pause') + "";
+    	let t3;
+    	let t4;
+    	let input1;
+    	let t5;
     	let title_value;
     	let mounted;
     	let dispose;
-    	document.title = title_value = /*name*/ ctx[1] || 'Audio Player';
+
+    	function audio_1_timeupdate_handler() {
+    		cancelAnimationFrame(audio_1_animationframe);
+
+    		if (!audio_1.paused) {
+    			audio_1_animationframe = raf(audio_1_timeupdate_handler);
+    			audio_1_updating = true;
+    		}
+
+    		/*audio_1_timeupdate_handler*/ ctx[21].call(audio_1);
+    	}
+
+    	document.title = title_value = /*name*/ ctx[3] || 'Audio Player';
 
     	const block = {
     		c: function create() {
-    			div = element("div");
     			audio_1 = element("audio");
-    			t = space();
-    			if (!src_url_equal(audio_1.src, audio_1_src_value = /*src*/ ctx[0])) attr_dev(audio_1, "src", audio_1_src_value);
+    			t0 = space();
+    			div4 = element("div");
+    			div0 = element("div");
+    			t1 = space();
+    			nav = element("nav");
+    			div1 = element("div");
+    			input0 = element("input");
+    			t2 = space();
+    			div3 = element("div");
+    			div2 = element("div");
+    			span = element("span");
+    			t3 = text(t3_value);
+    			t4 = space();
+    			input1 = element("input");
+    			t5 = space();
+    			if (!src_url_equal(audio_1.src, audio_1_src_value = /*src*/ ctx[2])) attr_dev(audio_1, "src", audio_1_src_value);
     			audio_1.autoplay = true;
-    			add_location(audio_1, file, 57, 2, 1668);
-    			attr_dev(div, "class", "w-full h-full overflow-hidden position-relative");
-    			add_location(div, file, 56, 0, 1604);
+    			attr_dev(audio_1, "class", "svelte-f3ouuq");
+    			if (/*duration*/ ctx[0] === void 0) add_render_callback(() => /*audio_1_durationchange_handler*/ ctx[20].call(audio_1));
+    			add_location(audio_1, file, 81, 0, 2150);
+    			attr_dev(div0, "class", "content-wrapper svelte-f3ouuq");
+    			add_location(div0, file, 83, 2, 2302);
+    			attr_dev(input0, "class", "w-full top-0 d-flex align-items-start svelte-f3ouuq");
+    			attr_dev(input0, "type", "range");
+    			attr_dev(input0, "min", "0");
+    			attr_dev(input0, "max", "1");
+    			attr_dev(input0, "step", "any");
+    			set_style(input0, "--value", /*progress*/ ctx[7] * 100 + "%");
+    			add_location(input0, file, 86, 6, 2447);
+    			attr_dev(div1, "class", "d-flex w-full svelte-f3ouuq");
+    			add_location(div1, file, 85, 4, 2413);
+    			attr_dev(span, "class", "material-icons font-size-24 svelte-f3ouuq");
+    			attr_dev(span, "type", "button");
+    			add_location(span, file, 100, 8, 2900);
+    			attr_dev(div2, "class", "ctrl pointer svelte-f3ouuq");
+    			add_location(div2, file, 99, 6, 2844);
+    			attr_dev(input1, "type", "range");
+    			attr_dev(input1, "min", "0");
+    			attr_dev(input1, "max", "1");
+    			attr_dev(input1, "step", "any");
+    			set_style(input1, "--value", /*volume*/ ctx[5] * 100 + "%");
+    			attr_dev(input1, "class", "svelte-f3ouuq");
+    			add_location(input1, file, 104, 6, 3036);
+    			attr_dev(div3, "class", "d-flex w-full flex-grow-1 align-items-center svelte-f3ouuq");
+    			add_location(div3, file, 98, 4, 2779);
+    			attr_dev(nav, "class", "navbar navbar-fixed-bottom p-0 d-flex flex-column border-0 svelte-f3ouuq");
+    			add_location(nav, file, 84, 2, 2336);
+    			attr_dev(div4, "class", "page-wrapper with-navbar-fixed-bottom svelte-f3ouuq");
+    			add_location(div4, file, 82, 0, 2248);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, div, anchor);
-    			append_dev(div, audio_1);
-    			/*audio_1_binding*/ ctx[9](audio_1);
-    			insert_dev(target, t, anchor);
+    			insert_dev(target, audio_1, anchor);
+    			/*audio_1_binding*/ ctx[18](audio_1);
+
+    			if (!isNaN(/*volume*/ ctx[5])) {
+    				audio_1.volume = /*volume*/ ctx[5];
+    			}
+
+    			insert_dev(target, t0, anchor);
+    			insert_dev(target, div4, anchor);
+    			append_dev(div4, div0);
+    			append_dev(div4, t1);
+    			append_dev(div4, nav);
+    			append_dev(nav, div1);
+    			append_dev(div1, input0);
+    			set_input_value(input0, /*progress*/ ctx[7]);
+    			append_dev(nav, t2);
+    			append_dev(nav, div3);
+    			append_dev(div3, div2);
+    			append_dev(div2, span);
+    			append_dev(span, t3);
+    			append_dev(div3, t4);
+    			append_dev(div3, input1);
+    			set_input_value(input1, /*volume*/ ctx[5]);
+    			insert_dev(target, t5, anchor);
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(window_1, "drop", prevent_default(/*handleDrop*/ ctx[3]), false, true, false),
-    					listen_dev(window_1, "dragenter", prevent_default(/*dragenter_handler*/ ctx[5]), false, true, false),
-    					listen_dev(window_1, "dragover", prevent_default(/*dragover_handler*/ ctx[6]), false, true, false),
-    					listen_dev(window_1, "dragstart", prevent_default(/*dragstart_handler*/ ctx[7]), false, true, false),
-    					listen_dev(window_1, "dragleave", prevent_default(/*dragleave_handler*/ ctx[8]), false, true, false),
-    					listen_dev(window_1, "paste", prevent_default(/*handlePaste*/ ctx[4]), false, true, false)
+    					listen_dev(window_1, "drop", prevent_default(/*handleDrop*/ ctx[8]), false, true, false),
+    					listen_dev(window_1, "dragenter", prevent_default(/*dragenter_handler*/ ctx[14]), false, true, false),
+    					listen_dev(window_1, "dragover", prevent_default(/*dragover_handler*/ ctx[15]), false, true, false),
+    					listen_dev(window_1, "dragstart", prevent_default(/*dragstart_handler*/ ctx[16]), false, true, false),
+    					listen_dev(window_1, "dragleave", prevent_default(/*dragleave_handler*/ ctx[17]), false, true, false),
+    					listen_dev(window_1, "paste", prevent_default(/*handlePaste*/ ctx[9]), false, true, false),
+    					listen_dev(audio_1, "volumechange", /*audio_1_volumechange_handler*/ ctx[19]),
+    					listen_dev(audio_1, "durationchange", /*audio_1_durationchange_handler*/ ctx[20]),
+    					listen_dev(audio_1, "timeupdate", audio_1_timeupdate_handler),
+    					listen_dev(audio_1, "play", /*audio_1_play_pause_handler*/ ctx[22]),
+    					listen_dev(audio_1, "pause", /*audio_1_play_pause_handler*/ ctx[22]),
+    					listen_dev(input0, "change", /*input0_change_input_handler*/ ctx[23]),
+    					listen_dev(input0, "input", /*input0_change_input_handler*/ ctx[23]),
+    					listen_dev(input0, "mousedown", /*handleMouseDown*/ ctx[10], false, false, false),
+    					listen_dev(input0, "mouseup", /*handleMouseUp*/ ctx[11], false, false, false),
+    					listen_dev(input0, "input", /*handleProgress*/ ctx[12], false, false, false),
+    					listen_dev(div2, "click", /*playPause*/ ctx[13], false, false, false),
+    					listen_dev(input1, "change", /*input1_change_input_handler*/ ctx[24]),
+    					listen_dev(input1, "input", /*input1_change_input_handler*/ ctx[24])
     				];
 
     				mounted = true;
     			}
     		},
     		p: function update(ctx, [dirty]) {
-    			if (dirty & /*src*/ 1 && !src_url_equal(audio_1.src, audio_1_src_value = /*src*/ ctx[0])) {
+    			if (dirty & /*src*/ 4 && !src_url_equal(audio_1.src, audio_1_src_value = /*src*/ ctx[2])) {
     				attr_dev(audio_1, "src", audio_1_src_value);
     			}
 
-    			if (dirty & /*name*/ 2 && title_value !== (title_value = /*name*/ ctx[1] || 'Audio Player')) {
+    			if (dirty & /*volume*/ 32 && !isNaN(/*volume*/ ctx[5])) {
+    				audio_1.volume = /*volume*/ ctx[5];
+    			}
+
+    			if (!audio_1_updating && dirty & /*currentTime*/ 2 && !isNaN(/*currentTime*/ ctx[1])) {
+    				audio_1.currentTime = /*currentTime*/ ctx[1];
+    			}
+
+    			audio_1_updating = false;
+
+    			if (dirty & /*paused*/ 64 && audio_1_is_paused !== (audio_1_is_paused = /*paused*/ ctx[6])) {
+    				audio_1[audio_1_is_paused ? "pause" : "play"]();
+    			}
+
+    			if (dirty & /*progress*/ 128) {
+    				set_style(input0, "--value", /*progress*/ ctx[7] * 100 + "%");
+    			}
+
+    			if (dirty & /*progress*/ 128) {
+    				set_input_value(input0, /*progress*/ ctx[7]);
+    			}
+
+    			if (dirty & /*paused*/ 64 && t3_value !== (t3_value = (/*paused*/ ctx[6] ? 'play_arrow' : 'pause') + "")) set_data_dev(t3, t3_value);
+
+    			if (dirty & /*volume*/ 32) {
+    				set_style(input1, "--value", /*volume*/ ctx[5] * 100 + "%");
+    			}
+
+    			if (dirty & /*volume*/ 32) {
+    				set_input_value(input1, /*volume*/ ctx[5]);
+    			}
+
+    			if (dirty & /*name*/ 8 && title_value !== (title_value = /*name*/ ctx[3] || 'Audio Player')) {
     				document.title = title_value;
     			}
     		},
     		i: noop,
     		o: noop,
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(div);
-    			/*audio_1_binding*/ ctx[9](null);
-    			if (detaching) detach_dev(t);
+    			if (detaching) detach_dev(audio_1);
+    			/*audio_1_binding*/ ctx[18](null);
+    			if (detaching) detach_dev(t0);
+    			if (detaching) detach_dev(div4);
+    			if (detaching) detach_dev(t5);
     			mounted = false;
     			run_all(dispose);
     		}
@@ -438,24 +595,31 @@ var app = (function () {
     }
 
     function instance($$self, $$props, $$invalidate) {
+    	let progress;
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots('App', slots, []);
     	let src = null;
     	let name = null;
     	let audio = null;
+    	let volume = 1;
+    	let duration = 1;
+    	let currentTime = 0;
+    	let targetTime = 0;
+    	let paused = true;
+    	let wasPaused = true;
     	const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser());
 
     	function setSource(target) {
     		if (src) URL.revokeObjectURL(src); // gc
 
     		if (target.constructor === String) {
-    			$$invalidate(0, src = target);
+    			$$invalidate(2, src = target);
     			const startIndex = Math.max(target.lastIndexOf('\\'), target.lastIndexOf('/')) + 1;
-    			$$invalidate(1, name = target.substring(startIndex));
+    			$$invalidate(3, name = target.substring(startIndex));
     		} else {
-    			$$invalidate(0, src = URL.createObjectURL(target));
+    			$$invalidate(2, src = URL.createObjectURL(target));
     			const startIndex = Math.max(target.name.lastIndexOf('\\'), target.name.lastIndexOf('/')) + 1;
-    			$$invalidate(1, name = target.name.substring(startIndex));
+    			$$invalidate(3, name = target.name.substring(startIndex));
     		}
     	}
 
@@ -495,6 +659,26 @@ var app = (function () {
     		});
     	}
 
+    	// todo use a store
+    	function handleMouseDown({ target }) {
+    		wasPaused = paused;
+    		$$invalidate(6, paused = true);
+    		targetTime = target.value * duration;
+    	}
+
+    	function handleMouseUp() {
+    		$$invalidate(6, paused = wasPaused);
+    		$$invalidate(1, currentTime = targetTime);
+    	}
+
+    	function handleProgress({ target }) {
+    		targetTime = target.value * duration;
+    	}
+
+    	function playPause() {
+    		$$invalidate(6, paused = !paused);
+    	}
+
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
@@ -520,41 +704,110 @@ var app = (function () {
     	function audio_1_binding($$value) {
     		binding_callbacks[$$value ? 'unshift' : 'push'](() => {
     			audio = $$value;
-    			$$invalidate(2, audio);
+    			$$invalidate(4, audio);
     		});
+    	}
+
+    	function audio_1_volumechange_handler() {
+    		volume = this.volume;
+    		$$invalidate(5, volume);
+    	}
+
+    	function audio_1_durationchange_handler() {
+    		duration = this.duration;
+    		$$invalidate(0, duration);
+    	}
+
+    	function audio_1_timeupdate_handler() {
+    		currentTime = this.currentTime;
+    		$$invalidate(1, currentTime);
+    	}
+
+    	function audio_1_play_pause_handler() {
+    		paused = this.paused;
+    		$$invalidate(6, paused);
+    	}
+
+    	function input0_change_input_handler() {
+    		progress = to_number(this.value);
+    		(($$invalidate(7, progress), $$invalidate(1, currentTime)), $$invalidate(0, duration));
+    	}
+
+    	function input1_change_input_handler() {
+    		volume = to_number(this.value);
+    		$$invalidate(5, volume);
     	}
 
     	$$self.$capture_state = () => ({
     		src,
     		name,
     		audio,
+    		volume,
+    		duration,
+    		currentTime,
+    		targetTime,
+    		paused,
+    		wasPaused,
     		DOMPARSER,
     		setSource,
     		handleDrop,
-    		handlePaste
+    		handlePaste,
+    		handleMouseDown,
+    		handleMouseUp,
+    		handleProgress,
+    		playPause,
+    		progress
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ('src' in $$props) $$invalidate(0, src = $$props.src);
-    		if ('name' in $$props) $$invalidate(1, name = $$props.name);
-    		if ('audio' in $$props) $$invalidate(2, audio = $$props.audio);
+    		if ('src' in $$props) $$invalidate(2, src = $$props.src);
+    		if ('name' in $$props) $$invalidate(3, name = $$props.name);
+    		if ('audio' in $$props) $$invalidate(4, audio = $$props.audio);
+    		if ('volume' in $$props) $$invalidate(5, volume = $$props.volume);
+    		if ('duration' in $$props) $$invalidate(0, duration = $$props.duration);
+    		if ('currentTime' in $$props) $$invalidate(1, currentTime = $$props.currentTime);
+    		if ('targetTime' in $$props) targetTime = $$props.targetTime;
+    		if ('paused' in $$props) $$invalidate(6, paused = $$props.paused);
+    		if ('wasPaused' in $$props) wasPaused = $$props.wasPaused;
+    		if ('progress' in $$props) $$invalidate(7, progress = $$props.progress);
     	};
 
     	if ($$props && "$$inject" in $$props) {
     		$$self.$inject_state($$props.$$inject);
     	}
 
+    	$$self.$$.update = () => {
+    		if ($$self.$$.dirty & /*currentTime, duration*/ 3) {
+    			$$invalidate(7, progress = currentTime / duration);
+    		}
+    	};
+
     	return [
+    		duration,
+    		currentTime,
     		src,
     		name,
     		audio,
+    		volume,
+    		paused,
+    		progress,
     		handleDrop,
     		handlePaste,
+    		handleMouseDown,
+    		handleMouseUp,
+    		handleProgress,
+    		playPause,
     		dragenter_handler,
     		dragover_handler,
     		dragstart_handler,
     		dragleave_handler,
-    		audio_1_binding
+    		audio_1_binding,
+    		audio_1_volumechange_handler,
+    		audio_1_durationchange_handler,
+    		audio_1_timeupdate_handler,
+    		audio_1_play_pause_handler,
+    		input0_change_input_handler,
+    		input1_change_input_handler
     	];
     }
 
