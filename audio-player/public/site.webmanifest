@@ -1,14 +1,14 @@
 {
-  "name": "Image Viewer",
-  "short_name": "Images",
+  "name": "Audio Player",
+  "short_name": "Music",
   "start_url": ".",
   "display": "fullscreen",
   "lang": "en-US",
   "orientation": "landscape",
   "background_color": "#191c20",
   "theme_color": "#191c20",
-  "scope": "/img-viewer/public/",
-  "description": "Simple and Fast Image Viewer",
+  "scope": "/audio-player/public/",
+  "description": "Simple and Fast Audio Player",
   "icons": [
     {
       "src": "./128.png",
@@ -23,36 +23,32 @@
   ],
   "intent_filters": {
     "scope_url_scheme": "https",
-    "scope_url_host": "haven.pages.dev/img-viewer/public/",
+    "scope_url_host": "haven.pages.dev/audio-player/public/",
     "scope_url_path": "/"
   },
   "capture_links": "new-client",
   "url_handlers": [
     {
-      "origin": "https://haven.pages.dev/img-viewer/public/"
+      "origin": "https://haven.pages.dev/audio-player/public/"
     }
   ],
   "file_handlers": [
     {
-      "action": "/img-viewer/public/",
+      "action": "/audio-player/public/",
       "accept": {
-        "image/apng": ".apng",
-        "image/avif": ".avif",
-        "image/bmp": ".bmp",
-        "image/gif": ".gif",
+        "image/apng": ".apng"
+      }
+    },
+    {
+      "action": "/audio-player/public/",
+      "accept": {
         "image/jpeg": [
           ".jpg",
           ".jpeg",
           ".jfif",
           ".pjpeg",
           ".pjp"
-        ],
-        "image/png": ".png",
-        "image/svg+xml": ".svg",
-        "image/tiff": [".tif" ,".tiff"],
-        "image/webp": ".webp",
-        "image/vnd.microsoft.icon": ".ico"
-
+        ]
       }
     }
   ]

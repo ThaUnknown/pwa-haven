@@ -3,13 +3,13 @@ const cacheList = {
     version: '1.0.0',
     resources: [
       'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/css/halfmoon-variables.min.css',
+      'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/js/halfmoon.min.js',
       'https://fonts.googleapis.com/icon?family=Material+Icons',
-      'https://fonts.gstatic.com/s/materialicons/v99/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2',
-      'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/js/halfmoon.min.js'
+      'https://fonts.gstatic.com/s/materialicons/v99/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2'
     ]
   },
   'img-viewer': {
-    version: '1.0.1',
+    version: '1.0.2',
     resources: [
       '../img-viewer/public/build/bundle.js',
       '../img-viewer/public/build/bundle.js.map',

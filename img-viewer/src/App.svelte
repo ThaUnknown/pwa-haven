@@ -86,18 +86,15 @@
     }
   }
 
-  const imageRx = /\.(jpeg|jpg|gif|png|apng|avif|ico|webp|tiff|bmp|svg)/i;
   function handlePaste(e) {
     const item = e.clipboardData.items[0];
     if (item?.type.indexOf('image') === 0) {
       setSource(item.getAsFile());
     } else if (item?.type === 'text/plain') {
-      item.getAsString((text) => {
-        if (imageRx.exec(text)) setSource(text);
-      });
+      item.getAsString(setSource);
     } else if (item?.type === 'text/html') {
       item.getAsString((text) => {
-        const img = DOMPARSER(text, 'text/html').querySelectorAll('img')[0];
+        const img = DOMPARSER(text, 'text/html').querySelector('img');
         if (img) setSource(img.src);
       });
     }
