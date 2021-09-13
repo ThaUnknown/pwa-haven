@@ -1,6 +1,6 @@
 <script>
   let src = null;
-  let name = 'Audio Player';
+  let name = null;
   let audio = null;
   const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser());
 
@@ -22,12 +22,14 @@
       dataTransfer: { files },
     } = e;
     if (files && files[0]) {
-      setSource(files[0]);
+      if (files[0].type) {
+        setSource(files[0]);
+      } else {
+        // handle directory, find cover art, oh man why am i doing this to myself
+      }
     }
   }
 
-  // these might be false, oh well
-  const audioRx = /\.(3gp|aac|ac3|adts|alac|amr|eac3|flac|m4a|m4b|m4p|mp3|mpeg|ogg|oga|mogg|opus|raw|wav|webm)/i;
   function handlePaste(e) {
     const item = e.clipboardData.items[0];
     if (item?.type.indexOf('audio') === 0) {
@@ -57,7 +59,7 @@
 </div>
 
 <svelte:head>
-  <title>{name}</title>
+  <title>{name || 'Audio Player'}</title>
 </svelte:head>
 
 <svelte:window

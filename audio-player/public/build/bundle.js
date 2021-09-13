@@ -371,7 +371,7 @@ var app = (function () {
     	let title_value;
     	let mounted;
     	let dispose;
-    	document.title = title_value = /*name*/ ctx[1];
+    	document.title = title_value = /*name*/ ctx[1] || 'Audio Player';
 
     	const block = {
     		c: function create() {
@@ -380,9 +380,9 @@ var app = (function () {
     			t = space();
     			if (!src_url_equal(audio_1.src, audio_1_src_value = /*src*/ ctx[0])) attr_dev(audio_1, "src", audio_1_src_value);
     			audio_1.autoplay = true;
-    			add_location(audio_1, file, 55, 2, 1693);
+    			add_location(audio_1, file, 57, 2, 1668);
     			attr_dev(div, "class", "w-full h-full overflow-hidden position-relative");
-    			add_location(div, file, 54, 0, 1629);
+    			add_location(div, file, 56, 0, 1604);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -411,7 +411,7 @@ var app = (function () {
     				attr_dev(audio_1, "src", audio_1_src_value);
     			}
 
-    			if (dirty & /*name*/ 2 && title_value !== (title_value = /*name*/ ctx[1])) {
+    			if (dirty & /*name*/ 2 && title_value !== (title_value = /*name*/ ctx[1] || 'Audio Player')) {
     				document.title = title_value;
     			}
     		},
@@ -437,13 +437,11 @@ var app = (function () {
     	return block;
     }
 
-    const audioRx = /\.(3gp|aac|ac3|adts|alac|amr|eac3|flac|m4a|m4b|m4p|mp3|mpeg|ogg|oga|mogg|opus|raw|wav|webm)/i;
-
     function instance($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots('App', slots, []);
     	let src = null;
-    	let name = 'Audio Player';
+    	let name = null;
     	let audio = null;
     	const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser());
 
@@ -466,7 +464,9 @@ var app = (function () {
     		const { dataTransfer: { files } } = e;
 
     		if (files && files[0]) {
-    			setSource(files[0]);
+    			if (files[0].type) {
+    				setSource(files[0]);
+    			} // handle directory, find cover art, oh man why am i doing this to myself
     		}
     	}
 
@@ -531,7 +531,6 @@ var app = (function () {
     		DOMPARSER,
     		setSource,
     		handleDrop,
-    		audioRx,
     		handlePaste
     	});
 

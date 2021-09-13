@@ -81,7 +81,7 @@
     const {
       dataTransfer: { files },
     } = e;
-    if (files && files[0]) {
+    if (files && files[0]?.type) {
       setSource(files[0]);
     }
   }

@@ -36,19 +36,50 @@
     {
       "action": "/audio-player/public/",
       "accept": {
-        "image/apng": ".apng"
-      }
-    },
-    {
-      "action": "/audio-player/public/",
-      "accept": {
-        "image/jpeg": [
-          ".jpg",
-          ".jpeg",
-          ".jfif",
-          ".pjpeg",
-          ".pjp"
-        ]
+        "audio/3gpp": [
+          ".3gp",
+          ".3gpp"
+        ],
+        "audio/3gpp2": ".3g2",
+        "audio/aac": [
+          ".aac",
+          ".adts"
+        ],
+        "audio/x-aac": [
+          ".aac",
+          ".adts"
+        ],
+        "audio/ac3": ".ac3",
+        "audio/amr": ".amr",
+        "audio/eac3": ".eac3",
+        "audio/flac": ".flac",
+        "audio/x-flac": ".flac",
+        "audio/mp3": ".mp3",
+        "audio/mp4": [
+          ".m4a",
+          ".mp4a"
+        ],
+        "audio/mpeg": [
+          ".mpga",
+          ".mp2",
+          ".mp2a",
+          ".mp3",
+          ".m2a",
+          ".m3a"
+        ],
+        "audio/ogg": [
+          ".oga",
+          ".ogg",
+          ".mogg",
+          ".spx",
+          ".opus"
+        ],
+        "audio/opus": ".opus",
+        "audio/raw": ".raw",
+        "audio/wav": ".wav",
+        "audio/wave": ".wav",
+        "audio/x-wav": ".wav",
+        "audio/webm": ".weba"
       }
     }
   ]
