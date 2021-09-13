@@ -4,17 +4,19 @@ const cacheList = {
     resources: [
       'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/css/halfmoon-variables.min.css',
       'https://fonts.googleapis.com/icon?family=Material+Icons',
-      'https://fonts.gstatic.com/s/materialicons/v98/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2',
+      'https://fonts.gstatic.com/s/materialicons/v99/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2',
       'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/js/halfmoon.min.js'
     ]
   },
   'img-viewer': {
-    version: '1.0.0',
+    version: '1.0.1',
     resources: [
       '../img-viewer/public/build/bundle.js',
       '../img-viewer/public/build/bundle.js.map',
       '../img-viewer/public/build/bundle.css',
-      '../img-viewer/public/favicon.png',
+      '../img-viewer/public/128.png',
+      '../img-viewer/public/512.png',
+      '../img-viewer/public/site.webmanifest',
       '../img-viewer/public/'
     ]
   },
@@ -39,7 +41,7 @@ self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keyList => {
       return Promise.all(keyList.map(key => {
-        if (key) {
+        if (key) { // dump all outdates caches on load
           const [name, version] = key.split(' v.')
           if (cacheList[name].version !== version) {
             return caches.delete(key)
@@ -54,7 +56,7 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   event.respondWith((async () => {
-    const match = await caches.match(event.request)
+    let match = await caches.match(event.request)
     if (!match) { // not in cache
       const url = event.request.url
       if (url.indexOf(self.registration.scope) !== -1) { // in origin
@@ -63,9 +65,9 @@ self.addEventListener('fetch', event => {
         if (cacheList[app]) { // in cachelist
           const keys = await caches.keys()
           if (!keys.includes(app + ' v.' + cacheList[app].version)) { // cache doesnt exist
-            console.log('cache not found, adding', event.request.url)
             const cache = await caches.open(app + ' v.' + cacheList[app].version)
             await cache.addAll(cacheList[app].resources)
+            match = await caches.match(event.request)
           }
         }
       }

@@ -11,13 +11,13 @@
   "description": "Simple, fast image viewer.",
   "icons": [
     {
-      "src": "./favicon.png",
+      "src": "./128.png",
       "sizes": "128x128",
       "type": "image/png"
     },
     {
-      "src": "./logo400.png",
-      "sizes": "400x400",
+      "src": "./512.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ],
