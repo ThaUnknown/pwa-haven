@@ -15,14 +15,27 @@
     const { items } = clipboardData
     handleItems([...items])
   }
-
+  const audioRx = /\.(3gp|3gpp|3g2|aac|adts|ac3|amr|eac3|flac|mp3|m4a|mp4a|mpga|mp2|mp2a|mp3|m2a|m3a|oga|ogg|mogg|spx|opus|raw|wav|weba)$/i
   async function handleItems(items) {
     const promises = items.map(item => {
-      if (item.type.indexOf('audio') === 0) {
+      if (item.type.indexOf('audio') === 0 || item.type.indexOf('image') === 0) {
         return item.getAsFile()
       }
       if (item.type === 'text/plain') {
-        return new Promise(resolve => item.getAsString(resolve))
+        return new Promise(resolve =>
+          item.getAsString(url => {
+            if (audioRx.test(url)) {
+              const filename = url.substring(Math.max(url.lastIndexOf('\\'), url.lastIndexOf('/')) + 1)
+              const name = filename.substring(0, filename.lastIndexOf('.')) || filename
+              resolve({
+                name,
+                url,
+                type: 'audio/'
+              })
+            }
+            resolve()
+          })
+        )
       }
       if (item.type === 'text/html') {
         return new Promise(resolve =>

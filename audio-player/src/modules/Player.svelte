@@ -1,18 +1,7 @@
 <script>
+  import { toTS } from './util.js'
+  import SongList from './SongList.svelte'
   export let name = ''
-  // const songDataPromises = songs.map(song => {
-  //   return new Promise(resolve => {
-  //     let audio = document.createElement('audio')
-  //     audio.preload = 'metadata'
-  //     audio.onloadedmetadata = () => {
-  //       resolve(audio.duration)
-  //       URL.revokeObjectURL(audio.src)
-  //       audio = null
-  //     }
-  //     audio.src = URL.createObjectURL(song)
-  //   })
-  // })
-  // const songData = await Promise.all(songDataPromises)
   let src = null
   let audio = null
   let volume = 1
@@ -20,6 +9,8 @@
   $: updateFiles(files)
   $: progress = currentTime / duration
   $: targetTime = currentTime
+  let current = null
+  $: setSource(current)
   let songs = []
   let duration = -1
   let currentTime = 0
@@ -35,57 +26,40 @@
       const cover = files.find(file => file.type.indexOf('image') === 0)
       setCover(cover)
       const audio = files.filter(file => file.type.indexOf('audio') === 0)
+      // this is hacky, but audio context api uses x100 CPU and x140 RAM
       const songDataPromises = audio.map(song => {
         return new Promise(resolve => {
           let audio = document.createElement('audio')
           audio.preload = 'metadata'
           audio.onloadedmetadata = () => {
-            resolve({ file: song, duration: audio.duration })
+            resolve({ file: song, duration: audio.duration, name: song.name.substring(0, song.name.lastIndexOf('.')) || song.name })
             URL.revokeObjectURL(audio.src)
             audio = null
           }
-          audio.src = URL.createObjectURL(song)
+          audio.src = song.url || URL.createObjectURL(song)
         })
       })
-      songs = await Promise.all(songDataPromises)
-      console.log(songs)
-      setSource(songs[0].file)
+      songs = (await Promise.all(songDataPromises)).sort((a, b) => (a.file.name > b.file.name ? 1 : b.file.name > a.file.name ? -1 : 0))
+      current = songs[0]
     }
   }
 
-  function setSource(target) {
-    if (src) URL.revokeObjectURL(src) // gc
-    let file = null
-    if (target.constructor === String) {
-      src = target
-      file = target
-    } else {
-      src = URL.createObjectURL(target)
-      file = target.name
+  function setSource(song) {
+    if (song) {
+      if (src) URL.revokeObjectURL(src) // gc
+      src = song.file.url || URL.createObjectURL(song.file)
+      name = song.name
     }
-    const filename = file.substring(Math.max(file.lastIndexOf('\\'), file.lastIndexOf('/')) + 1)
-    name = filename.substring(0, filename.lastIndexOf('.')) || filename
   }
-  function setCover(target = '') {
-    if (cover) URL.revokeObjectURL(cover)
-    if (target.constructor === String) {
-      cover = target || defaultCover
+  function setCover(file) {
+    if (file) {
+      if (cover) URL.revokeObjectURL(cover)
+      cover = file.url || URL.createObjectURL(file)
     } else {
-      cover = (target && URL.createObjectURL(target)) || defaultCover
+      cover = defaultCover
     }
   }
 
-  function toTS(sec, full) {
-    if (isNaN(sec) || sec < 0) {
-      return full ? '0:00:00.00' : '00:00'
-    }
-    const hours = Math.floor(sec / 3600)
-    let minutes = Math.floor(sec / 60) - hours * 60
-    let seconds = full ? (sec % 60).toFixed(2) : Math.floor(sec % 60)
-    if (minutes < 10) minutes = '0' + minutes
-    if (seconds < 10) seconds = '0' + seconds
-    return hours > 0 || full ? hours + ':' + minutes + ':' + seconds : minutes + ':' + seconds
-  }
   // todo use a store
   function handleMouseDown({ target }) {
     wasPaused = paused
@@ -109,11 +83,21 @@
   function toggleLoop() {
     loop = !loop
   }
+  function playNext() {
+    current = songs[(songs.indexOf(current) + 1) % songs.length]
+  }
+  function playLast() {
+    const index = songs.indexOf(current)
+    current = songs[index === 0 ? songs.length - 1 : index - 1]
+  }
 </script>
 
-<audio {src} bind:this={audio} autoplay bind:volume bind:duration bind:currentTime bind:paused bind:muted {loop} />
-<div class="content-wrapper">
-  <img src={cover} alt="cover" />
+<audio {src} bind:this={audio} autoplay bind:volume bind:duration bind:currentTime bind:paused bind:muted {loop} on:ended={() => !loop && playNext()} />
+<div class="content-wrapper row">
+  <div class="col-8">
+    <img src={cover} alt="cover" class="w-full" />
+  </div>
+  <SongList {songs} bind:current />
 </div>
 <nav class="navbar navbar-fixed-bottom p-0 d-flex flex-column border-0">
   <div class="d-flex w-full prog">
@@ -131,17 +115,17 @@
   </div>
   <div class="d-flex w-full flex-grow-1 px-20 justify-content-between">
     <div class="d-flex align-items-center">
-      <span class="material-icons font-size-20 ctrl pointer" type="button"> skip_previous </span>
+      <span class="material-icons font-size-20 ctrl pointer" type="button" on:click={playLast}> skip_previous </span>
       <span class="material-icons font-size-24 ctrl pointer" type="button" on:click={playPause}>
         {paused ? 'play_arrow' : 'pause'}
       </span>
-      <span class="material-icons font-size-20 ctrl pointer" type="button"> skip_next </span>
+      <span class="material-icons font-size-20 ctrl pointer" type="button" on:click={playNext}> skip_next </span>
       <div class="text-muted center ml-10 text-nowrap">
-        {toTS(targetTime)} / {toTS(duration)}
+        {toTS(targetTime, true)} / {toTS(duration, true)}
       </div>
     </div>
     <div class="center px-20 mw-0">
-      <span class="text-truncate text-muted">{name}</span>
+      <div class="text-truncate text-muted h-full center">{name}</div>
     </div>
     <div class="d-flex align-items-center">
       <input class="ml-auto px-5 h-half" type="range" min="0" max="1" bind:value={volume} step="any" style="--value: {volume * 100}%" />
