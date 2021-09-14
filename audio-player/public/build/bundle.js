@@ -407,7 +407,7 @@ var app = (function () {
     	let span0;
     	let t4;
     	let span1;
-    	let t5_value = (/*paused*/ ctx[6] ? "play_arrow" : "pause") + "";
+    	let t5_value = (/*paused*/ ctx[6] ? 'play_arrow' : 'pause') + "";
     	let t5;
     	let t6;
     	let span2;
@@ -427,11 +427,11 @@ var app = (function () {
     	let input1;
     	let t15;
     	let span4;
-    	let t16_value = (/*muted*/ ctx[7] ? "volume_off" : "volume_up") + "";
+    	let t16_value = (/*muted*/ ctx[7] ? 'volume_off' : 'volume_up') + "";
     	let t16;
     	let t17;
     	let span5;
-    	let t18_value = (/*loop*/ ctx[8] ? "repeat_one" : "repeat") + "";
+    	let t18_value = (/*loop*/ ctx[8] ? 'repeat_one' : 'repeat') + "";
     	let t18;
     	let t19;
     	let title_value;
@@ -449,7 +449,7 @@ var app = (function () {
     		/*audio_1_timeupdate_handler*/ ctx[27].call(audio_1);
     	}
 
-    	document_1.title = title_value = /*name*/ ctx[3] || "Audio Player";
+    	document_1.title = title_value = /*name*/ ctx[3] || 'Audio Player';
 
     	const block = {
     		c: function create() {
@@ -495,62 +495,62 @@ var app = (function () {
     			if (!src_url_equal(audio_1.src, audio_1_src_value = /*src*/ ctx[2])) attr_dev(audio_1, "src", audio_1_src_value);
     			audio_1.autoplay = true;
     			audio_1.loop = /*loop*/ ctx[8];
-    			attr_dev(audio_1, "class", "svelte-1irdywj");
+    			attr_dev(audio_1, "class", "svelte-qc2vzz");
     			if (/*duration*/ ctx[0] === void 0) add_render_callback(() => /*audio_1_durationchange_handler*/ ctx[26].call(audio_1));
-    			add_location(audio_1, file, 137, 0, 4361);
+    			add_location(audio_1, file, 137, 0, 4341);
     			if (!src_url_equal(img.src, img_src_value = /*cover*/ ctx[9])) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "cover");
-    			attr_dev(img, "class", "svelte-1irdywj");
-    			add_location(img, file, 140, 4, 4565);
-    			attr_dev(div0, "class", "content-wrapper svelte-1irdywj");
-    			add_location(div0, file, 139, 2, 4531);
-    			attr_dev(input0, "class", "w-full top-0 svelte-1irdywj");
+    			attr_dev(img, "class", "svelte-qc2vzz");
+    			add_location(img, file, 140, 4, 4545);
+    			attr_dev(div0, "class", "content-wrapper svelte-qc2vzz");
+    			add_location(div0, file, 139, 2, 4511);
+    			attr_dev(input0, "class", "w-full top-0 svelte-qc2vzz");
     			attr_dev(input0, "type", "range");
     			attr_dev(input0, "min", "0");
     			attr_dev(input0, "max", "1");
     			attr_dev(input0, "step", "any");
     			set_style(input0, "--value", /*progress*/ ctx[11] * 100 + "%");
-    			add_location(input0, file, 144, 6, 4724);
-    			attr_dev(div1, "class", "d-flex w-full prog svelte-1irdywj");
-    			add_location(div1, file, 143, 4, 4685);
-    			attr_dev(span0, "class", "material-icons font-size-20 ctrl pointer svelte-1irdywj");
+    			add_location(input0, file, 144, 6, 4704);
+    			attr_dev(div1, "class", "d-flex w-full prog svelte-qc2vzz");
+    			add_location(div1, file, 143, 4, 4665);
+    			attr_dev(span0, "class", "material-icons font-size-20 ctrl pointer svelte-qc2vzz");
     			attr_dev(span0, "type", "button");
-    			add_location(span0, file, 158, 8, 5155);
-    			attr_dev(span1, "class", "material-icons font-size-24 ctrl pointer svelte-1irdywj");
+    			add_location(span0, file, 158, 8, 5135);
+    			attr_dev(span1, "class", "material-icons font-size-24 ctrl pointer svelte-qc2vzz");
     			attr_dev(span1, "type", "button");
-    			add_location(span1, file, 159, 8, 5255);
-    			attr_dev(span2, "class", "material-icons font-size-20 ctrl pointer svelte-1irdywj");
+    			add_location(span1, file, 159, 8, 5235);
+    			attr_dev(span2, "class", "material-icons font-size-20 ctrl pointer svelte-qc2vzz");
     			attr_dev(span2, "type", "button");
-    			add_location(span2, file, 162, 8, 5414);
-    			attr_dev(div2, "class", "text-muted center ml-10 text-nowrap svelte-1irdywj");
-    			add_location(div2, file, 163, 8, 5510);
-    			attr_dev(div3, "class", "d-flex align-items-center svelte-1irdywj");
-    			add_location(div3, file, 157, 6, 5107);
-    			attr_dev(span3, "class", "text-truncate text-muted svelte-1irdywj");
-    			add_location(span3, file, 168, 8, 5682);
-    			attr_dev(div4, "class", "center px-20 mw-0 svelte-1irdywj");
-    			add_location(div4, file, 167, 6, 5642);
-    			attr_dev(input1, "class", "ml-auto px-5 h-half svelte-1irdywj");
+    			add_location(span2, file, 162, 8, 5394);
+    			attr_dev(div2, "class", "text-muted center ml-10 text-nowrap svelte-qc2vzz");
+    			add_location(div2, file, 163, 8, 5490);
+    			attr_dev(div3, "class", "d-flex align-items-center svelte-qc2vzz");
+    			add_location(div3, file, 157, 6, 5087);
+    			attr_dev(span3, "class", "text-truncate text-muted svelte-qc2vzz");
+    			add_location(span3, file, 168, 8, 5662);
+    			attr_dev(div4, "class", "center px-20 mw-0 svelte-qc2vzz");
+    			add_location(div4, file, 167, 6, 5622);
+    			attr_dev(input1, "class", "ml-auto px-5 h-half svelte-qc2vzz");
     			attr_dev(input1, "type", "range");
     			attr_dev(input1, "min", "0");
     			attr_dev(input1, "max", "1");
     			attr_dev(input1, "step", "any");
     			set_style(input1, "--value", /*volume*/ ctx[5] * 100 + "%");
-    			add_location(input1, file, 171, 8, 5802);
-    			attr_dev(span4, "class", "material-icons font-size-20 ctrl pointer svelte-1irdywj");
+    			add_location(input1, file, 171, 8, 5782);
+    			attr_dev(span4, "class", "material-icons font-size-20 ctrl pointer svelte-qc2vzz");
     			attr_dev(span4, "type", "button");
-    			add_location(span4, file, 172, 8, 5941);
-    			attr_dev(span5, "class", "material-icons font-size-20 ctrl pointer svelte-1irdywj");
+    			add_location(span4, file, 172, 8, 5921);
+    			attr_dev(span5, "class", "material-icons font-size-20 ctrl pointer svelte-qc2vzz");
     			attr_dev(span5, "type", "button");
-    			add_location(span5, file, 175, 8, 6104);
-    			attr_dev(div5, "class", "d-flex align-items-center svelte-1irdywj");
-    			add_location(div5, file, 170, 6, 5754);
-    			attr_dev(div6, "class", "d-flex w-full flex-grow-1 px-20 justify-content-between svelte-1irdywj");
-    			add_location(div6, file, 156, 4, 5031);
-    			attr_dev(nav, "class", "navbar navbar-fixed-bottom p-0 d-flex flex-column border-0 svelte-1irdywj");
-    			add_location(nav, file, 142, 2, 4608);
-    			attr_dev(div7, "class", "page-wrapper with-navbar-fixed-bottom svelte-1irdywj");
-    			add_location(div7, file, 138, 0, 4477);
+    			add_location(span5, file, 175, 8, 6084);
+    			attr_dev(div5, "class", "d-flex align-items-center svelte-qc2vzz");
+    			add_location(div5, file, 170, 6, 5734);
+    			attr_dev(div6, "class", "d-flex w-full flex-grow-1 px-20 justify-content-between svelte-qc2vzz");
+    			add_location(div6, file, 156, 4, 5011);
+    			attr_dev(nav, "class", "navbar navbar-fixed-bottom p-0 d-flex flex-column border-0 svelte-qc2vzz");
+    			add_location(nav, file, 142, 2, 4588);
+    			attr_dev(div7, "class", "page-wrapper with-navbar-fixed-bottom svelte-qc2vzz");
+    			add_location(div7, file, 138, 0, 4457);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -670,7 +670,7 @@ var app = (function () {
     				set_input_value(input0, /*progress*/ ctx[11]);
     			}
 
-    			if (dirty[0] & /*paused*/ 64 && t5_value !== (t5_value = (/*paused*/ ctx[6] ? "play_arrow" : "pause") + "")) set_data_dev(t5, t5_value);
+    			if (dirty[0] & /*paused*/ 64 && t5_value !== (t5_value = (/*paused*/ ctx[6] ? 'play_arrow' : 'pause') + "")) set_data_dev(t5, t5_value);
     			if (dirty[0] & /*targetTime*/ 1024 && t9_value !== (t9_value = toTS(/*targetTime*/ ctx[10]) + "")) set_data_dev(t9, t9_value);
     			if (dirty[0] & /*duration*/ 1 && t11_value !== (t11_value = toTS(/*duration*/ ctx[0]) + "")) set_data_dev(t11, t11_value);
     			if (dirty[0] & /*name*/ 8) set_data_dev(t13, /*name*/ ctx[3]);
@@ -683,10 +683,10 @@ var app = (function () {
     				set_input_value(input1, /*volume*/ ctx[5]);
     			}
 
-    			if (dirty[0] & /*muted*/ 128 && t16_value !== (t16_value = (/*muted*/ ctx[7] ? "volume_off" : "volume_up") + "")) set_data_dev(t16, t16_value);
-    			if (dirty[0] & /*loop*/ 256 && t18_value !== (t18_value = (/*loop*/ ctx[8] ? "repeat_one" : "repeat") + "")) set_data_dev(t18, t18_value);
+    			if (dirty[0] & /*muted*/ 128 && t16_value !== (t16_value = (/*muted*/ ctx[7] ? 'volume_off' : 'volume_up') + "")) set_data_dev(t16, t16_value);
+    			if (dirty[0] & /*loop*/ 256 && t18_value !== (t18_value = (/*loop*/ ctx[8] ? 'repeat_one' : 'repeat') + "")) set_data_dev(t18, t18_value);
 
-    			if (dirty[0] & /*name*/ 8 && title_value !== (title_value = /*name*/ ctx[3] || "Audio Player")) {
+    			if (dirty[0] & /*name*/ 8 && title_value !== (title_value = /*name*/ ctx[3] || 'Audio Player')) {
     				document_1.title = title_value;
     			}
     		},
@@ -716,18 +716,18 @@ var app = (function () {
 
     function toTS(sec, full) {
     	if (isNaN(sec) || sec < 0) {
-    		return full ? "0:00:00.00" : "00:00";
+    		return full ? '0:00:00.00' : '00:00';
     	}
 
     	const hours = Math.floor(sec / 3600);
     	let minutes = Math.floor(sec / 60) - hours * 60;
     	let seconds = full ? (sec % 60).toFixed(2) : Math.floor(sec % 60);
-    	if (minutes < 10) minutes = "0" + minutes;
-    	if (seconds < 10) seconds = "0" + seconds;
+    	if (minutes < 10) minutes = '0' + minutes;
+    	if (seconds < 10) seconds = '0' + seconds;
 
     	return hours > 0 || full
-    	? hours + ":" + minutes + ":" + seconds
-    	: minutes + ":" + seconds;
+    	? hours + ':' + minutes + ':' + seconds
+    	: minutes + ':' + seconds;
     }
 
     function instance($$self, $$props, $$invalidate) {
@@ -736,7 +736,7 @@ var app = (function () {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots('App', slots, []);
     	let src = null;
-    	let name = "";
+    	let name = '';
     	let audio = null;
     	let volume = 1;
     	let duration = -1;
@@ -761,8 +761,8 @@ var app = (function () {
     			file = target.name;
     		}
 
-    		const filename = file.substring(Math.max(file.lastIndexOf("\\"), file.lastIndexOf("/")) + 1);
-    		$$invalidate(3, name = filename.substring(0, filename.lastIndexOf(".")) || filename);
+    		const filename = file.substring(Math.max(file.lastIndexOf('\\'), file.lastIndexOf('/')) + 1);
+    		$$invalidate(3, name = filename.substring(0, filename.lastIndexOf('.')) || filename);
     	}
 
     	function setCover(target) {
@@ -790,16 +790,16 @@ var app = (function () {
     					folder.createReader().readEntries(async entries => {
     						const filePromises = entries.filter(entry => entry.isFile).map(file => new Promise(resolve => file.file(resolve)));
     						const files = await Promise.all(filePromises);
-    						const cover = files.find(file => file.type.indexOf("image") === 0);
-    						const songs = files.filter(file => file.type.indexOf("audio") === 0);
+    						const cover = files.find(file => file.type.indexOf('image') === 0);
+    						const songs = files.filter(file => file.type.indexOf('audio') === 0);
     						setSource(songs[0]);
     						setCover(cover);
 
     						// this is hacky, but audio context api uses x100 CPU and x140 RAM
     						const songDataPromises = songs.map(song => {
     							return new Promise(resolve => {
-    									let audio = document.createElement("audio");
-    									audio.preload = "metadata";
+    									let audio = document.createElement('audio');
+    									audio.preload = 'metadata';
 
     									audio.onloadedmetadata = () => {
     										resolve(audio.duration);
@@ -822,19 +822,19 @@ var app = (function () {
     	function handlePaste(e) {
     		const item = e.clipboardData.items[0];
 
-    		if (item?.type.indexOf("audio") === 0) {
+    		if (item?.type.indexOf('audio') === 0) {
     			setSource(item.getAsFile());
-    		} else if (item?.type === "text/plain") {
+    		} else if (item?.type === 'text/plain') {
     			item.getAsString(setSource);
-    		} else if (item?.type === "text/html") {
+    		} else if (item?.type === 'text/html') {
     			item.getAsString(text => {
-    				const audio = DOMPARSER(text, "text/html").querySelector("audio");
+    				const audio = DOMPARSER(text, 'text/html').querySelector('audio');
     				if (audio) setSource(audio.src);
     			});
     		}
     	}
 
-    	if ("launchQueue" in window) {
+    	if ('launchQueue' in window) {
     		launchQueue.setConsumer(async launchParams => {
     			if (!launchParams.files.length) {
     				return;

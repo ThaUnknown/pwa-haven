@@ -1,6 +1,6 @@
 <script>
   let src = null
-  let name = ""
+  let name = ''
   let audio = null
   let volume = 1
   $: progress = currentTime / duration
@@ -25,8 +25,8 @@
       src = URL.createObjectURL(target)
       file = target.name
     }
-    const filename = file.substring(Math.max(file.lastIndexOf("\\"), file.lastIndexOf("/")) + 1)
-    name = filename.substring(0, filename.lastIndexOf(".")) || filename
+    const filename = file.substring(Math.max(file.lastIndexOf('\\'), file.lastIndexOf('/')) + 1)
+    name = filename.substring(0, filename.lastIndexOf('.')) || filename
   }
   function setCover(target) {
     if (cover) URL.revokeObjectURL(cover)
@@ -47,19 +47,19 @@
         let folder = items[0].webkitGetAsEntry()
         folder = folder.isDirectory && folder
         if (folder) {
-          folder.createReader().readEntries(async (entries) => {
-            const filePromises = entries.filter((entry) => entry.isFile).map((file) => new Promise((resolve) => file.file(resolve)))
+          folder.createReader().readEntries(async entries => {
+            const filePromises = entries.filter(entry => entry.isFile).map(file => new Promise(resolve => file.file(resolve)))
             const files = await Promise.all(filePromises)
-            const cover = files.find((file) => file.type.indexOf("image") === 0)
-            const songs = files.filter((file) => file.type.indexOf("audio") === 0)
+            const cover = files.find(file => file.type.indexOf('image') === 0)
+            const songs = files.filter(file => file.type.indexOf('audio') === 0)
             setSource(songs[0])
             setCover(cover)
 
             // this is hacky, but audio context api uses x100 CPU and x140 RAM
-            const songDataPromises = songs.map((song) => {
-              return new Promise((resolve) => {
-                let audio = document.createElement("audio")
-                audio.preload = "metadata"
+            const songDataPromises = songs.map(song => {
+              return new Promise(resolve => {
+                let audio = document.createElement('audio')
+                audio.preload = 'metadata'
                 audio.onloadedmetadata = () => {
                   resolve(audio.duration)
                   URL.revokeObjectURL(audio.src)
@@ -78,20 +78,20 @@
 
   function handlePaste(e) {
     const item = e.clipboardData.items[0]
-    if (item?.type.indexOf("audio") === 0) {
+    if (item?.type.indexOf('audio') === 0) {
       setSource(item.getAsFile())
-    } else if (item?.type === "text/plain") {
+    } else if (item?.type === 'text/plain') {
       item.getAsString(setSource)
-    } else if (item?.type === "text/html") {
-      item.getAsString((text) => {
-        const audio = DOMPARSER(text, "text/html").querySelector("audio")
+    } else if (item?.type === 'text/html') {
+      item.getAsString(text => {
+        const audio = DOMPARSER(text, 'text/html').querySelector('audio')
         if (audio) setSource(audio.src)
       })
     }
   }
 
-  if ("launchQueue" in window) {
-    launchQueue.setConsumer(async (launchParams) => {
+  if ('launchQueue' in window) {
+    launchQueue.setConsumer(async launchParams => {
       if (!launchParams.files.length) {
         return
       }
@@ -100,14 +100,14 @@
   }
   function toTS(sec, full) {
     if (isNaN(sec) || sec < 0) {
-      return full ? "0:00:00.00" : "00:00"
+      return full ? '0:00:00.00' : '00:00'
     }
     const hours = Math.floor(sec / 3600)
     let minutes = Math.floor(sec / 60) - hours * 60
     let seconds = full ? (sec % 60).toFixed(2) : Math.floor(sec % 60)
-    if (minutes < 10) minutes = "0" + minutes
-    if (seconds < 10) seconds = "0" + seconds
-    return hours > 0 || full ? hours + ":" + minutes + ":" + seconds : minutes + ":" + seconds
+    if (minutes < 10) minutes = '0' + minutes
+    if (seconds < 10) seconds = '0' + seconds
+    return hours > 0 || full ? hours + ':' + minutes + ':' + seconds : minutes + ':' + seconds
   }
 
   // todo use a store
@@ -158,7 +158,7 @@
       <div class="d-flex align-items-center">
         <span class="material-icons font-size-20 ctrl pointer" type="button"> skip_previous </span>
         <span class="material-icons font-size-24 ctrl pointer" type="button" on:click={playPause}>
-          {paused ? "play_arrow" : "pause"}
+          {paused ? 'play_arrow' : 'pause'}
         </span>
         <span class="material-icons font-size-20 ctrl pointer" type="button"> skip_next </span>
         <div class="text-muted center ml-10 text-nowrap">
@@ -171,10 +171,10 @@
       <div class="d-flex align-items-center">
         <input class="ml-auto px-5 h-half" type="range" min="0" max="1" bind:value={volume} step="any" style="--value: {volume * 100}%" />
         <span class="material-icons font-size-20 ctrl pointer" type="button" on:click={toggleMute}>
-          {muted ? "volume_off" : "volume_up"}
+          {muted ? 'volume_off' : 'volume_up'}
         </span>
         <span class="material-icons font-size-20 ctrl pointer" type="button" on:click={toggleLoop}>
-          {loop ? "repeat_one" : "repeat"}
+          {loop ? 'repeat_one' : 'repeat'}
         </span>
       </div>
     </div>
@@ -182,7 +182,7 @@
 </div>
 
 <svelte:head>
-  <title>{name || "Audio Player"}</title>
+  <title>{name || 'Audio Player'}</title>
 </svelte:head>
 
 <svelte:window
@@ -200,7 +200,7 @@
   img:not([src]) {
     display: none;
   }
-  input[type="range"] {
+  input[type='range'] {
     -webkit-appearance: none;
     background: transparent;
     margin: 0;
@@ -208,15 +208,15 @@
     height: 8px;
   }
 
-  input[type="range"]:focus {
+  input[type='range']:focus {
     outline: none;
   }
 
-  input[type="range"]::-webkit-slider-runnable-track {
+  input[type='range']::-webkit-slider-runnable-track {
     height: 3px;
   }
 
-  input[type="range"]::-webkit-slider-thumb {
+  input[type='range']::-webkit-slider-thumb {
     height: 0;
     width: 0;
     border-radius: 50%;
@@ -226,17 +226,17 @@
     transition: all 0.1s ease;
   }
 
-  input[type="range"]:hover::-webkit-slider-thumb {
+  input[type='range']:hover::-webkit-slider-thumb {
     height: 12px;
     width: 12px;
     margin-top: -4px;
   }
 
-  input[type="range"] {
+  input[type='range'] {
     --volume: 0%;
   }
 
-  input[type="range"]::-webkit-slider-runnable-track {
+  input[type='range']::-webkit-slider-runnable-track {
     background: linear-gradient(90deg, #ff3c00 var(--value), rgba(255, 255, 255, 0.2) var(--value));
   }
 
