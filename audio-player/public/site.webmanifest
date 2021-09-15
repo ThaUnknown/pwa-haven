@@ -57,6 +57,7 @@
         "audio/mp3": ".mp3",
         "audio/mp4": [
           ".m4a",
+          ".mp4",
           ".mp4a"
         ],
         "audio/mpeg": [
