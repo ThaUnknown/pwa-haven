@@ -26,7 +26,11 @@
     "scope_url_host": "haven.pages.dev/audio-player/public/",
     "scope_url_path": "/"
   },
-  "capture_links": "existing-client-event",
+  "capture_links": "existing-client-navigate",
+  "launch_handler": {
+    "route_to": "existing-client",
+    "navigate_existing_client": "always"
+  },
   "url_handlers": [
     {
       "origin": "https://haven.pages.dev/audio-player/public/"
