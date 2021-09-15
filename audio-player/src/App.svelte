@@ -73,10 +73,23 @@
       files = await Promise.all(promises)
     })
   }
+  function handlePopup() {
+    if (!files.length) {
+      let input = document.createElement('input')
+      input.type = 'file'
+      input.multiple = 'multiple'
+
+      input.onchange = ({target}) => {
+        files = [...target.files]
+        input = null
+      }
+      input.click()
+    }
+  }
 </script>
 
 <div class="page-wrapper with-navbar-fixed-bottom">
-  <Player bind:name bind:files />
+  <Player bind:name bind:files on:popup={handlePopup} />
 </div>
 
 <svelte:head>

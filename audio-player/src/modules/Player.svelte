@@ -1,6 +1,9 @@
 <script>
   import { toTS } from './util.js'
   import SongList from './SongList.svelte'
+  import { createEventDispatcher } from 'svelte'
+
+  const dispatch = createEventDispatcher()
   export let name = ''
   let src = null
   let audio = null
@@ -18,14 +21,19 @@
   let muted = false
   let loop = false
   let wasPaused = true
-  let cover
-  let defaultCover
+  let shuffle = false
+  let cover = '../512.png'
+  let defaultCover = '../512.png'
 
   async function updateFiles(files) {
     if (files.length) {
       const cover = files.find(file => file.type.indexOf('image') === 0)
       setCover(cover)
       const audio = files.filter(file => file.type.indexOf('audio') === 0)
+      if (audio) {
+        songs = []
+        current = null
+      }
       // this is hacky, but audio context api uses x100 CPU and x140 RAM
       const songDataPromises = audio.map(song => {
         return new Promise(resolve => {
@@ -45,15 +53,18 @@
   }
 
   function setSource(song) {
+    if (src) URL.revokeObjectURL(src)
     if (song) {
-      if (src) URL.revokeObjectURL(src) // gc
       src = song.file.url || URL.createObjectURL(song.file)
       name = song.name
+    } else {
+      src = null
+      name = ''
     }
   }
   function setCover(file) {
+    if (cover) URL.revokeObjectURL(cover)
     if (file) {
-      if (cover) URL.revokeObjectURL(cover)
       cover = file.url || URL.createObjectURL(file)
     } else {
       cover = defaultCover
@@ -90,16 +101,24 @@
     const index = songs.indexOf(current)
     current = songs[index === 0 ? songs.length - 1 : index - 1]
   }
+  function toggleShuffle() {
+    shuffle = !shuffle
+    if (shuffle) {
+      songs = songs.sort(() => 0.5 - Math.random())
+    } else {
+      songs = songs.sort((a, b) => (a.file.name > b.file.name ? 1 : b.file.name > a.file.name ? -1 : 0))
+    }
+  }
 </script>
 
 <audio {src} bind:this={audio} autoplay bind:volume bind:duration bind:currentTime bind:paused bind:muted {loop} on:ended={() => !loop && playNext()} />
-<div class="content-wrapper row">
-  <div class="col-8">
-    <img src={cover} alt="cover" class="w-full" />
+<div class="content-wrapper row overflow-hidden">
+  <div class="col-md-7 p-20 center h-half h-md-full bg-dark">
+    <img src={cover} alt="cover" class="shadow-lg pointer" on:click={playPause} />
   </div>
-  <SongList {songs} bind:current />
+  <SongList {songs} bind:current on:popup={() => dispatch('popup')} />
 </div>
-<nav class="navbar navbar-fixed-bottom p-0 d-flex flex-column border-0">
+<nav class="navbar navbar-fixed-bottom p-0 d-flex flex-column border-0 shadow-lg bg-dark-light">
   <div class="d-flex w-full prog">
     <input
       class="w-full top-0"
@@ -125,7 +144,7 @@
       </div>
     </div>
     <div class="center px-20 mw-0">
-      <div class="text-truncate text-muted h-full center">{name}</div>
+      <div class="text-truncate text-muted">{name}</div>
     </div>
     <div class="d-flex align-items-center">
       <input class="ml-auto px-5 h-half" type="range" min="0" max="1" bind:value={volume} step="any" style="--value: {volume * 100}%" />
@@ -134,6 +153,9 @@
       </span>
       <span class="material-icons font-size-20 ctrl pointer" type="button" on:click={toggleLoop}>
         {loop ? 'repeat_one' : 'repeat'}
+      </span>
+      <span class="material-icons font-size-20 ctrl pointer" type="button" on:click={toggleShuffle}>
+        {shuffle ? 'shuffle' : 'sort'}
       </span>
     </div>
   </div>
@@ -145,6 +167,11 @@
   }
   img:not([src]) {
     display: none;
+  }
+  img {
+    object-fit: contain;
+    max-height: 100%;
+    max-width: 100%;
   }
   input[type='range'] {
     -webkit-appearance: none;
@@ -202,7 +229,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    line-height: 1;
   }
 
   .prog {
