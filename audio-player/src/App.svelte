@@ -70,7 +70,8 @@
         return
       }
       const promises = launchParams.files.map(file => file.getFile())
-      files = await Promise.all(promises)
+      files = [...new Set(await Promise.all(promises))]
+      console.log(files)
     })
   }
   function handlePopup() {
@@ -79,7 +80,7 @@
       input.type = 'file'
       input.multiple = 'multiple'
 
-      input.onchange = ({target}) => {
+      input.onchange = ({ target }) => {
         files = [...target.files]
         input = null
       }
