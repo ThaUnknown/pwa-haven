@@ -22,8 +22,8 @@
   let loop = false
   let wasPaused = true
   let shuffle = false
-  let cover = '/512.png'
-  let defaultCover = '/512.png'
+  let cover = './512.png'
+  let defaultCover = './512.png'
 
   async function updateFiles(files) {
     if (files.length) {
