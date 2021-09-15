@@ -1,129 +1,127 @@
 <script>
-  let src = null;
-  let image = null;
-  let scale = 1;
-  let isBlurred = true;
-  let name = 'Image Viewer';
-  let fileSize = null;
-  const initial = { x: 0, y: 0 };
-  const old = { x: 0, y: 0 };
-  const position = { x: 0, y: 0 };
-  const dimensions = { x: null, y: null };
-  const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser());
-  const units = [' B', ' KB', ' MB', ' GB'];
+  let src = null
+  let image = null
+  let scale = 1
+  let isBlurred = true
+  let name = 'Image Viewer'
+  let fileSize = null
+  const initial = { x: 0, y: 0 }
+  const old = { x: 0, y: 0 }
+  const position = { x: 0, y: 0 }
+  const dimensions = { x: null, y: null }
+  const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser())
+  const units = [' B', ' KB', ' MB', ' GB']
 
   function prettyBytes(num) {
-    if (isNaN(num) || num == null) return '';
-    if (num < 1) return num + ' B';
-    const exponent = Math.min(Math.floor(Math.log(num) / Math.log(1000)), units.length - 1);
-    return Number((num / Math.pow(1000, exponent)).toFixed(2)) + units[exponent];
+    if (isNaN(num) || num == null) return ''
+    if (num < 1) return num + ' B'
+    const exponent = Math.min(Math.floor(Math.log(num) / Math.log(1000)), units.length - 1)
+    return Number((num / Math.pow(1000, exponent)).toFixed(2)) + units[exponent]
   }
 
   function setSource(target) {
-    if (src) URL.revokeObjectURL(src); // gc
+    if (src) URL.revokeObjectURL(src) // gc
     if (target.constructor === String) {
-      src = target;
-      const startIndex = Math.max(target.lastIndexOf('\\'), target.lastIndexOf('/')) + 1;
-      name = target.substring(startIndex);
-      fileSize = null;
+      src = target
+      const startIndex = Math.max(target.lastIndexOf('\\'), target.lastIndexOf('/')) + 1
+      name = target.substring(startIndex)
+      fileSize = null
     } else {
-      src = URL.createObjectURL(target);
-      const startIndex = Math.max(target.name.lastIndexOf('\\'), target.name.lastIndexOf('/')) + 1;
-      name = target.name.substring(startIndex);
-      fileSize = target.size;
+      src = URL.createObjectURL(target)
+      const startIndex = Math.max(target.name.lastIndexOf('\\'), target.name.lastIndexOf('/')) + 1
+      name = target.name.substring(startIndex)
+      fileSize = target.size
     }
   }
 
   // dragging around
   function dragStart(e) {
-    initial.x = e.clientX;
-    initial.y = e.clientY;
-    image.onpointermove = handleDrag;
-    image.setPointerCapture(e.pointerId);
+    initial.x = e.clientX
+    initial.y = e.clientY
+    image.onpointermove = handleDrag
+    image.setPointerCapture(e.pointerId)
   }
   function dragEnd(e) {
     if (image.onpointermove) {
-      image.onpointermove = null;
-      image.releasePointerCapture(e.pointerId);
-      old.x += e.clientX - initial.x;
-      old.y += e.clientY - initial.y;
+      image.onpointermove = null
+      image.releasePointerCapture(e.pointerId)
+      old.x += e.clientX - initial.x
+      old.y += e.clientY - initial.y
     }
   }
   function handleDrag(e) {
-    position.x = old.x + e.clientX - initial.x;
-    position.y = old.y + e.clientY - initial.y;
-    handlePosition();
+    position.x = old.x + e.clientX - initial.x
+    position.y = old.y + e.clientY - initial.y
+    handlePosition()
   }
 
   // zooming
   function handleZoom(e) {
-    const diff = e.deltaY * -0.01;
+    const diff = e.deltaY * -0.01
     if (diff === -1) {
-      if (!(scale < -4)) scale += diff;
-      old.x /= 2;
-      old.y /= 2;
+      if (!(scale < -4)) scale += diff
+      old.x /= 2
+      old.y /= 2
     } else if (diff === 1 && !(scale > 11)) {
-      scale += diff;
-      old.x *= 2;
-      old.y *= 2;
+      scale += diff
+      old.x *= 2
+      old.y *= 2
     }
-    image.style.setProperty('--zoom', 2 ** scale);
-    handlePosition(old);
+    image.style.setProperty('--zoom', 2 ** scale)
+    handlePosition(old)
   }
 
   // position
   function handlePosition(pos = position) {
-    image.style.setProperty('--left', pos.x + 'px');
-    image.style.setProperty('--top', pos.y + 'px');
+    image.style.setProperty('--left', pos.x + 'px')
+    image.style.setProperty('--top', pos.y + 'px')
   }
   // loading files
-  function handleDrop(e) {
-    const {
-      dataTransfer: { files },
-    } = e;
-    if (files && files[0]?.type) {
-      setSource(files[0]);
-    }
+  function handleDrop({ dataTransfer }) {
+    if (dataTransfer.items) handleItems(dataTransfer.items[0])
   }
 
-  function handlePaste(e) {
-    const item = e.clipboardData.items[0];
+  function handlePaste({ clipboardData }) {
+    if (clipboardData.items) handleItems(clipboardData.items[0])
+  }
+  function handleItems(item) {
+    // don't support multi-image x)
     if (item?.type.indexOf('image') === 0) {
-      setSource(item.getAsFile());
+      setSource(item.getAsFile())
     } else if (item?.type === 'text/plain') {
-      item.getAsString(setSource);
+      item.getAsString(setSource)
     } else if (item?.type === 'text/html') {
-      item.getAsString((text) => {
-        const img = DOMPARSER(text, 'text/html').querySelector('img');
-        if (img) setSource(img.src);
-      });
+      item.getAsString(text => {
+        const img = DOMPARSER(text, 'text/html').querySelector('img')
+        if (img) setSource(img.src)
+      })
     }
   }
 
   if ('launchQueue' in window) {
-    launchQueue.setConsumer(async (launchParams) => {
+    launchQueue.setConsumer(async launchParams => {
       if (!launchParams.files.length) {
-        return;
+        return
       }
-      setSource(await launchParams.files[0].getFile());
-    });
+      setSource(await launchParams.files[0].getFile())
+    })
   }
 
   // UI
   function toggleBlur() {
-    isBlurred = !isBlurred;
-    image.style.setProperty('--pixel', isBlurred ? 'crisp-edges' : 'pixelated');
+    isBlurred = !isBlurred
+    image.style.setProperty('--pixel', isBlurred ? 'crisp-edges' : 'pixelated')
   }
   function resetPos() {
-    old.x = 0;
-    old.y = 0;
-    scale = 0;
-    image.style.setProperty('--zoom', 1);
-    handlePosition(old);
+    old.x = 0
+    old.y = 0
+    scale = 0
+    image.style.setProperty('--zoom', 1)
+    handlePosition(old)
   }
   function handleImage() {
-    dimensions.x = image.naturalWidth;
-    dimensions.y = image.naturalHeight;
+    dimensions.x = image.naturalWidth
+    dimensions.y = image.naturalHeight
   }
 </script>
 

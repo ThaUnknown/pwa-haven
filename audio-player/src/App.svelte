@@ -7,13 +7,11 @@
 
   // loading files
   function handleDrop({ dataTransfer }) {
-    const { items } = dataTransfer
-    handleItems([...items])
+    handleItems([...dataTransfer.items])
   }
 
   function handlePaste({ clipboardData }) {
-    const { items } = clipboardData
-    handleItems([...items])
+    handleItems([...clipboardData.items])
   }
   const audioRx = /\.(3gp|3gpp|3g2|aac|adts|ac3|amr|eac3|flac|mp3|m4a|mp4a|mpga|mp2|mp2a|mp3|m2a|m3a|oga|ogg|mogg|spx|opus|raw|wav|weba)$/i
   async function handleItems(items) {

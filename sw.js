@@ -9,7 +9,7 @@ const cacheList = {
     ]
   },
   'img-viewer': {
-    version: '1.0.4',
+    version: '1.0.5',
     resources: [
       '../img-viewer/public/build/bundle.js',
       '../img-viewer/public/build/bundle.js.map',
@@ -21,7 +21,7 @@ const cacheList = {
     ]
   },
   'audio-player': {
-    version: '1.0.7',
+    version: '1.0.8',
     resources: [
       '../audio-player/public/build/bundle.js',
       '../audio-player/public/build/bundle.js.map',
