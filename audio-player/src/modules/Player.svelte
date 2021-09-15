@@ -7,7 +7,8 @@
   export let name = ''
   let src = null
   let audio = null
-  let volume = 1
+  let volume = localStorage.getItem('volume') || 1
+  $: localStorage.setItem('volume', volume)
   export let files = []
   $: updateFiles(files)
   $: progress = currentTime / duration
@@ -15,7 +16,7 @@
   let current = null
   $: setSource(current)
   let songs = []
-  let duration = -1
+  let duration = 0.1
   let currentTime = 0
   let paused = true
   let muted = false
@@ -24,6 +25,32 @@
   let shuffle = false
   let cover = './512.png'
   let defaultCover = './512.png'
+  $: navigator.mediaSession?.setPositionState({
+    duration: duration || 0,
+    playbackRate: 1,
+    position: currentTime || 0
+  })
+  $: (name, cover) => {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: name || 'Audio Player',
+        artwork: [
+          {
+            src: cover,
+            sizes: '256x256',
+            type: 'image/jpg'
+          }
+        ]
+      })
+    }
+  }
+
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.setActionHandler('play', playPause)
+    navigator.mediaSession.setActionHandler('pause', playPause)
+    navigator.mediaSession.setActionHandler('nexttrack', playNext)
+    navigator.mediaSession.setActionHandler('previoustrack', playLast)
+  }
 
   async function updateFiles(files) {
     if (files.length) {
