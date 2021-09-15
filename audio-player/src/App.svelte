@@ -70,7 +70,14 @@
         return
       }
       const promises = launchParams.files.map(file => file.getFile())
-      files = [...new Set(await Promise.all(promises))]
+      // for some fucking reason, the same file can get passed multiple times, why? I still want to future-proof multi-files
+      files = (await Promise.all(promises)).filter((file, index, all) => {
+        return (
+          all.findIndex(search => {
+            return search.name === file.name && search.size === file.size && search.lastModified === file.lastModified
+          }) === index
+        )
+      })
       console.log(files)
     })
   }
