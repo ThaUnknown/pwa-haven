@@ -1,0 +1,71 @@
+{
+  "name": "Video Player",
+  "short_name": "Videos",
+  "start_url": ".",
+  "display": "fullscreen",
+  "lang": "en-US",
+  "orientation": "landscape",
+  "background_color": "#191c20",
+  "theme_color": "#191c20",
+  "scope": "/video-player/public/",
+  "description": "Simple and Powerful Video Player",
+  "icons": [
+    {
+      "src": "./128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "./512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "intent_filters": {
+    "scope_url_scheme": "https",
+    "scope_url_host": "haven.pages.dev/video-player/public/",
+    "scope_url_path": "/"
+  },
+  "capture_links": "existing-client-navigate",
+  "launch_handler": {
+    "route_to": "existing-client",
+    "navigate_existing_client": "always"
+  },
+  "url_handlers": [
+    {
+      "origin": "https://haven.pages.dev/video-player/public/"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/video-player/public/",
+      "accept": {
+        "video/3gpp": [
+          ".3gp",
+          ".3gpp"
+        ],
+        "video/3gpp2": ".3g2",
+        "video/mp2t": [
+          ".ts",
+          ".m2ts"
+        ],
+        "video/mp4": [
+          ".mp4",
+          ".m4p",
+          ".mp4v",
+          ".mpg4"
+        ],
+        "video/quicktime": [
+          ".qt",
+          ".mov"
+        ],
+        "video/ogg": [
+          ".ogm",
+          ".ogv"
+        ],
+        "video/webm": ".webm",
+        "video/x-matroska": [".mkv",".mk3d",".mks"]
+      }
+    }
+  ]
+}
