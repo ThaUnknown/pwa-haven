@@ -94,7 +94,7 @@
 </script>
 
 <div class="page-wrapper with-navbar-fixed-bottom">
-  <Player bind:files/>
+  <Player bind:files />
 </div>
 
 <svelte:head>

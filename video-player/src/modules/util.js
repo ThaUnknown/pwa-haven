@@ -9,14 +9,3 @@ export function toTS (sec, full) {
   if (seconds < 10) seconds = '0' + seconds
   return hours > 0 ? hours + ':' + minutes + ':' + seconds : minutes + ':' + seconds
 }
-
-if (!ReadableStream.prototype[Symbol.asyncIterator]) {
-  ReadableStream.prototype[Symbol.asyncIterator] = async function * () {
-    const reader = this.getReader()
-    while (1) {
-      const chunk = await reader.read()
-      if (chunk.done) return chunk.value
-      yield chunk.value
-    }
-  }
-}
