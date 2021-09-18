@@ -13,10 +13,10 @@
   function handlePaste({ clipboardData }) {
     handleItems([...clipboardData.items])
   }
-  const videoRx = /\.(3gp|3gpp|3g2|aac|adts|ac3|amr|eac3|flac|mp3|m4a|mp4|mp4a|mpga|mp2|mp2a|mp3|m2a|m3a|oga|ogg|mogg|spx|opus|raw|wav|weba)$/i
+  const videoRx = /\.(3gp|3gpp|3g2|ts|m2ts|mp4|m4p|mp4v|mpg4|qt|mov|omg|ogv|web|mkb|mk3d|mks)$/i
   async function handleItems(items) {
     const promises = items.map(item => {
-      if (item.type.indexOf('video') === 0) {
+      if (item.type.indexOf('video/') === 0) {
         return item.getAsFile()
       }
       if (item.type === 'text/plain') {
@@ -94,7 +94,7 @@
 </script>
 
 <div class="page-wrapper with-navbar-fixed-bottom">
-  <Player bind:name bind:files on:popup={handlePopup} />
+  <Player bind:files/>
 </div>
 
 <svelte:head>
