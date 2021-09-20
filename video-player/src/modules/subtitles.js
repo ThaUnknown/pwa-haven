@@ -28,13 +28,7 @@ export default class Subtitles {
     this.initParser(this.selected).then(() => {
       this.selected.onStream = ({ stream, file, req }, cb) => {
         if (req.destination === 'video' && file.name.endsWith('.mkv') && !this.parsed) {
-          const temp = this.stream
-          this.stream = new SubtitleStream(temp) // this should work, but doesn't, mangle it.
-          this.stream.subtitleTracks = temp.subtitleTracks
-          this.stream.timecodeScale = temp.timecodeScale
-          this.stream.unstable = true
-          temp.end()
-          temp.destroy()
+          this.stream = new SubtitleStream(this.stream) // this should work, but doesn't, mangle it.
           this.handleSubtitleParser(this.stream, true)
           stream.pipe(this.stream)
           cb(this.stream)

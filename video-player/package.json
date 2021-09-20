@@ -22,7 +22,7 @@
   "dependencies": {
     "end-of-stream": "^1.4.4",
     "filestream": "github:jimmywarting/filestream#feature/fewer-dep",
-    "matroska-subtitles": "^3.3.1",
+    "matroska-subtitles": "^3.3.2",
     "range-parser": "^1.2.1"
   }
 }
