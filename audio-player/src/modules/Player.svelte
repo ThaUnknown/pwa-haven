@@ -138,6 +138,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-media-has-caption -->
 <audio {src} bind:this={audio} autoplay bind:volume bind:duration bind:currentTime bind:paused bind:muted {loop} on:ended={() => !loop && playNext()} />
 <div class="content-wrapper row overflow-hidden">
   <div class="col-md-7 p-20 center h-half h-md-full bg-dark">

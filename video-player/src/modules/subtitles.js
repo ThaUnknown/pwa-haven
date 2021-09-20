@@ -1,5 +1,5 @@
 import { SubtitleParser, SubtitleStream } from 'matroska-subtitles'
-import SubtitlesOctopus from './lib/subtitles-octopus.js'
+import SubtitlesOctopus from '../lib/subtitles-octopus.js'
 
 const subtitleExtensions = ['.srt', '.vtt', '.ass', '.ssa']
 const videoExtensions = ['.3g2', '.3gp', '.asf', '.avi', '.dv', '.flv', '.gxf', '.m2ts', '.m4a', '.m4b', '.m4p', '.m4r', '.m4v', '.mkv', '.mov', '.mp4', '.mpd', '.mpeg', '.mpg', '.mxf', '.nut', '.ogm', '.ogv', '.swf', '.ts', '.vob', '.webm', '.wmv', '.wtv']
@@ -25,14 +25,22 @@ export default class Subtitles {
     this.videoFiles = files.filter(file => videoExtensions.some(ext => file.name.endsWith(ext)))
     this.timeout = null
 
-    this.selected.onStream = ({ stream, file, req }, cb) => {
-      if (req.destination === 'video' && file.name.endsWith('.mkv') && !this.parsed && this.stream) {
-        this.stream = new SubtitleStream(this.stream)
-        this.handleSubtitleParser(this.stream, true)
-        stream.pipe(this.stream)
-        cb(this.stream)
+    this.initParser(this.selected).then(() => {
+      this.selected.onStream = ({ stream, file, req }, cb) => {
+        if (req.destination === 'video' && file.name.endsWith('.mkv') && !this.parsed) {
+          const temp = this.stream
+          this.stream = new SubtitleStream(temp) // this should work, but doesn't, mangle it.
+          this.stream.subtitleTracks = temp.subtitleTracks
+          this.stream.timecodeScale = temp.timecodeScale
+          this.stream.unstable = true
+          temp.end()
+          temp.destroy()
+          this.handleSubtitleParser(this.stream, true)
+          stream.pipe(this.stream)
+          cb(this.stream)
+        }
       }
-    }
+    })
 
     this.video.addEventListener('loadedmetadata', () => this.findSubtitleFiles(this.selected))
   }
@@ -255,7 +263,7 @@ export default class Subtitles {
     parser.on('subtitle', (subtitle, trackNumber) => {
       if (!this.parsed) {
         if (!this.renderer) this.initSubtitleRenderer()
-        this.tracks[trackNumber].add(this.constructSub(subtitle, this.headers[trackNumber].type !== 'ass'))
+        this.tracks[trackNumber].add(this.constructor.constructSub(subtitle, this.headers[trackNumber].type !== 'ass'))
         if (this.current === trackNumber) this.selectCaptions(trackNumber) // yucky
       }
     })

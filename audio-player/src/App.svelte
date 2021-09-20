@@ -104,6 +104,7 @@
 
 <svelte:window
   on:drop|preventDefault={handleDrop}
+  on:dragover|preventDefault
   on:paste|preventDefault={handlePaste} />
 
 <style>

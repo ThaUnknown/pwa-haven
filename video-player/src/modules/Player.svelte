@@ -14,10 +14,11 @@
       selected = files[0]
       setFile(selected)
       subs = new Subtitles(video, files, selected)
+      console.log(subs)
       src = `player/${selected.name}`
     }
   }
 </script>
 
 <!-- svelte-ignore a11y-media-has-caption -->
-<video {src} width="300px" controls bind:this={video} />
+<video {src} width="700px" controls bind:this={video} />
