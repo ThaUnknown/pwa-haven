@@ -1,11 +1,12 @@
 const cacheList = {
   shared: {
-    version: '1.0.0',
+    version: '1.0.1',
     resources: [
       'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/css/halfmoon-variables.min.css',
       'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/js/halfmoon.min.js',
       'https://fonts.googleapis.com/icon?family=Material+Icons',
-      'https://fonts.gstatic.com/s/materialicons/v99/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2'
+      'https://fonts.gstatic.com/s/materialicons/v99/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2',
+      'https://fonts.gstatic.com/s/materialicons/v103/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2'
     ]
   },
   'img-viewer': {
@@ -21,7 +22,7 @@ const cacheList = {
     ]
   },
   'audio-player': {
-    version: '1.0.12',
+    version: '1.0.13',
     resources: [
       '../audio-player/public/build/bundle.js',
       '../audio-player/public/build/bundle.js.map',

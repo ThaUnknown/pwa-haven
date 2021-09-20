@@ -175,10 +175,10 @@
       <div class="text-truncate text-muted">{name}</div>
     </div>
     <div class="d-flex align-items-center">
-      <input class="ml-auto px-5 h-half" type="range" min="0" max="1" bind:value={volume} step="any" style="--value: {volume * 100}%" />
       <span class="material-icons font-size-20 ctrl pointer" type="button" on:click={toggleMute}>
         {muted ? 'volume_off' : 'volume_up'}
       </span>
+      <input class="ml-auto px-5 h-half" type="range" min="0" max="1" bind:value={volume} step="any" style="--value: {volume * 100}%" />
       <span class="material-icons font-size-20 ctrl pointer" type="button" on:click={toggleLoop}>
         {loop ? 'repeat_one' : 'repeat'}
       </span>
