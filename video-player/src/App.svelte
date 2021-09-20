@@ -103,10 +103,6 @@
 
 <svelte:window
   on:drop|preventDefault={handleDrop}
-  on:dragenter|preventDefault
-  on:dragover|preventDefault
-  on:dragstart|preventDefault
-  on:dragleave|preventDefault
   on:paste|preventDefault={handlePaste} />
 
 <style>

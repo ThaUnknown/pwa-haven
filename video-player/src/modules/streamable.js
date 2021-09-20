@@ -58,6 +58,6 @@ Object.assign(File.prototype, {
     return [res, pipe || stream, pipe && stream]
   },
   createReadStream (opts) {
-    return new FileReadStream(this.slice(opts.start, opts.end + 1))
+    return new FileReadStream(opts ? this.slice(opts.start, opts.end + 1) : this)
   }
 })
