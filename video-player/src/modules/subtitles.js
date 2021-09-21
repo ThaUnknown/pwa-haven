@@ -1,5 +1,6 @@
 import { SubtitleParser, SubtitleStream } from 'matroska-subtitles'
 import SubtitlesOctopus from '../lib/subtitles-octopus.js'
+import { toTS } from './util.js'
 
 const subtitleExtensions = ['.srt', '.vtt', '.ass', '.ssa']
 const videoExtensions = ['.3g2', '.3gp', '.asf', '.avi', '.dv', '.flv', '.gxf', '.m2ts', '.m4a', '.m4b', '.m4p', '.m4r', '.m4v', '.mkv', '.mov', '.mp4', '.mpd', '.mpeg', '.mpg', '.mxf', '.nut', '.ogm', '.ogv', '.swf', '.ts', '.vob', '.webm', '.wmv', '.wtv']
@@ -99,18 +100,6 @@ export default class Subtitles {
     }
   }
 
-  static toTS (sec, full) {
-    if (isNaN(sec) || sec < 0) {
-      return full ? '0:00:00.00' : '00:00'
-    }
-    const hours = Math.floor(sec / 3600)
-    let minutes = Math.floor(sec / 60) - (hours * 60)
-    let seconds = full ? (sec % 60).toFixed(2) : Math.floor(sec % 60)
-    if (minutes < 10) minutes = '0' + minutes
-    if (seconds < 10) seconds = '0' + seconds
-    return (hours > 0 || full) ? hours + ':' + minutes + ':' + seconds : minutes + ':' + seconds
-  }
-
   static convertSubFile (file, isAss, callback) {
     const regex = /(?:\d+\n)?(\S{9,12})\s?-->\s?(\S{9,12})(.*)\n([\s\S]*)$/i
     file.text.then(text => {
@@ -175,8 +164,8 @@ export default class Subtitles {
     }
     return 'Dialogue: ' +
     (subtitle.layer || 0) + ',' +
-    this.toTS(subtitle.time / 1000, true) + ',' +
-    this.toTS((subtitle.time + subtitle.duration) / 1000, true) + ',' +
+    toTS(subtitle.time / 1000, true) + ',' +
+    toTS((subtitle.time + subtitle.duration) / 1000, true) + ',' +
     (subtitle.style || 'Default') + ',' +
     (subtitle.name || '') + ',' +
     (subtitle.marginL || '0') + ',' +
@@ -192,7 +181,7 @@ export default class Subtitles {
         let parser = new SubtitleParser()
         this.handleSubtitleParser(parser, skipFiles)
         parser.on('finish', () => {
-          console.log('Sub parsing finished', this.toTS((performance.now() - t0) / 1000))
+          console.log('Sub parsing finished', toTS((performance.now() - t0) / 1000))
           this.parsed = true
           this.stream?.destroy()
           this.stream = undefined
