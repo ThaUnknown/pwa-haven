@@ -118,7 +118,7 @@
       seek(-0.5) // stupid fix because video freezes up when chaging tracks
     }
   }
-  function   toggleCast () {
+  function toggleCast() {
     if (video.readyState) {
       if (presentationConnection) {
         presentationConnection?.terminate()
@@ -132,7 +132,7 @@
       await video.fps
       if (!subs?.renderer) {
         video !== document.pictureInPictureElement ? video.requestPictureInPicture() : document.exitPictureInPicture()
-        pip = !!document.pictureInPictureElement
+        pip = !document.pictureInPictureElement
       } else {
         if (document.pictureInPictureElement && !document.pictureInPictureElement.id) {
           // only exit if pip is the custom one, else overwrite existing pip with custom
@@ -223,7 +223,7 @@
         for (const track of tracks) {
           peer.pc.addTrack(track, videostream)
         }
-        video.paused = false // video pauses for some reason
+        paused = false // video pauses for some reason
       }
     }
   }
@@ -323,16 +323,22 @@
   <div class="top" />
   <div class="middle">
     <div class="ctrl" data-name="ppToggle" on:click={playPause} on:dblclick={toggleFullscreen} />
-    <span class="material-icons ctrl" class:d-none={videos.length <= 1} data-name="playLast" on:click={playLast}> skip_previous </span>
+    {#if videos?.length > 1}
+      <span class="material-icons ctrl" data-name="playLast" on:click={playLast}> skip_previous </span>
+    {/if}
     <span class="material-icons ctrl" data-name="rewind" on:click={rewind}> fast_rewind </span>
     <span class="material-icons ctrl" data-name="playPause" on:click={playPause}> {paused ? 'play_arrow' : 'pause'} </span>
     <span class="material-icons ctrl" data-name="forward" on:click={forward}> fast_forward </span>
-    <span class="material-icons ctrl" class:d-none={videos.length <= 1} data-name="playNext" on:click={playNext}> skip_next </span>
+    {#if videos?.length > 1}
+      <span class="material-icons ctrl" data-name="playNext" on:click={playNext}> skip_next </span>
+    {/if}
     <div data-name="bufferingDisplay" />
   </div>
   <div class="bottom">
     <span class="material-icons ctrl" title="Play/Pause [Space]" data-name="playPause" on:click={playPause}> {paused ? 'play_arrow' : 'pause'} </span>
-    <span class="material-icons ctrl" class:d-none={videos.length <= 1} title="Next [N]" data-name="playNext" on:click={playNext}> skip_next </span>
+    {#if videos?.length > 1}
+      <span class="material-icons ctrl" title="Next [N]" data-name="playNext" on:click={playNext}> skip_next </span>
+    {/if}
     <div class="volume">
       <span class="material-icons ctrl" title="Mute [M]" data-name="toggleMute" on:click={toggleMute}> {muted ? 'volume_off' : 'volume_up'} </span>
       <input class="ctrl" type="range" min="0" max="1" step="any" data-name="setVolume" bind:value={volume} style="--value: {volume * 100}%" />
@@ -391,10 +397,10 @@
       </div>
     {/if}
     {#if 'PresentationRequest' in window}
-      <span class="material-icons ctrl" title="Cast Video [P]" data-name="toggleCast" on:click={toggleCast}> cast </span>
+      <span class="material-icons ctrl" title="Cast Video [P]" data-name="toggleCast" on:click={toggleCast}> {presentationConnection? 'cast_connected' : 'cast'} </span>
     {/if}
     {#if 'pictureInPictureEnabled' in document}
-      <span class="material-icons ctrl" title="Popout Window [P]" data-name="togglePopout" on:click={togglePopout}> picture_in_picture </span>
+      <span class="material-icons ctrl" title="Popout Window [P]" data-name="togglePopout" on:click={togglePopout}> {pip? 'featured_video' : 'picture_in_picture'} </span>
     {/if}
     <span class="material-icons ctrl" title="Fullscreen [F]" data-name="toggleFullscreen" on:click={toggleFullscreen}>
       {document.fullscreenElement ? 'fullscreen_exit' : 'fullscreen'}
