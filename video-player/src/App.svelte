@@ -76,6 +76,7 @@
           }) === index
         )
       })
+      console.log(files)
     })
   }
   function handlePopup() {
