@@ -32,6 +32,21 @@ const cacheList = {
       '../audio-player/public/site.webmanifest',
       '../audio-player/public/'
     ]
+  },
+  'video-player': {
+    version: '1.0.0',
+    resources: [
+      '../video-player/public/lib/subtitles-octopus-worker.js',
+      '../video-player/public/lib/subtitles-octopus-worker.wasm',
+      '../video-player/public/server-worker.js',
+      '../video-player/public/build/bundle.js',
+      '../video-player/public/build/bundle.js.map',
+      '../video-player/public/build/bundle.css',
+      '../video-player/public/128.png',
+      '../video-player/public/512.png',
+      '../video-player/public/site.webmanifest',
+      '../video-player/public/'
+    ]
   }
 }
 
