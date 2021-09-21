@@ -11,7 +11,7 @@ Style: Default, Roboto Medium,26,&H00FFFFFF,&H000000FF,&H00020713,&H00000000,0,0
 
 `
 export default class Subtitles {
-  constructor (video, files, selected) {
+  constructor (video, files, selected, onHeader) {
     this.video = video
     this.selected = selected || null
     this.files = files || []
@@ -23,6 +23,7 @@ export default class Subtitles {
     this.stream = null
     this.parser = null
     this.current = 0
+    this.onHeader = onHeader
     this.videoFiles = files.filter(file => videoExtensions.some(ext => file.name.endsWith(ext)))
     this.timeout = null
 
@@ -62,6 +63,7 @@ export default class Subtitles {
           type: file.name.match(extension)[1]
         }
         this.headers.push(header)
+        this.onHeader()
         this.tracks[index] = []
         this.convertSubFile(file, isAss, subtitles => {
           if (isAss) {
@@ -239,6 +241,7 @@ export default class Subtitles {
             }
             this.tracks[track.number] = new Set()
             this.headers[track.number] = track
+            this.onHeader()
           }
         }
       }
@@ -276,9 +279,10 @@ export default class Subtitles {
     this.files = null
     this.video = null
     this.selected = null
-    this.renderer?.dispose()
+    this.renderer?.destroy()
     this.tracks = null
     this.headers = null
+    this.onHeader()
     this.stream?.destroy()
     this.parser?.destroy()
     this.fonts?.forEach(file => URL.revokeObjectURL(file))

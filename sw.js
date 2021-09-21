@@ -34,7 +34,7 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '1.0.1',
+    version: '1.1.0',
     resources: [
       '../video-player/public/lib/subtitles-octopus-worker.js',
       '../video-player/public/lib/subtitles-octopus-worker.wasm',
@@ -42,6 +42,9 @@ const cacheList = {
       '../video-player/public/build/bundle.js',
       '../video-player/public/build/bundle.js.map',
       '../video-player/public/build/bundle.css',
+      '../video-player/public/build/halfmoon.css',
+      '../video-player/public/build/peer.js',
+      '../video-player/public/build/cast.html',
       '../video-player/public/128.png',
       '../video-player/public/512.png',
       '../video-player/public/site.webmanifest',

@@ -1,6 +1,9 @@
 <script>
+  import { onMount } from 'svelte'
+
   import { setFile } from './server.js'
-  import './streamable.js'
+  import Peer from '../lib/peer.js'
+  import './File.js'
   import Subtitles from './subtitles.js'
   import { toTS } from './util.js'
 
@@ -22,17 +25,43 @@
   let buffering = false
   let immerseTimeout = null
   let bufferTimeout = null
+  let subHeaders = null
+  let pip = false
+  let presentationRequest = null
+  let presentationConnection = null
+  let canCast = false
   $: progress = currentTime / duration
   $: targetTime = currentTime
   let volume = localStorage.getItem('volume') || 1
   $: localStorage.setItem('volume', volume)
+  onMount(() => {
+    video.fps = 23.976
+  })
+
+  if ('PresentationRequest' in window) {
+    const handleAvailability = aval => {
+      canCast = !!aval
+    }
+    presentationRequest = new PresentationRequest(['build/cast.html'])
+    presentationRequest.addEventListener('connectionavailable', e => initCast(e))
+    navigator.presentation.defaultRequest = presentationRequest
+    presentationRequest.getAvailability().then(aval => {
+      aval.onchange = e => handleAvailability(e.target.value)
+      handleAvailability(aval.value)
+    })
+  }
+
+  function handleHeaders() {
+    subHeaders = subs.headers
+  }
 
   function updateFiles(files) {
     if (files && files.length) {
+      if (subs) subs.destroy()
       videos = files.filter(file => file.type.indexOf('video/') === 0)
       current = videos[0]
       setFile(current)
-      subs = new Subtitles(video, files, current)
+      subs = new Subtitles(video, files, current, handleHeaders)
       src = `player/${current.name}`
     }
   }
@@ -81,6 +110,123 @@
   function rewind() {
     seek(-2)
   }
+  function selectAudio(id) {
+    if (id !== undefined) {
+      for (const track of video.audioTracks) {
+        track.enabled = track.id === id
+      }
+      seek(-0.5) // stupid fix because video freezes up when chaging tracks
+    }
+  }
+  function   toggleCast () {
+    if (video.readyState) {
+      if (presentationConnection) {
+        presentationConnection?.terminate()
+      } else {
+        presentationRequest.start()
+      }
+    }
+  }
+  async function togglePopout() {
+    if (video.readyState) {
+      await video.fps
+      if (!subs?.renderer) {
+        video !== document.pictureInPictureElement ? video.requestPictureInPicture() : document.exitPictureInPicture()
+        pip = !!document.pictureInPictureElement
+      } else {
+        if (document.pictureInPictureElement && !document.pictureInPictureElement.id) {
+          // only exit if pip is the custom one, else overwrite existing pip with custom
+          document.exitPictureInPicture()
+          pip = !!document.pictureInPictureElement
+        } else {
+          const canvasVideo = document.createElement('video')
+          const { stream, destroy } = await getBurnIn()
+          canvasVideo.srcObject = stream
+          canvasVideo.onloadedmetadata = () => {
+            canvasVideo.play()
+            canvasVideo
+              .requestPictureInPicture()
+              .then(() => {
+                pip = !!document.pictureInPictureElement
+              })
+              .catch(e => {
+                pip = !!document.pictureInPictureElement
+                console.warn('Failed To Burn In Subtitles ' + e)
+                destroy()
+                canvasVideo.remove()
+              })
+          }
+          canvasVideo.onleavepictureinpicture = () => {
+            destroy()
+            canvasVideo.remove()
+            pip = !!document.pictureInPictureElement
+          }
+        }
+      }
+    }
+  }
+
+  async function getBurnIn(noSubs) {
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d', { alpha: false })
+    let running = true
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+
+    const renderFrame = () => {
+      if (running === true) {
+        context.drawImage(video, 0, 0)
+        if (!noSubs) context.drawImage(subs.renderer?.canvas, 0, 0, canvas.width, canvas.height)
+        requestAnimationFrame(renderFrame)
+      }
+    }
+    requestAnimationFrame(renderFrame)
+    const destroy = () => {
+      running = false
+      canvas.remove()
+    }
+    return { stream: canvas.captureStream(await video.fps), destroy }
+  }
+
+  function initCast(event) {
+    let peer = new Peer({ polite: true })
+
+    presentationConnection = event.connection
+    presentationConnection.addEventListener('terminate', () => {
+      presentationConnection = null
+      pip = false
+      peer = null
+    })
+
+    peer.signalingPort.onmessage = ({ data }) => {
+      presentationConnection.send(data)
+    }
+
+    presentationConnection.addEventListener('message', ({ data }) => {
+      peer.signalingPort.postMessage(data)
+    })
+
+    peer.dc.onopen = async () => {
+      await video.fps
+      if (peer && presentationConnection) {
+        pip = true
+        const tracks = []
+        const videostream = video.captureStream(await video.fps)
+        if (true) {
+          // TODO: check if cast supports codecs
+          const { stream, destroy } = await getBurnIn(!subs?.renderer)
+          tracks.push(stream.getVideoTracks()[0], videostream.getAudioTracks()[0])
+          presentationConnection.addEventListener('terminate', destroy)
+        } else {
+          tracks.push(videostream.getVideoTracks()[0], videostream.getAudioTracks()[0])
+        }
+        for (const track of tracks) {
+          peer.pc.addTrack(track, videostream)
+        }
+        video.paused = false // video pauses for some reason
+      }
+    }
+  }
 
   function immersePlayer() {
     immersed = true
@@ -110,11 +256,47 @@
       resetImmerse()
     }, 150)
   }
+
+  function resolveFps() {
+    if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+      video.fps = new Promise(resolve => {
+        const resolveFps = () => {
+          video.removeEventListener('timeupdate', resolveFps)
+          if (!paused) {
+            setTimeout(
+              () =>
+                video.requestVideoFrameCallback((now, metaData) => {
+                  let duration = 0
+                  for (let index = video.played.length; index--; ) {
+                    duration += video.played.end(index) - video.played.start(index)
+                  }
+                  const rawFPS = metaData.presentedFrames / duration
+                  if (rawFPS < 28) {
+                    resolve(23.976)
+                  } else if (rawFPS <= 35) {
+                    resolve(29.97)
+                  } else if (rawFPS <= 70) {
+                    resolve(59.94)
+                  } else {
+                    resolve(23.976) // smth went VERY wrong
+                  }
+                }),
+              2000
+            )
+          }
+        }
+        video.addEventListener('timeupdate', resolveFps)
+      })
+    }
+  }
 </script>
 
 <!-- svelte-ignore a11y-media-has-caption -->
 <div
-  class="player {immersed ? 'immersed' : ''} {buffering ? 'buffering' : ''}"
+  class="player"
+  class:pip
+  class:immersed
+  class:buffering
   bind:this={container}
   on:mousemove={resetImmerse}
   on:touchmove={resetImmerse}
@@ -133,30 +315,44 @@
     on:loadeddata={hideBuffering}
     on:canplay={hideBuffering}
     on:playing={hideBuffering}
-    on:timeupdate={hideBuffering} />
+    on:timeupdate={hideBuffering}
+    on:loadedmetadata={resolveFps} />
+  <canvas class="d-none" />
   <!-- svelte-ignore a11y-missing-content -->
   <a href="#player" class="miniplayer" alt="miniplayer" />
   <div class="top" />
   <div class="middle">
-    <div class="ctrl" data-name="ppToggle" on:click={playPause} />
-    <span class="material-icons ctrl {videos.length <= 1 ? 'd-none' : ''}" data-name="playLast" on:click={playLast}> skip_previous </span>
+    <div class="ctrl" data-name="ppToggle" on:click={playPause} on:dblclick={toggleFullscreen} />
+    <span class="material-icons ctrl" class:d-none={videos.length <= 1} data-name="playLast" on:click={playLast}> skip_previous </span>
     <span class="material-icons ctrl" data-name="rewind" on:click={rewind}> fast_rewind </span>
     <span class="material-icons ctrl" data-name="playPause" on:click={playPause}> {paused ? 'play_arrow' : 'pause'} </span>
     <span class="material-icons ctrl" data-name="forward" on:click={forward}> fast_forward </span>
-    <span class="material-icons ctrl {videos.length <= 1 ? 'd-none' : ''}" data-name="playNext" on:click={playNext}> skip_next </span>
+    <span class="material-icons ctrl" class:d-none={videos.length <= 1} data-name="playNext" on:click={playNext}> skip_next </span>
     <div data-name="bufferingDisplay" />
   </div>
   <div class="bottom">
     <span class="material-icons ctrl" title="Play/Pause [Space]" data-name="playPause" on:click={playPause}> {paused ? 'play_arrow' : 'pause'} </span>
-    <span class="material-icons ctrl {videos.length <= 1 ? 'd-none' : ''}" title="Next [N]" data-name="playNext" on:click={playNext}> skip_next </span>
+    <span class="material-icons ctrl" class:d-none={videos.length <= 1} title="Next [N]" data-name="playNext" on:click={playNext}> skip_next </span>
     <div class="volume">
       <span class="material-icons ctrl" title="Mute [M]" data-name="toggleMute" on:click={toggleMute}> {muted ? 'volume_off' : 'volume_up'} </span>
       <input class="ctrl" type="range" min="0" max="1" step="any" data-name="setVolume" bind:value={volume} style="--value: {volume * 100}%" />
     </div>
-    <div class="audio-tracks popup">
-      <span class="material-icons ctrl" title="Audio Tracks [T]" disabled data-name="audioButton"> queue_music </span>
-      <div class="popup-menu ctrl" data-name="selectAudio" />
-    </div>
+    <!-- svelte-ignore missing-declaration -->
+    {#if 'audioTracks' in HTMLVideoElement.prototype && video?.audioTracks?.length > 1}
+      <div class="audio-tracks dropdown dropup with-arrow">
+        <span class="material-icons ctrl" title="Audio Tracks [T]" id="baudio" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-name="audioButton">
+          queue_music
+        </span>
+        <div class="dropdown-menu dropdown-menu-left ctrl custom-radio p-10 pb-5 text-capitalize" aria-labelledby="baudio" data-name="selectAudio">
+          {#each video.audioTracks as track}
+            <input name="audio-radio-set" type="radio" id="audio-{track.id}-radio" value={track.id} checked={track.enabled} />
+            <label for="audio-{track.id}-radio" on:click={() => selectAudio(track.id)}>
+              {(track.language || (!Object.values(video.audioTracks).some(track => track.language === 'eng' || track.language === 'en') ? 'eng' : track.label)) +
+                (track.label ? ' - ' + track.label : '')}</label>
+          {/each}
+        </div>
+      </div>
+    {/if}
     <div class="ctrl" data-name="progressWrapper" data-elapsed="00:00" data-remaining="00:00">
       <div>
         <div class="ts">{toTS(targetTime)}</div>
@@ -176,12 +372,30 @@
         <img class="ctrl" data-elapsed="00:00" data-name="thumbnail" alt="thumbnail" src={thumbnail} />
       </div>
     </div>
-    <div class="subtitles popup">
-      <span class="material-icons ctrl" title="Subtitles [C]" disabled data-name="captionsButton"> subtitles </span>
-      <div class="popup-menu ctrl" data-name="selectCaptions" />
-    </div>
-    <span class="material-icons ctrl" title="Cast Video [P]" data-name="toggleCast" disabled> cast </span>
-    <span class="material-icons ctrl" title="Popout Window [P]" data-name="togglePopout"> picture_in_picture </span>
+    {#if subHeaders}
+      <div class="subtitles dropdown dropup with-arrow">
+        <span class="material-icons ctrl" title="Subtitles [C]" id="bcap" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-name="captionsButton">
+          subtitles
+        </span>
+        <div class="dropdown-menu dropdown-menu-right ctrl custom-radio p-10 pb-5 text-capitalize" aria-labelledby="bcap" data-name="selectCaptions">
+          {#each subHeaders as track}
+            {#if track}
+              <input name="subtitle-radio-set" type="radio" id="subtitle-{track.number}-radio" value={track.numer} checked={track.number === subs.current} />
+              <label for="subtitle-{track.numer}-radio" on:click={() => subs.selectCaptions(track.number)}>
+                {(track.language || (!Object.values(subs.headers).some(header => header.language === 'eng' || header.language === 'en') ? 'eng' : track.type)) +
+                  (track.name ? ' - ' + track.name : '')}
+              </label>
+            {/if}
+          {/each}
+        </div>
+      </div>
+    {/if}
+    {#if 'PresentationRequest' in window}
+      <span class="material-icons ctrl" title="Cast Video [P]" data-name="toggleCast" on:click={toggleCast}> cast </span>
+    {/if}
+    {#if 'pictureInPictureEnabled' in document}
+      <span class="material-icons ctrl" title="Popout Window [P]" data-name="togglePopout" on:click={togglePopout}> picture_in_picture </span>
+    {/if}
     <span class="material-icons ctrl" title="Fullscreen [F]" data-name="toggleFullscreen" on:click={toggleFullscreen}>
       {document.fullscreenElement ? 'fullscreen_exit' : 'fullscreen'}
     </span>
@@ -273,7 +487,6 @@
   .player:not(.miniplayer) a.miniplayer,
   .bottom img[src=' '],
   video[src='']:not([poster]),
-  .ctrl[disabled],
   .player:fullscreen .ctrl[data-name='togglePopout'] {
     display: none !important;
   }

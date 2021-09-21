@@ -146,7 +146,7 @@ export default class SubtitlesOctopus {
     console.error('Worker error: ', error)
     if (this.onErrorEvent) this.onErrorEvent(error)
     if (!this.debug) {
-      this.dispose()
+      this.destroy()
       throw new Error('Worker error: ' + error)
     }
   }
