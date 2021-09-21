@@ -1,5 +1,6 @@
 <script>
   import Player from './modules/Player.svelte'
+  import {videoRx} from './modules/util.js'
 
   const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser())
   let name = ''
@@ -13,7 +14,6 @@
   function handlePaste({ clipboardData }) {
     handleItems([...clipboardData.items])
   }
-  const videoRx = /\.(3gp|3gpp|3g2|ts|m2ts|mp4|m4p|mp4v|mpg4|qt|mov|omg|ogv|web|mkb|mk3d|mks)$/i
   async function handleItems(items) {
     const promises = items.map(item => {
       if (item.type.indexOf('video/') === 0) {

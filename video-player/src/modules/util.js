@@ -9,3 +9,5 @@ export function toTS (sec, full) {
   if (seconds < 10) seconds = '0' + seconds
   return (hours > 0 || full) ? hours + ':' + minutes + ':' + seconds : minutes + ':' + seconds
 }
+
+export const videoRx = /\.(3gp|3gpp|3g2|ts|m2ts|mp4|m4p|mp4v|mpg4|qt|mov|omg|ogv|webm|mkv|mk3d|mks)$/i

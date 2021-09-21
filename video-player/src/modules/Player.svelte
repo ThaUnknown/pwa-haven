@@ -5,7 +5,7 @@
   import Peer from '../lib/peer.js'
   import './File.js'
   import Subtitles from './subtitles.js'
-  import { toTS } from './util.js'
+  import { toTS, videoRx } from './util.js'
 
   $: updateFiles(files)
   export let files = []
@@ -58,7 +58,7 @@
   function updateFiles(files) {
     if (files && files.length) {
       if (subs) subs.destroy()
-      videos = files.filter(file => file.type.indexOf('video/') === 0)
+      videos = files.filter(file => videoRx.test(file.name))
       current = videos[0]
       setFile(current)
       subs = new Subtitles(video, files, current, handleHeaders)
@@ -397,10 +397,10 @@
       </div>
     {/if}
     {#if 'PresentationRequest' in window}
-      <span class="material-icons ctrl" title="Cast Video [P]" data-name="toggleCast" on:click={toggleCast}> {presentationConnection? 'cast_connected' : 'cast'} </span>
+      <span class="material-icons ctrl" title="Cast Video [P]" data-name="toggleCast" on:click={toggleCast}> {presentationConnection ? 'cast_connected' : 'cast'} </span>
     {/if}
     {#if 'pictureInPictureEnabled' in document}
-      <span class="material-icons ctrl" title="Popout Window [P]" data-name="togglePopout" on:click={togglePopout}> {pip? 'featured_video' : 'picture_in_picture'} </span>
+      <span class="material-icons ctrl" title="Popout Window [P]" data-name="togglePopout" on:click={togglePopout}> {pip ? 'featured_video' : 'picture_in_picture'} </span>
     {/if}
     <span class="material-icons ctrl" title="Fullscreen [F]" data-name="toggleFullscreen" on:click={toggleFullscreen}>
       {document.fullscreenElement ? 'fullscreen_exit' : 'fullscreen'}
