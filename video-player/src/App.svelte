@@ -93,7 +93,7 @@
   }
 </script>
 
-<div class="page-wrapper with-navbar-fixed-bottom">
+<div class="page-wrapper with-navbar-fixed-bottom" on:click={handlePopup}>
   <Player bind:files />
 </div>
 

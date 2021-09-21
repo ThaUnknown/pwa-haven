@@ -4,9 +4,11 @@
   import Subtitles from './subtitles.js'
   import { toTS } from './util.js'
 
+  $: updateFiles(files)
   export let files = []
   let src = null
   let video = null
+  let container = null
   let current = null
   let subs = null
   let duration = 0.1
@@ -15,10 +17,25 @@
   let muted = false
   let wasPaused = true
   let thumbnail = ' '
+  let videos = []
+  let immersed = false
+  let buffering = false
+  let immerseTimeout = null
+  let bufferTimeout = null
   $: progress = currentTime / duration
   $: targetTime = currentTime
   let volume = localStorage.getItem('volume') || 1
   $: localStorage.setItem('volume', volume)
+
+  function updateFiles(files) {
+    if (files && files.length) {
+      videos = files.filter(file => file.type.indexOf('video/') === 0)
+      current = videos[0]
+      setFile(current)
+      subs = new Subtitles(video, files, current)
+      src = `player/${current.name}`
+    }
+  }
 
   function handleMouseDown({ target }) {
     wasPaused = paused
@@ -39,7 +56,6 @@
   function toggleMute() {
     muted = !muted
   }
-
   function playNext() {
     current = files[(files.indexOf(current) + 1) % files.length]
   }
@@ -47,38 +63,94 @@
     const index = files.indexOf(current)
     current = files[index === 0 ? files.length - 1 : index - 1]
   }
-
-  $: testVideo(files)
-  async function testVideo(files) {
-    if (files && files.length) {
-      current = files[0]
-      setFile(current)
-      subs = new Subtitles(video, files, current)
-      src = `player/${current.name}`
+  function toggleFullscreen() {
+    document.fullscreenElement ? document.exitFullscreen() : container.requestFullscreen()
+  }
+  function seek(time) {
+    if (time === 85 && currentTime < 10) {
+      currentTime = 90
+    } else if (time === 85 && duration - currentTime < 90) {
+      currentTime = duration
+    } else {
+      currentTime += time
     }
+  }
+  function forward() {
+    seek(2)
+  }
+  function rewind() {
+    seek(-2)
+  }
+
+  function immersePlayer() {
+    immersed = true
+    immerseTimeout = undefined
+  }
+
+  function resetImmerse() {
+    if (immerseTimeout) {
+      clearTimeout(immerseTimeout)
+    } else {
+      immersed = false
+    }
+    immerseTimeout = setTimeout(immersePlayer, 5 * 1000)
+  }
+
+  function hideBuffering() {
+    if (bufferTimeout) {
+      clearTimeout(bufferTimeout)
+      bufferTimeout = null
+      buffering = false
+    }
+  }
+
+  function showBuffering() {
+    bufferTimeout = setTimeout(() => {
+      buffering = true
+      resetImmerse()
+    }, 150)
   }
 </script>
 
 <!-- svelte-ignore a11y-media-has-caption -->
-<div class="player">
-  <video {src} bind:this={video} autoplay bind:volume bind:duration bind:currentTime bind:paused bind:muted />
+<div
+  class="player {immersed ? 'immersed' : ''} {buffering ? 'buffering' : ''}"
+  bind:this={container}
+  on:mousemove={resetImmerse}
+  on:touchmove={resetImmerse}
+  on:keypress={resetImmerse}
+  on:mouseleave={immersePlayer}>
+  <video
+    {src}
+    bind:this={video}
+    autoplay
+    bind:volume
+    bind:duration
+    bind:currentTime
+    bind:paused
+    bind:muted
+    on:waiting={showBuffering}
+    on:loadeddata={hideBuffering}
+    on:canplay={hideBuffering}
+    on:playing={hideBuffering}
+    on:timeupdate={hideBuffering} />
   <!-- svelte-ignore a11y-missing-content -->
   <a href="#player" class="miniplayer" alt="miniplayer" />
   <div class="top" />
   <div class="middle">
     <div class="ctrl" data-name="ppToggle" on:click={playPause} />
-    <span class="material-icons ctrl" data-name="playLast"on:click={playLast}> skip_previous </span>
-    <span class="material-icons ctrl" data-name="rewind"> fast_rewind </span>
-    <span class="material-icons ctrl" data-name="playPause" on:click={playPause}> play_arrow </span>
-    <span class="material-icons ctrl" data-name="forward"> fast_forward </span>
-    <span class="material-icons ctrl" data-name="playNext" on:click={playNext}> skip_next </span>
+    <span class="material-icons ctrl {videos.length <= 1 ? 'd-none' : ''}" data-name="playLast" on:click={playLast}> skip_previous </span>
+    <span class="material-icons ctrl" data-name="rewind" on:click={rewind}> fast_rewind </span>
+    <span class="material-icons ctrl" data-name="playPause" on:click={playPause}> {paused ? 'play_arrow' : 'pause'} </span>
+    <span class="material-icons ctrl" data-name="forward" on:click={forward}> fast_forward </span>
+    <span class="material-icons ctrl {videos.length <= 1 ? 'd-none' : ''}" data-name="playNext" on:click={playNext}> skip_next </span>
     <div data-name="bufferingDisplay" />
   </div>
   <div class="bottom">
-    <span class="material-icons ctrl" title="Play/Pause [Space]" data-name="playPause" on:click={playPause}> play_arrow </span>
-    <span class="material-icons ctrl" title="Next [N]" data-name="playNext" on:click={playNext}> skip_next </span>
+    <span class="material-icons ctrl" title="Play/Pause [Space]" data-name="playPause" on:click={playPause}> {paused ? 'play_arrow' : 'pause'} </span>
+    <span class="material-icons ctrl {videos.length <= 1 ? 'd-none' : ''}" title="Next [N]" data-name="playNext" on:click={playNext}> skip_next </span>
     <div class="volume">
-      <span class="material-icons ctrl" title="Mute [M]" data-name="toggleMute" on:click={toggleMute}> volume_up </span>
+      <span class="material-icons ctrl" title="Mute [M]" data-name="toggleMute" on:click={toggleMute}> {muted ? 'volume_off' : 'volume_up'} </span>
       <input class="ctrl" type="range" min="0" max="1" step="any" data-name="setVolume" bind:value={volume} style="--value: {volume * 100}%" />
     </div>
     <div class="audio-tracks popup">
@@ -110,8 +182,9 @@
     </div>
     <span class="material-icons ctrl" title="Cast Video [P]" data-name="toggleCast" disabled> cast </span>
     <span class="material-icons ctrl" title="Popout Window [P]" data-name="togglePopout"> picture_in_picture </span>
-    <span class="material-icons ctrl" title="Theatre Mode [T]" data-name="toggleTheatre"> crop_16_9 </span>
-    <span class="material-icons ctrl" title="Fullscreen [F]" data-name="toggleFullscreen"> fullscreen </span>
+    <span class="material-icons ctrl" title="Fullscreen [F]" data-name="toggleFullscreen" on:click={toggleFullscreen}>
+      {document.fullscreenElement ? 'fullscreen_exit' : 'fullscreen'}
+    </span>
   </div>
 </div>
 
@@ -201,7 +274,6 @@
   .bottom img[src=' '],
   video[src='']:not([poster]),
   .ctrl[disabled],
-  .player:fullscreen .ctrl[data-name='toggleTheatre'],
   .player:fullscreen .ctrl[data-name='togglePopout'] {
     display: none !important;
   }
