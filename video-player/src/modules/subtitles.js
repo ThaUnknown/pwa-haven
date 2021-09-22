@@ -28,17 +28,20 @@ export default class Subtitles {
     this.timeout = null
 
     this.initParser(this.selected).then(() => {
-      this.selected.onStream = ({ stream, file, req }, cb) => {
-        if (req.destination === 'video' && file.name.endsWith('.mkv') && !this.parsed) {
-          this.stream = new SubtitleStream(this.stream) // this should work, but doesn't, mangle it.
-          this.handleSubtitleParser(this.stream, true)
-          stream.pipe(this.stream)
-          cb(this.stream)
+      if (this.selected.name.endsWith('.mkv')) {
+        video.currentTime -= 0.1
+        this.selected.onStream = ({ stream, file, req }, cb) => {
+          if (req.destination === 'video' && !this.parsed) {
+            this.stream = new SubtitleStream(this.stream)
+            this.handleSubtitleParser(this.stream, true)
+            stream.pipe(this.stream)
+            cb(this.stream)
+          }
         }
       }
     })
-
-    this.video.addEventListener('loadedmetadata', () => this.findSubtitleFiles(this.selected))
+    if (this.selected instanceof File) this.parseSubtitles(this.selected, true) // only parse local files
+    this.findSubtitleFiles(this.selected)
   }
 
   findSubtitleFiles (targetFile) {
@@ -235,7 +238,7 @@ export default class Subtitles {
         for (const track of tracks) {
           if (!this.tracks[track.number]) {
             // overwrite webvtt or other header with custom one
-            if (track.type !== 'ass') track.header = this.defaultHeader
+            if (track.type !== 'ass') track.header = defaultHeader
             if (!this.current) {
               this.current = track.number
             }
@@ -266,6 +269,7 @@ export default class Subtitles {
     if (trackNumber !== undefined) {
       trackNumber = Number(trackNumber)
       this.current = trackNumber
+      this.onHeader()
       if (!this.timeout) {
         this.timeout = setTimeout(() => {
           this.timeout = undefined

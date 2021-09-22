@@ -165,6 +165,43 @@
       }
     }
   }
+  function handleKeydown({ key }) {
+    switch (key) {
+      case ' ':
+        playPause()
+        break
+      case 'n':
+        playNext()
+        break
+      case 'm':
+        muted = !muted
+        break
+      case 'p':
+        togglePopout()
+        break
+      case 'f':
+        toggleFullscreen()
+        break
+      case 's':
+        seek(85)
+        break
+      case 'c':
+        toggleCast()
+        break
+      case 'ArrowLeft':
+        rewind()
+        break
+      case 'ArrowRight':
+        forward()
+        break
+      case 'ArrowUp':
+        volume = Math.min(1, volume + 0.05)
+        break
+      case 'ArrowDown':
+        volume = Math.max(0, volume - 0.05)
+        break
+    }
+  }
 
   async function getBurnIn(noSubs) {
     const canvas = document.createElement('canvas')
@@ -291,6 +328,8 @@
   }
 </script>
 
+<svelte:window on:keydown={handleKeydown} />
+
 <!-- svelte-ignore a11y-media-has-caption -->
 <div
   class="player"
@@ -380,7 +419,7 @@
     </div>
     {#if subHeaders}
       <div class="subtitles dropdown dropup with-arrow">
-        <span class="material-icons ctrl" title="Subtitles [C]" id="bcap" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-name="captionsButton">
+        <span class="material-icons ctrl" title="Subtitles" id="bcap" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-name="captionsButton">
           subtitles
         </span>
         <div class="dropdown-menu dropdown-menu-right ctrl custom-radio p-10 pb-5 text-capitalize" aria-labelledby="bcap" data-name="selectCaptions">
@@ -397,7 +436,7 @@
       </div>
     {/if}
     {#if 'PresentationRequest' in window}
-      <span class="material-icons ctrl" title="Cast Video [P]" data-name="toggleCast" on:click={toggleCast}> {presentationConnection ? 'cast_connected' : 'cast'} </span>
+      <span class="material-icons ctrl" title="Cast Video [C]" data-name="toggleCast" on:click={toggleCast}> {presentationConnection ? 'cast_connected' : 'cast'} </span>
     {/if}
     {#if 'pictureInPictureEnabled' in document}
       <span class="material-icons ctrl" title="Popout Window [P]" data-name="togglePopout" on:click={togglePopout}> {pip ? 'featured_video' : 'picture_in_picture'} </span>

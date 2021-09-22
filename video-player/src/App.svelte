@@ -94,7 +94,7 @@
   }
 </script>
 
-<div class="page-wrapper with-navbar-fixed-bottom" on:click={handlePopup}>
+<div class="page-wrapper with-navbar-fixed-bottom bg-very-dark" on:click={handlePopup}>
   <Player bind:files />
 </div>
 
