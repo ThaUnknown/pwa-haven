@@ -185,24 +185,29 @@ export default class Subtitles {
       if (file.name.endsWith('.mkv')) {
         let parser = new SubtitleParser()
         this.handleSubtitleParser(parser, skipFiles)
-        parser.on('finish', () => {
+        const finish = () => {
           console.log('Sub parsing finished', toTS((performance.now() - t0) / 1000))
           this.parsed = true
           this.stream?.destroy()
-          this.stream = undefined
+          fileStream.destroy()
           this.parser.destroy()
+          this.stream = undefined
           this.parser = undefined
           this.selectCaptions(this.current)
           parser = undefined
           if (!this.video.paused) {
-            this.video.pause()
-            this.video.play()
+            this.video.currentTime -= 0.1
           }
           resolve()
+        }
+        parser.once('tracks', tracks => {
+          if (!tracks.length) finish()
         })
+        parser.once('finish', finish)
         const t0 = performance.now()
         console.log('Sub parsing started')
-        this.parser = file.createReadStream().pipe(parser)
+        const fileStream = file.createReadStream()
+        this.parser = fileStream.pipe(parser)
       } else {
         resolve()
       }
