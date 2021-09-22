@@ -189,8 +189,8 @@ export default class Subtitles {
           console.log('Sub parsing finished', toTS((performance.now() - t0) / 1000))
           this.parsed = true
           this.stream?.destroy()
-          fileStream.destroy()
-          this.parser.destroy()
+          fileStream?.destroy()
+          this.parser?.destroy()
           this.stream = undefined
           this.parser = undefined
           this.selectCaptions(this.current)
@@ -239,6 +239,7 @@ export default class Subtitles {
     parser.once('tracks', tracks => {
       if (!tracks.length) {
         this.parsed = true
+        parser?.destroy()
       } else {
         for (const track of tracks) {
           if (!this.tracks[track.number]) {
@@ -295,6 +296,5 @@ export default class Subtitles {
     this.stream?.destroy()
     this.parser?.destroy()
     this.fonts?.forEach(file => URL.revokeObjectURL(file))
-    this.video.removeEventListener(this.findSubtitleFiles)
   }
 }

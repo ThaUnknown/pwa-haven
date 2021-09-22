@@ -166,6 +166,7 @@
   .dragarea {
     background: repeating-conic-gradient(rgba(0, 0, 0, 0.3) 0% 25%, transparent 0% 50%) 50% / 20px 20px;
     user-select: none;
+    cursor: grab;
   }
   .btn-group {
     bottom: 8rem;

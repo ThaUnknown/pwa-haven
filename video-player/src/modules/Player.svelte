@@ -435,7 +435,7 @@
         </div>
       </div>
     {/if}
-    {#if 'PresentationRequest' in window}
+    {#if 'PresentationRequest' in window && canCast}
       <span class="material-icons ctrl" title="Cast Video [C]" data-name="toggleCast" on:click={toggleCast}> {presentationConnection ? 'cast_connected' : 'cast'} </span>
     {/if}
     {#if 'pictureInPictureEnabled' in document}
