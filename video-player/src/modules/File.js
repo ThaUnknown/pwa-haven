@@ -59,5 +59,6 @@ Object.assign(File.prototype, {
   },
   createReadStream (opts) {
     return new FileReadStream(opts ? this.slice(opts.start) : this)
+    // streamX is a viable alternative, but seems to have issues
   }
 })

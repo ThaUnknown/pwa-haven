@@ -11,3 +11,24 @@ export function toTS (sec, full) {
 }
 
 export const videoRx = /\.(3gp|3gpp|3g2|ts|m2ts|mp4|m4p|mp4v|mpg4|qt|mov|omg|ogv|webm|mkv|mk3d|mks)$/i
+
+export function requestTimeout (callback, delay) {
+  const startedAt = Date.now()
+  let animationFrame = requestAnimationFrame(tick)
+  function tick () {
+    if (Date.now() - startedAt >= delay) {
+      callback()
+    } else {
+      animationFrame = requestAnimationFrame(tick)
+    }
+  }
+  return {
+    clear: () => cancelAnimationFrame(animationFrame)
+  }
+}
+
+export function cancelTimeout (timeout) {
+  if (timeout) {
+    timeout.clear()
+  }
+}

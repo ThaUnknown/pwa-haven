@@ -27,8 +27,8 @@ export default class Subtitles {
     this.videoFiles = files.filter(file => videoExtensions.some(ext => file.name.endsWith(ext)))
     this.timeout = null
 
-    this.initParser(this.selected).then(() => {
-      if (this.selected.name.endsWith('.mkv')) {
+    if (this.selected.name.endsWith('.mkv')) {
+      this.initParser(this.selected).then(() => {
         video.currentTime -= 0.1
         this.selected.onStream = ({ stream, file, req }, cb) => {
           if (req.destination === 'video' && !this.parsed) {
@@ -38,9 +38,9 @@ export default class Subtitles {
             cb(this.stream)
           }
         }
-      }
-    })
-    if (this.selected instanceof File) this.parseSubtitles(this.selected, true) // only parse local files
+      })
+      if (this.selected instanceof File) this.parseSubtitles(this.selected, true) // only parse local files
+    }
     this.findSubtitleFiles(this.selected)
   }
 
@@ -75,6 +75,7 @@ export default class Subtitles {
             this.tracks[index] = subtitles
           }
           if (this.current === index) this.selectCaptions(this.current)
+          this.onHeader()
         })
         this.initSubtitleRenderer()
       }

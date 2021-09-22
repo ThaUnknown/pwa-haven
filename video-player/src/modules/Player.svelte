@@ -5,7 +5,7 @@
   import Peer from '../lib/peer.js'
   import './File.js'
   import Subtitles from './subtitles.js'
-  import { toTS, videoRx } from './util.js'
+  import { toTS, videoRx, requestTimeout } from './util.js'
 
   $: updateFiles(files)
   export let files = []
@@ -210,11 +210,11 @@
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
 
-    const renderFrame = () => {
+    const renderFrame = async () => {
       if (running === true) {
         context.drawImage(video, 0, 0)
         if (!noSubs) context.drawImage(subs.renderer?.canvas, 0, 0, canvas.width, canvas.height)
-        requestAnimationFrame(renderFrame)
+        requestTimeout(renderFrame, 500 / (await video.fps)) // request x2 fps for smoothness
       }
     }
     requestAnimationFrame(renderFrame)
@@ -222,7 +222,7 @@
       running = false
       canvas.remove()
     }
-    return { stream: canvas.captureStream(await video.fps), destroy }
+    return { stream: canvas.captureStream(), destroy }
   }
 
   function initCast(event) {
@@ -248,7 +248,7 @@
       if (peer && presentationConnection) {
         pip = true
         const tracks = []
-        const videostream = video.captureStream(await video.fps)
+        const videostream = video.captureStream()
         if (true) {
           // TODO: check if cast supports codecs
           const { stream, destroy } = await getBurnIn(!subs?.renderer)
@@ -417,7 +417,7 @@
         <img class="ctrl" data-elapsed="00:00" data-name="thumbnail" alt="thumbnail" src={thumbnail} />
       </div>
     </div>
-    {#if subHeaders}
+    {#if subHeaders && subHeaders.length}
       <div class="subtitles dropdown dropup with-arrow">
         <span class="material-icons ctrl" title="Subtitles" id="bcap" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-name="captionsButton">
           subtitles
