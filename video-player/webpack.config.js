@@ -10,6 +10,9 @@ module.exports = {
   entry: {
     'build/bundle': ['./src/main.js']
   },
+  externals: {
+    anitomyscript: 'anitomyscript'
+  },
   resolve: {
     alias: {
       svelte: path.dirname(require.resolve('svelte/package.json'))

@@ -94,8 +94,8 @@
   }
 </script>
 
-<div class="page-wrapper with-navbar-fixed-bottom bg-very-dark" on:click={handlePopup}>
-  <Player bind:files />
+<div class="page-wrapper with-navbar-fixed-bottom" on:click={handlePopup}>
+  <Player bind:files bind:name />
 </div>
 
 <svelte:head>

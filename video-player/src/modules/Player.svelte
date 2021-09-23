@@ -1,14 +1,15 @@
 <script>
   import { onMount } from 'svelte'
-
   import { setFile } from './server.js'
   import Peer from '../lib/peer.js'
   import './File.js'
   import Subtitles from './subtitles.js'
   import { toTS, videoRx, requestTimeout, cancelTimeout } from './util.js'
+  import anitomyscript from 'anitomyscript'
 
   $: updateFiles(files)
   export let files = []
+  export let name = null
   let src = null
   let video = null
   let container = null
@@ -325,6 +326,42 @@
       })
     }
   }
+  $: navigator.mediaSession?.setPositionState({
+    duration: duration || 0,
+    playbackRate: 1,
+    position: currentTime || 0
+  })
+  async function mediaChange(current) {
+    if (current) {
+      const { release_group, anime_title, episode_number } = await anitomyscript(current.name)
+      // honestly, this is made for anime, but works fantastic for everything else.
+      name = [anime_title, episode_number].filter(i => i).join(' - ')
+      if ('mediaSession' in navigator) {
+        const metadata = new MediaMetadata({
+          title: name || 'Video Player'
+          // artwork: [
+          //   {
+          //     src: null,
+          //     sizes: '256x256',
+          //     type: 'image/jpg'
+          //   }
+          // ]
+        })
+        if (release_group) metadata.artist = release_group
+        navigator.mediaSession.metadata = metadata
+      }
+    }
+  }
+  $: mediaChange(current)
+
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.setActionHandler('play', playPause)
+    navigator.mediaSession.setActionHandler('pause', playPause)
+    navigator.mediaSession.setActionHandler('nexttrack', playNext)
+    navigator.mediaSession.setActionHandler('previoustrack', playLast)
+    navigator.mediaSession.setActionHandler('seekforward', forward)
+    navigator.mediaSession.setActionHandler('seekbackward', rewind)
+  }
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
@@ -530,8 +567,7 @@
 
   .player:not(.miniplayer) a.miniplayer,
   .bottom img[src=' '],
-  video[src='']:not([poster]),
-  .player:fullscreen .ctrl[data-name='togglePopout'] {
+  video[src='']:not([poster]) {
     display: none !important;
   }
 
@@ -739,7 +775,6 @@
     .bottom .ctrl[data-name='playPause'],
     .bottom .ctrl[data-name='playNext'],
     .bottom .volume,
-    .bottom .ctrl[data-name='togglePopout'],
     .bottom .ctrl[data-name='toggleFullscreen'] {
       display: none;
     }
