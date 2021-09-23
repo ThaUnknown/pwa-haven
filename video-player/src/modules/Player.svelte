@@ -5,7 +5,7 @@
   import Peer from '../lib/peer.js'
   import './File.js'
   import Subtitles from './subtitles.js'
-  import { toTS, videoRx, requestTimeout } from './util.js'
+  import { toTS, videoRx, requestTimeout, cancelTimeout } from './util.js'
 
   $: updateFiles(files)
   export let files = []
@@ -52,7 +52,7 @@
   }
 
   function handleHeaders() {
-    subHeaders = subs.headers
+    subHeaders = subs?.headers
   }
 
   function updateFiles(files) {
@@ -206,20 +206,19 @@
   async function getBurnIn(noSubs) {
     const canvas = document.createElement('canvas')
     const context = canvas.getContext('2d', { alpha: false })
-    let running = true
+    const fps = await video.fps
+    let loop = null
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
 
     const renderFrame = async () => {
-      if (running === true) {
-        context.drawImage(video, 0, 0)
-        if (!noSubs) context.drawImage(subs.renderer?.canvas, 0, 0, canvas.width, canvas.height)
-        requestTimeout(renderFrame, 500 / (await video.fps)) // request x2 fps for smoothness
-      }
+      context.drawImage(video, 0, 0)
+      if (!noSubs) context.drawImage(subs.renderer?.canvas, 0, 0, canvas.width, canvas.height)
+      loop = requestTimeout(renderFrame, 500 / fps) // request x2 fps for smoothness
     }
-    requestAnimationFrame(renderFrame)
+    loop = requestAnimationFrame(renderFrame)
     const destroy = () => {
-      running = false
+      cancelTimeout(loop)
       canvas.remove()
     }
     return { stream: canvas.captureStream(), destroy }

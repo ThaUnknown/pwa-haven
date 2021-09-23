@@ -68,7 +68,7 @@ export default class Subtitles {
         this.headers.push(header)
         this.onHeader()
         this.tracks[index] = []
-        this.convertSubFile(file, isAss, subtitles => {
+        this.constructor.convertSubFile(file, isAss, subtitles => { // why does .constructor work ;-;
           if (isAss) {
             this.headers[index].header = subtitles
           } else {
@@ -108,7 +108,7 @@ export default class Subtitles {
 
   static convertSubFile (file, isAss, callback) {
     const regex = /(?:\d+\n)?(\S{9,12})\s?-->\s?(\S{9,12})(.*)\n([\s\S]*)$/i
-    file.text.then(text => {
+    file.text().then(text => {
       const subtitles = isAss ? text : []
       if (isAss) {
         callback(subtitles)

@@ -34,7 +34,7 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '1.2.2',
+    version: '1.2.3',
     resources: [
       '../video-player/public/lib/subtitles-octopus-worker.js',
       '../video-player/public/lib/subtitles-octopus-worker.wasm',
