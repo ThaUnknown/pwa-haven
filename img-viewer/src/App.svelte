@@ -183,4 +183,8 @@
     left: 50%;
     transform: translate(-50%, 0);
   }
+  .sticky-alerts {
+    --sticky-alerts-top: auto;
+    bottom: 1rem;
+  }
 </style>

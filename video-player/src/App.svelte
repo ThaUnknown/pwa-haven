@@ -118,4 +118,8 @@
   * {
     user-select: none;
   }
+  .sticky-alerts {
+    --sticky-alerts-top: auto;
+    bottom: 1rem;
+  }
 </style>

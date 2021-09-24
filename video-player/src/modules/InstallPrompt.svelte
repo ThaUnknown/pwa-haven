@@ -12,11 +12,15 @@
       deferredPrompt = null
     }
   }
+  function dismiss() {
+    deferredPrompt = null
+  }
 </script>
 
 {#if deferredPrompt}
   <div class="alert alert-success filled-dm show" on:click={promptInstall}>
     <h4 class="alert-heading">Install</h4>
+    <button class="close" type="button" on:click={dismiss}><span>×</span></button>
     Click here to install the app for more features!
   </div>
 {/if}
