@@ -12,6 +12,13 @@
   const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser())
   const units = [' B', ' KB', ' MB', ' GB']
 
+  navigator.serviceWorker.getRegistrations().then((workers = []) => {
+    // register a root service worker if user didin't come from home page
+    if (!workers.find(worker => worker.scope === location.origin + '/')) {
+      navigator.serviceWorker.register('/sw.js')
+    }
+  })
+
   function prettyBytes(num) {
     if (isNaN(num) || num == null) return ''
     if (num < 1) return num + ' B'

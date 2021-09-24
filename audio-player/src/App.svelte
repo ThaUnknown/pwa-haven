@@ -5,6 +5,13 @@
   let name = ''
   let files
 
+  navigator.serviceWorker.getRegistrations().then((workers = []) => {
+    // register a root service worker if user didin't come from home page
+    if (!workers.find(worker => worker.scope === location.origin + '/')) {
+      navigator.serviceWorker.register('/sw.js')
+    }
+  })
+
   // loading files
   function handleDrop({ dataTransfer }) {
     handleItems([...dataTransfer.items])
@@ -102,10 +109,7 @@
   <title>{name || 'Audio Player'}</title>
 </svelte:head>
 
-<svelte:window
-  on:drop|preventDefault={handleDrop}
-  on:dragover|preventDefault
-  on:paste|preventDefault={handlePaste} />
+<svelte:window on:drop|preventDefault={handleDrop} on:dragover|preventDefault on:paste|preventDefault={handlePaste} />
 
 <style>
   * {

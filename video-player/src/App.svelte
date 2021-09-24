@@ -1,10 +1,17 @@
 <script>
   import Player from './modules/Player.svelte'
-  import {videoRx} from './modules/util.js'
+  import { videoRx } from './modules/util.js'
 
   const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser())
   let name = ''
   let files
+
+  navigator.serviceWorker.getRegistrations().then((workers = []) => {
+    // register a root service worker if user didin't come from home page
+    if (!workers.find(worker => worker.scope === location.origin + '/')) {
+      navigator.serviceWorker.register('/sw.js')
+    }
+  })
 
   // loading files
   function handleDrop({ dataTransfer }) {
@@ -102,10 +109,7 @@
   <title>{name || 'Video Player'}</title>
 </svelte:head>
 
-<svelte:window
-  on:drop|preventDefault={handleDrop}
-  on:dragover|preventDefault
-  on:paste|preventDefault={handlePaste} />
+<svelte:window on:drop|preventDefault={handleDrop} on:dragover|preventDefault on:paste|preventDefault={handlePaste} />
 
 <style>
   * {
