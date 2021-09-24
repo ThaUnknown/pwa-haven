@@ -31,6 +31,7 @@
   let presentationRequest = null
   let presentationConnection = null
   let canCast = false
+  let isFullscreen = false
   $: progress = currentTime / duration
   $: targetTime = currentTime
   let volume = localStorage.getItem('volume') || 1
@@ -51,6 +52,11 @@
       handleAvailability(aval.value)
     })
   }
+
+  //document.fullscreenElement isn't reactive
+  document.addEventListener('fullscreenchange', () => {
+    isFullscreen = !!document.fullscreenElement
+  })
 
   function handleHeaders() {
     subHeaders = subs?.headers
@@ -327,9 +333,9 @@
     }
   }
   $: navigator.mediaSession?.setPositionState({
-    duration: duration || 0,
+    duration: Math.max(0, duration || 0),
     playbackRate: 1,
-    position: currentTime || 0
+    position: Math.max(0, currentTime || 0)
   })
   async function mediaChange(current) {
     if (current) {
@@ -392,7 +398,6 @@
     on:playing={hideBuffering}
     on:timeupdate={hideBuffering}
     on:loadedmetadata={resolveFps} />
-  <canvas class="d-none" />
   <!-- svelte-ignore a11y-missing-content -->
   <a href="#player" class="miniplayer" alt="miniplayer" />
   <div class="top" />
@@ -472,13 +477,17 @@
       </div>
     {/if}
     {#if 'PresentationRequest' in window && canCast}
-      <span class="material-icons ctrl" title="Cast Video [C]" data-name="toggleCast" on:click={toggleCast}> {presentationConnection ? 'cast_connected' : 'cast'} </span>
+      <span class="material-icons ctrl" title="Cast Video [C]" data-name="toggleCast" on:click={toggleCast}>
+        {presentationConnection ? 'cast_connected' : 'cast'}
+      </span>
     {/if}
     {#if 'pictureInPictureEnabled' in document}
-      <span class="material-icons ctrl" title="Popout Window [P]" data-name="togglePopout" on:click={togglePopout}> {pip ? 'featured_video' : 'picture_in_picture'} </span>
+      <span class="material-icons ctrl" title="Popout Window [P]" data-name="togglePopout" on:click={togglePopout}>
+        {pip ? 'featured_video' : 'picture_in_picture'}
+      </span>
     {/if}
     <span class="material-icons ctrl" title="Fullscreen [F]" data-name="toggleFullscreen" on:click={toggleFullscreen}>
-      {document.fullscreenElement ? 'fullscreen_exit' : 'fullscreen'}
+      {isFullscreen ? 'fullscreen_exit' : 'fullscreen'}
     </span>
   </div>
 </div>
@@ -544,7 +553,7 @@
     background: #000;
   }
 
-  .pip canvas {
+  .pip :global(canvas) {
     left: 99.9% !important;
     /*hack to hide the canvas but still keep it updating*/
   }
@@ -567,7 +576,9 @@
 
   .player:not(.miniplayer) a.miniplayer,
   .bottom img[src=' '],
-  video[src='']:not([poster]) {
+  video[src='']:not([poster]),
+  :fullscreen .ctrl[data-name='toggleCast'],
+  :fullscreen .ctrl[data-name='togglePopout'] {
     display: none !important;
   }
 

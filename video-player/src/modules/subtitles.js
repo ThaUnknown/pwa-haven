@@ -28,8 +28,9 @@ export default class Subtitles {
     this.timeout = null
 
     if (this.selected.name.endsWith('.mkv')) {
+      let lastStream = null
+      this.selected.onStream = ({ stream }) => { lastStream = stream }
       this.initParser(this.selected).then(() => {
-        video.currentTime -= 0.1
         this.selected.onStream = ({ stream, file, req }, cb) => {
           if (req.destination === 'video' && !this.parsed) {
             this.stream = new SubtitleStream(this.stream)
@@ -38,6 +39,7 @@ export default class Subtitles {
             cb(this.stream)
           }
         }
+        lastStream.destroy()
       })
       if (this.selected instanceof File) this.parseSubtitles(this.selected, true) // only parse local files
     }
@@ -196,9 +198,6 @@ export default class Subtitles {
           this.parser = undefined
           this.selectCaptions(this.current)
           parser = undefined
-          if (!this.video.paused) {
-            this.video.currentTime -= 0.1
-          }
           resolve()
         }
         parser.once('tracks', tracks => {
