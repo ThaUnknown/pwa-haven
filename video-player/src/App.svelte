@@ -1,6 +1,7 @@
 <script>
   import Player from './modules/Player.svelte'
   import { videoRx } from './modules/util.js'
+  import InstallPrompt from './modules/InstallPrompt.svelte'
 
   const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser())
   let name = ''
@@ -100,8 +101,10 @@
     }
   }
 </script>
-
-<div class="page-wrapper with-navbar-fixed-bottom" on:click={handlePopup}>
+<div class="sticky-alerts d-flex flex-column-reverse">
+  <InstallPrompt />
+</div>
+<div class="page-wrapper" on:click={handlePopup}>
   <Player bind:files bind:name />
 </div>
 
@@ -114,5 +117,9 @@
 <style>
   * {
     user-select: none;
+  }
+  .sticky-alerts {
+    --sticky-alerts-top: auto;
+    bottom: 1rem;
   }
 </style>

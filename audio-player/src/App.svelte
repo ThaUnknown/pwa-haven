@@ -1,4 +1,5 @@
 <script>
+  import InstallPrompt from './modules/InstallPrompt.svelte'
   import Player from './modules/Player.svelte'
 
   const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser())
@@ -101,6 +102,9 @@
   }
 </script>
 
+<div class="sticky-alerts d-flex flex-column-reverse">
+  <InstallPrompt />
+</div>
 <div class="page-wrapper with-navbar-fixed-bottom">
   <Player bind:name bind:files on:popup={handlePopup} />
 </div>
@@ -114,5 +118,9 @@
 <style>
   * {
     user-select: none;
+  }
+  .sticky-alerts {
+    --sticky-alerts-top: auto;
+    bottom: 1rem;
   }
 </style>

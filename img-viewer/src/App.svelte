@@ -1,4 +1,5 @@
 <script>
+  import InstallPrompt from './modules/InstallPrompt.svelte'
   let src = null
   let image = null
   let scale = 1
@@ -131,7 +132,9 @@
     dimensions.y = image.naturalHeight
   }
 </script>
-
+<div class="sticky-alerts d-flex flex-column-reverse">
+  <InstallPrompt />
+</div>
 <div class="w-full h-full overflow-hidden position-relative dragarea" on:pointerdown={dragStart} on:pointerup={dragEnd} on:wheel|passive={handleZoom}>
   <img {src} alt="view" class="w-full h-full position-absolute" bind:this={image} on:load={handleImage} />
 </div>
