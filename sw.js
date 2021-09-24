@@ -34,7 +34,7 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '1.2.6',
+    version: '1.2.7',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       '../video-player/public/lib/subtitles-octopus-worker.js',
