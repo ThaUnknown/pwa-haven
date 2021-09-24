@@ -13,3 +13,6 @@ You shouldn't. The apps work fully offline, auto-update instantly and benefit fr
 
 ## Are these secure?
 They are as secure as any other website, and all permission requests are always propmpted to the user. They don't have access to any native folders, unless the user explcitly grants that permission for that specific folder, with exceptions to any sort of root directory, to which the app can never get permissions for.
+
+## Why did you make this?
+Practice coding, cool new API to play with, look at potential future of PWA's, because default Win10 apps are a fucking piece of slow, bloated garbage which can't even do it's job right.
