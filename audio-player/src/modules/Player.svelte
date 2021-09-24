@@ -2,6 +2,7 @@
   import { toTS } from './util.js'
   import SongList from './SongList.svelte'
   import { createEventDispatcher } from 'svelte'
+  import { parseBlob } from 'music-metadata-browser'
 
   const dispatch = createEventDispatcher()
   export let name = ''
@@ -30,10 +31,13 @@
     playbackRate: 1,
     position: currentTime || 0
   })
-  $: (name, cover) => {
+  $: updateMedia(current, cover)
+  function updateMedia(current, cover) {
     if ('mediaSession' in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({
-        title: name || 'Audio Player',
+        title: current?.name || 'Audio Player',
+        artist: current?.artist || '',
+        album: current?.album || '',
         artwork: [
           {
             src: cover,
@@ -52,27 +56,34 @@
     navigator.mediaSession.setActionHandler('previoustrack', playLast)
   }
 
+  function atb64(buffer) {
+    let binary = ''
+    for (const byte of buffer) {
+      binary += String.fromCharCode(byte)
+    }
+    return btoa(binary)
+  }
+
   async function updateFiles(files) {
     if (files.length) {
-      const cover = files.find(file => file.type.indexOf('image') === 0)
-      setCover(cover)
+      const image = files.find(file => file.type.indexOf('image') === 0)
       const audio = files.filter(file => file.type.indexOf('audio') === 0)
       if (audio) {
         songs = []
         current = null
+        src = null
+        paused = true
       }
-      // this is hacky, but audio context api uses x100 CPU and x140 RAM
-      const songDataPromises = audio.map(song => {
-        return new Promise(resolve => {
-          let audio = document.createElement('audio')
-          audio.preload = 'metadata'
-          audio.onloadedmetadata = () => {
-            resolve({ file: song, duration: audio.duration, name: song.name.substring(0, song.name.lastIndexOf('.')) || song.name })
-            URL.revokeObjectURL(audio.src)
-            audio = null
-          }
-          audio.src = song.url || URL.createObjectURL(song)
-        })
+      const songDataPromises = audio.map(async file => {
+        const { common, format } = await parseBlob(file)
+        const name = common?.title || file.name.substring(0, file.name.lastIndexOf('.')) || file.name
+        const artist = common?.artist
+        const album = common?.album
+        // note: this is utterly fucking retarded, the browser isn't capable of creating a object url from an image file blob in this case, but a data URI works!!!!! WHY?
+        const cover = (common?.picture?.length && { url: 'data:' + common.picture[0].format + ';base64,' + atb64(common.picture[0].data) }) || image
+        const duration = format?.duration
+        const number = common?.track?.no
+        return { file, name, artist, album, cover, duration, number }
       })
       songs = (await Promise.all(songDataPromises)).sort((a, b) => (a.file.name > b.file.name ? 1 : b.file.name > a.file.name ? -1 : 0))
       current = songs[0]
@@ -84,6 +95,7 @@
     if (song) {
       src = song.file.url || URL.createObjectURL(song.file)
       name = song.name
+      setCover(song.cover)
     } else {
       src = null
       name = ''
@@ -172,7 +184,7 @@
       </div>
     </div>
     <div class="center px-20 mw-0">
-      <div class="text-truncate text-muted">{name}</div>
+      <div class="text-truncate text-muted">{[current?.artist, current?.name].filter(c => c).join(' - ')}</div>
     </div>
     <div class="d-flex align-items-center">
       <span class="material-icons font-size-20 ctrl pointer" type="button" on:click={toggleMute}>

@@ -1,8 +1,9 @@
 <script>
   import { toTS } from './util.js'
+  import { createEventDispatcher } from 'svelte'
+
   export let current
   export let songs
-  import { createEventDispatcher } from 'svelte'
   const dispatch = createEventDispatcher()
   function select(song) {
     if (song !== current) current = song
@@ -16,7 +17,7 @@
         <div class="material-icons font-size-20 center pr-20">
           {song === current ? 'volume_up' : 'play_arrow'}
         </div>
-        <div class="text-truncate">{song.name}</div>
+        <div class="text-truncate">{[song.number, song.name].filter(s => s).join('. ')}</div>
         <div class="ml-auto pl-20">{toTS(song.duration)}</div>
       </div>
     {/each}
