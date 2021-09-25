@@ -3,6 +3,7 @@
   import SongList from './SongList.svelte'
   import { createEventDispatcher } from 'svelte'
   import { parseBlob } from 'music-metadata-browser'
+  import Peer from './peer.js'
 
   const dispatch = createEventDispatcher()
   export let name = ''
@@ -56,12 +57,84 @@
     navigator.mediaSession.setActionHandler('previoustrack', playLast)
   }
 
-  function atb64(buffer) {
-    let binary = ''
-    for (const byte of buffer) {
-      binary += String.fromCharCode(byte)
+  let presentationRequest = null
+  let presentationConnection = null
+  let presentationPort = null
+  let canCast = false
+
+  $: updateCast(currentTime)
+
+  function updateCast(currentTime) {
+    if (presentationPort?.readyState === 'open') {
+      presentationPort.send(JSON.stringify({ current: currentTime }))
     }
-    return btoa(binary)
+  }
+
+  if ('PresentationRequest' in window) {
+    const handleAvailability = aval => {
+      canCast = !!aval
+    }
+    presentationRequest = new PresentationRequest(['build/cast.html'])
+    presentationRequest.addEventListener('connectionavailable', e => initCast(e))
+    navigator.presentation.defaultRequest = presentationRequest
+    presentationRequest.getAvailability().then(aval => {
+      aval.onchange = e => handleAvailability(e.target.value)
+      handleAvailability(aval.value)
+    })
+  }
+
+  function toggleCast() {
+    if (audio.readyState) {
+      if (presentationConnection) {
+        presentationConnection?.terminate()
+      } else {
+        presentationRequest.start()
+      }
+    }
+  }
+  function initCast(event) {
+    let peer = new Peer({ polite: true })
+
+    presentationConnection = event.connection
+    presentationConnection.addEventListener('terminate', () => {
+      presentationConnection = null
+      peer = null
+    })
+
+    peer.signalingPort.onmessage = ({ data }) => {
+      presentationConnection.send(data)
+    }
+
+    presentationConnection.addEventListener('message', ({ data }) => {
+      peer.signalingPort.postMessage(data)
+    })
+
+    peer.dc.onopen = () => {
+      const videostream = audio.captureStream()
+      peer.pc.addTrack(videostream.getAudioTracks()[0], videostream)
+      paused = false // pauses for some reason
+      presentationPort = peer.pc.createDataChannel('current', { negotiated: true, id: 2 })
+      presentationConnection.addEventListener('terminate', () => presentationPort.close())
+      presentationPort.onopen = async () => {
+        presentationPort.send(
+          JSON.stringify({
+            duration: current.duration,
+            current: currentTime,
+            arist: current.artist,
+            title: current.name
+          })
+        )
+        if (current.cover) {
+          const buffer = await current.cover.arrayBuffer()
+          const array = new Uint8Array(buffer)
+          for (let pos = 0; pos < array.length; pos += 16000) {
+            const sliced = array.slice(pos, pos + 16000)
+            presentationPort.send(sliced)
+          }
+          presentationPort.send(JSON.stringify({ ended: true }))
+        }
+      }
+    }
   }
 
   async function updateFiles(files) {
@@ -80,7 +153,7 @@
         const artist = common?.artist
         const album = common?.album
         // note: this is utterly fucking retarded, the browser isn't capable of creating a object url from an image file blob in this case, but a data URI works!!!!! WHY?
-        const cover = (common?.picture?.length && { url: 'data:' + common.picture[0].format + ';base64,' + atb64(common.picture[0].data) }) || image
+        const cover = (common?.picture?.length && new Blob([common.picture[0].data], { type: common.picture[0].format })) || image
         const duration = format?.duration
         const number = common?.track?.no
         return { file, name, artist, album, cover, duration, number }
@@ -148,7 +221,38 @@
       songs = songs.sort((a, b) => (a.file.name > b.file.name ? 1 : b.file.name > a.file.name ? -1 : 0))
     }
   }
+
+  function handleKeydown({ key }) {
+    switch (key) {
+      case ' ':
+        playPause()
+        break
+      case 'n':
+        playNext()
+        break
+      case 'm':
+        muted = !muted
+        break
+      case 'c':
+        toggleCast()
+        break
+      case 'ArrowLeft':
+        currentTime = Math.max(currentTime - 2, 0)
+        break
+      case 'ArrowRight':
+        currentTime = Math.min(currentTime + 2, duration)
+        break
+      case 'ArrowUp':
+        volume = Math.min(1, volume + 0.05)
+        break
+      case 'ArrowDown':
+        volume = Math.max(0, volume - 0.05)
+        break
+    }
+  }
 </script>
+
+<svelte:window on:keydown={handleKeydown} />
 
 <!-- svelte-ignore a11y-media-has-caption -->
 <audio {src} bind:this={audio} autoplay bind:volume bind:duration bind:currentTime bind:paused bind:muted {loop} on:ended={() => !loop && playNext()} />
@@ -187,6 +291,11 @@
       <div class="text-truncate text-muted">{[current?.artist, current?.name].filter(c => c).join(' - ')}</div>
     </div>
     <div class="d-flex align-items-center">
+      {#if 'PresentationRequest' in window && canCast}
+        <span class="material-icons font-size-20 ctrl pointer" title="Cast Video [C]" data-name="toggleCast" on:click={toggleCast}>
+          {presentationConnection ? 'cast_connected' : 'cast'}
+        </span>
+      {/if}
       <span class="material-icons font-size-20 ctrl pointer" type="button" on:click={toggleMute}>
         {muted ? 'volume_off' : 'volume_up'}
       </span>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <style>
+    body {
+      margin: 0;
+      background: #25282c;
+      width: 100vw;
+      height: 100vh;
+      color: #fff;
+      font-size: 50px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      font-weight: 400;
+      text-align: center;
+    }
+
+    audio {
+      display: none
+    }
+
+    .row {
+      display: flex;
+      flex-direction: row;
+      height: 100%;
+      backdrop-filter: blur(10px) brightness(30%);
+    }
+
+    .half {
+      width: 50%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .half>* {
+      width: 90%;
+      height: 80%;
+    }
+
+    .half>div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    img:not([src]) {
+      display: none
+    }
+
+    img {
+      object-fit: contain;
+    }
+
+    .backdrop {
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%
+    }
+
+    .title {
+      font-weight: bold;
+    }
+
+    .time {
+      padding-top: 50px;
+    }
+
+  </style>
+</head>
+
+<body>
+  <audio></audio>
+  <img class="backdrop">
+  <div class="row">
+    <div class="half">
+      <img class="cover">
+    </div>
+    <div class="half">
+      <div>
+        <div class="title"></div>
+        <div class="artist"></div>
+        <div class="time">
+          <span class="current"></span>
+          /
+          <span class="duration"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+<script type="module" src="peer.js"></script>
+<script type="module">
+  function toTS (sec, full) {
+  if (isNaN(sec) || sec < 0) {
+    return full ? '00:00' : '0:00'
+  }
+  const hours = Math.floor(sec / 3600)
+  let minutes = Math.floor(sec / 60) - hours * 60
+  let seconds = Math.floor(sec % 60)
+  if (full && minutes < 10) minutes = '0' + minutes
+  if (seconds < 10) seconds = '0' + seconds
+  return hours > 0 ? hours + ':' + minutes + ':' + seconds : minutes + ':' + seconds
+}
+let peer = null
+const audio = document.querySelector('audio')
+const duration = document.querySelector('.duration')
+const current = document.querySelector('.current')
+const artist = document.querySelector('.artist')
+const title = document.querySelector('.title')
+const cover = document.querySelector('.cover')
+const backdrop = document.querySelector('.backdrop')
+
+function addConnection (connection) {
+  peer = new window.Peer({ polite: false })
+
+  peer.pc.ontrack = evt => {
+    evt.receiver.playoutDelayHint = 0.1 // audio has less data, so less delay
+    if (!audio.srcObject) {
+      audio.srcObject = evt.streams[0]
+      audio.volume = 1
+      audio.play()
+    }
+  }
+
+  const dataport = peer.pc.createDataChannel('current', { negotiated: true, id: 2 })
+  const imageData = []
+  function buildImage() {
+    const blob = new Blob(imageData)
+    const url = URL.createObjectURL(blob)
+    cover.src = url
+    backdrop.src = url
+  }
+  dataport.onmessage = ({ data }) => {
+    if (data instanceof ArrayBuffer) {
+      imageData.push(data)
+    } else {
+      const parsed = JSON.parse(data)
+      if (parsed.duration) duration.textContent = toTS(parsed.duration)
+      if (parsed.current) current.textContent = toTS(parsed.current)
+      if (parsed.artist) artist.textContent = parsed.artist
+      if (parsed.title) title.textContent = parsed.title
+      if (parsed.ended) buildImage()
+    }
+  }
+
+  // only used to signal description and candidates to the other peer
+  // once a connection is establish the DataChannel takes over.
+  peer.signalingPort.onmessage = ({ data }) => {
+    connection.send(data)
+  }
+
+  connection.addEventListener('message', ({ data }) => {
+    peer.signalingPort.postMessage(data)
+  })
+}
+
+if (navigator.presentation.receiver) {
+  navigator.presentation.receiver.connectionList.then(list => {
+    list.connections.map(connection => addConnection(connection))
+    list.addEventListener('connectionavailable', event => {
+      addConnection(event.connection)
+    })
+  })
+}
+
+  </script>
+
+</html>

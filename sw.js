@@ -22,13 +22,15 @@ const cacheList = {
     ]
   },
   'audio-player': {
-    version: '1.1.16',
+    version: '1.3.0',
     resources: [
       '../audio-player/public/build/bundle.js',
       '../audio-player/public/build/bundle.js.map',
       '../audio-player/public/build/bundle.css',
       '../audio-player/public/128.png',
       '../audio-player/public/512.png',
+      '../audio-player/public/build/peer.js',
+      '../audio-player/public/build/cast.html',
       '../audio-player/public/site.webmanifest',
       '../audio-player/public/'
     ]
