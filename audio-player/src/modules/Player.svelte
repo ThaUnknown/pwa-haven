@@ -62,9 +62,9 @@
   let presentationPort = null
   let canCast = false
 
-  $: updateCast(currentTime)
+  $: updateCastTime(currentTime)
 
-  function updateCast(currentTime) {
+  function updateCastTime(currentTime) {
     if (presentationPort?.readyState === 'open') {
       presentationPort.send(JSON.stringify({ current: currentTime }))
     }
@@ -92,8 +92,34 @@
       }
     }
   }
+  let peer = null
+  $: updateCastState(audio?.readyState && current)
+  async function updateCastState(current) {
+    if (current && presentationPort?.readyState === 'open') {
+      const stream = audio.captureStream()
+      peer.pc.addTrack(stream.getAudioTracks()[0], stream)
+      paused = false // pauses for some reason
+      presentationPort.send(
+        JSON.stringify({
+          duration: current.duration,
+          current: currentTime,
+          arist: current.artist,
+          title: current.name
+        })
+      )
+      if (current.cover) {
+        const buffer = await current.cover.arrayBuffer()
+        const array = new Uint8Array(buffer)
+        for (let pos = 0; pos < array.length; pos += 16000) {
+          const sliced = array.slice(pos, pos + 16000)
+          presentationPort.send(sliced)
+        }
+        presentationPort.send(JSON.stringify({ ended: true }))
+      }
+    }
+  }
   function initCast(event) {
-    let peer = new Peer({ polite: true })
+    peer = new Peer({ polite: true })
 
     presentationConnection = event.connection
     presentationConnection.addEventListener('terminate', () => {
@@ -110,30 +136,9 @@
     })
 
     peer.dc.onopen = () => {
-      const videostream = audio.captureStream()
-      peer.pc.addTrack(videostream.getAudioTracks()[0], videostream)
-      paused = false // pauses for some reason
       presentationPort = peer.pc.createDataChannel('current', { negotiated: true, id: 2 })
       presentationConnection.addEventListener('terminate', () => presentationPort.close())
-      presentationPort.onopen = async () => {
-        presentationPort.send(
-          JSON.stringify({
-            duration: current.duration,
-            current: currentTime,
-            arist: current.artist,
-            title: current.name
-          })
-        )
-        if (current.cover) {
-          const buffer = await current.cover.arrayBuffer()
-          const array = new Uint8Array(buffer)
-          for (let pos = 0; pos < array.length; pos += 16000) {
-            const sliced = array.slice(pos, pos + 16000)
-            presentationPort.send(sliced)
-          }
-          presentationPort.send(JSON.stringify({ ended: true }))
-        }
-      }
+      presentationPort.onopen = () => updateCastState(current)
     }
   }
 
@@ -255,7 +260,18 @@
 <svelte:window on:keydown={handleKeydown} />
 
 <!-- svelte-ignore a11y-media-has-caption -->
-<audio {src} bind:this={audio} autoplay bind:volume bind:duration bind:currentTime bind:paused bind:muted {loop} on:ended={() => !loop && playNext()} />
+<audio
+  {src}
+  bind:this={audio}
+  autoplay
+  bind:volume
+  bind:duration
+  bind:currentTime
+  bind:paused
+  bind:muted
+  {loop}
+  on:ended={() => !loop && playNext()}
+  on:loadedmetadata={updateCastState} />
 <div class="content-wrapper row overflow-hidden">
   <div class="col-md-7 p-20 center h-half h-md-full bg-dark">
     <img src={cover} alt="cover" class="shadow-lg pointer" on:click={playPause} />

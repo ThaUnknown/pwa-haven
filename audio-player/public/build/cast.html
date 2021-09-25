@@ -70,7 +70,6 @@
     .time {
       padding-top: 50px;
     }
-
   </style>
 </head>
 
@@ -121,20 +120,19 @@ function addConnection (connection) {
 
   peer.pc.ontrack = evt => {
     evt.receiver.playoutDelayHint = 0.1 // audio has less data, so less delay
-    if (!audio.srcObject) {
-      audio.srcObject = evt.streams[0]
-      audio.volume = 1
-      audio.play()
-    }
+    audio.srcObject = evt.streams[0]
+    audio.volume = 1
+    audio.play()
   }
 
   const dataport = peer.pc.createDataChannel('current', { negotiated: true, id: 2 })
-  const imageData = []
+  let imageData = []
   function buildImage() {
     const blob = new Blob(imageData)
     const url = URL.createObjectURL(blob)
     cover.src = url
     backdrop.src = url
+    imageData = []
   }
   dataport.onmessage = ({ data }) => {
     if (data instanceof ArrayBuffer) {
