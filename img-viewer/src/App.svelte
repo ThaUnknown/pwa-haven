@@ -2,7 +2,7 @@
   import InstallPrompt from './modules/InstallPrompt.svelte'
   let src = null
   let image = null
-  let scale = 1
+  let scale = 0
   let isBlurred = true
   let name = 'Image Viewer'
   let fileSize = null
