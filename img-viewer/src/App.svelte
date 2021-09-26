@@ -42,8 +42,10 @@
     }
   }
 
+  let transition = true
   // dragging around
   function dragStart(e) {
+    transition = false
     initial.x = e.clientX
     initial.y = e.clientY
     image.onpointermove = handleDrag
@@ -51,6 +53,7 @@
   }
   function dragEnd(e) {
     if (image.onpointermove) {
+      transition = true
       image.onpointermove = null
       image.releasePointerCapture(e.pointerId)
       old.x += e.clientX - initial.x
@@ -67,13 +70,13 @@
   function handleZoom(e) {
     const diff = e.deltaY * -0.01
     if (diff === -1) {
-      if (!(scale < -4)) scale += diff
-      old.x /= 2
-      old.y /= 2
+      if (!(scale < -4)) scale -= 0.5
+      old.x /= 1.5
+      old.y /= 1.5
     } else if (diff === 1 && !(scale > 11)) {
-      scale += diff
-      old.x *= 2
-      old.y *= 2
+      scale += 0.5
+      old.x *= 1.5
+      old.y *= 1.5
     }
     image.style.setProperty('--zoom', 2 ** scale)
     handlePosition(old)
@@ -132,11 +135,12 @@
     dimensions.y = image.naturalHeight
   }
 </script>
+
 <div class="sticky-alerts d-flex flex-column-reverse">
   <InstallPrompt />
 </div>
 <div class="w-full h-full overflow-hidden position-relative dragarea" on:pointerdown={dragStart} on:pointerup={dragEnd} on:wheel|passive={handleZoom}>
-  <img {src} alt="view" class="w-full h-full position-absolute" bind:this={image} on:load={handleImage} />
+  <img {src} class:transition alt="view" class="w-full h-full position-absolute" bind:this={image} on:load={handleImage} />
 </div>
 
 <div class="btn-group position-absolute bg-dark-dm bg-light-lm">
@@ -169,6 +173,9 @@
     left: var(--left);
     image-rendering: var(--pixel);
     transform: scale(var(--zoom));
+  }
+  .transition {
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
   img:not([src]) {
     display: none;
