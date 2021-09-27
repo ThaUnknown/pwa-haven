@@ -27,7 +27,7 @@ export default class Subtitles {
     this.videoFiles = files.filter(file => videoExtensions.some(ext => file.name.endsWith(ext)))
     this.timeout = null
 
-    if (this.selected.name.endsWith('.mkv')) {
+    if (this.selected.name.endsWith('.mkv') && this.selected.createReadStream) {
       let lastStream = null
       this.selected.onStream = ({ stream }) => { lastStream = stream }
       this.initParser(this.selected).then(() => {

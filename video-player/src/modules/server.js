@@ -37,7 +37,7 @@ if (worker) {
 }
 
 function findFile (name) {
-  return file.name === name && file
+  return file?.name === name && file
 }
 
 function loadWorker (controller) {

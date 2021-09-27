@@ -31,8 +31,7 @@
         return new Promise(resolve =>
           item.getAsString(url => {
             if (videoRx.test(url)) {
-              const filename = url.substring(Math.max(url.lastIndexOf('\\'), url.lastIndexOf('/')) + 1)
-              const name = filename.substring(0, filename.lastIndexOf('.')) || filename
+              const name = url.substring(Math.max(url.lastIndexOf('\\') + 2, url.lastIndexOf('/') + 1))
               resolve({
                 name,
                 url,

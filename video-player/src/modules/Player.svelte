@@ -6,6 +6,7 @@
   import Subtitles from './subtitles.js'
   import { toTS, videoRx, requestTimeout, cancelTimeout } from './util.js'
   import anitomyscript from 'anitomyscript'
+  import { URLFile } from './File.js'
 
   $: updateFiles(files)
   export let files = []
@@ -64,12 +65,52 @@
 
   function updateFiles(files) {
     if (files && files.length) {
-      if (subs) subs.destroy()
       videos = files.filter(file => videoRx.test(file.name))
-      current = videos[0]
-      setFile(current)
+      handleCurrent(videos[0])
+    }
+  }
+
+  async function handleCurrent(file) {
+    if (file) {
+      URL.revokeObjectURL(current?.name) // eh just in case
+      if (file instanceof File) {
+        if (file.name.endsWith('.mkv')) {
+          setFile(file)
+          src = `player/${file.name}`
+        } else {
+          setFile(null)
+          src = URL.createObjectURL(file)
+        }
+        current = file
+      } else {
+        await new Promise((resolve, reject) => {
+          if (!file.name.endsWith('.mkv')) return reject()
+          // check if the media can be fetched [CORS, origin, token etc]
+          fetch(file.url, { method: 'HEAD' })
+            .then(res => {
+              if (!res.ok) {
+                reject()
+              } else {
+                resolve()
+              }
+            })
+            .catch(reject)
+        })
+          .then(async () => {
+            const urlfile = new URLFile(file)
+            await urlfile.ready
+            setFile(urlfile)
+            current = urlfile
+            src = `player/${urlfile.name}`
+          })
+          .catch(() => {
+            setFile(null)
+            src = file.url
+            current = file
+          })
+      }
+      if (subs) subs.destroy()
       subs = new Subtitles(video, files, current, handleHeaders)
-      src = `player/${current.name}`
     }
   }
 
@@ -93,11 +134,11 @@
     muted = !muted
   }
   function playNext() {
-    current = files[(files.indexOf(current) + 1) % files.length]
+    handleCurrent(videos[(videos.indexOf(current) + 1) % videos.length])
   }
   function playLast() {
-    const index = files.indexOf(current)
-    current = files[index === 0 ? files.length - 1 : index - 1]
+    const index = videos.indexOf(current)
+    handleCurrent(videos[index === 0 ? videos.length - 1 : index - 1])
   }
   function toggleFullscreen() {
     document.fullscreenElement ? document.exitFullscreen() : container.requestFullscreen()
@@ -396,7 +437,7 @@
     on:loadeddata={hideBuffering}
     on:canplay={hideBuffering}
     on:playing={hideBuffering}
-    on:timeupdate={hideBuffering}
+    on:loadedmetadata={hideBuffering}
     on:loadedmetadata={resolveFps} />
   <!-- svelte-ignore a11y-missing-content -->
   <a href="#player" class="miniplayer" alt="miniplayer" />
