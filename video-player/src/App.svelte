@@ -1,6 +1,6 @@
 <script>
   import Player from './modules/Player.svelte'
-  import { videoRx } from './modules/util.js'
+  import { videoRx, subtitleExtensions } from './modules/util.js'
   import InstallPrompt from './modules/InstallPrompt.svelte'
 
   const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser())
@@ -16,6 +16,7 @@
   function handlePaste({ clipboardData }) {
     handleItems([...clipboardData.items])
   }
+
   async function handleItems(items) {
     const promises = items.map(item => {
       if (item.type.indexOf('video/') === 0) {
@@ -46,21 +47,24 @@
         )
       }
       if (!item.type) {
-        let folder = item.webkitGetAsEntry()
-        folder = folder.isDirectory && folder
-        if (folder) {
+        let entry = item.webkitGetAsEntry()
+        if (entry?.isDirectory) {
           return new Promise(resolve => {
             folder.createReader().readEntries(async entries => {
               const filePromises = entries.filter(entry => entry.isFile).map(file => new Promise(resolve => file.file(resolve)))
               resolve(await Promise.all(filePromises))
             })
           })
+        } else if (entry && !entry.isDirectory) {
+          if (subtitleExtensions.some(ext => entry.name.endsWith(ext))) {
+            return new Promise(resolve => entry.file(resolve))
+          }
         }
         return
       }
       return
     })
-    files = (await Promise.all(promises)).flat().filter(i => i)
+    files = files.concat((await Promise.all(promises)).flat().filter(i => i))
   }
 
   if ('launchQueue' in window) {

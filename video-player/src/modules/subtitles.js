@@ -1,9 +1,7 @@
 import { SubtitleParser, SubtitleStream } from 'matroska-subtitles'
 import SubtitlesOctopus from '../lib/subtitles-octopus.js'
-import { toTS } from './util.js'
+import { toTS, subtitleExtensions, videoExtensions } from './util.js'
 
-const subtitleExtensions = ['.srt', '.vtt', '.ass', '.ssa']
-const videoExtensions = ['.3g2', '.3gp', '.asf', '.avi', '.dv', '.flv', '.gxf', '.m2ts', '.m4a', '.m4b', '.m4p', '.m4r', '.m4v', '.mkv', '.mov', '.mp4', '.mpd', '.mpeg', '.mpg', '.mxf', '.nut', '.ogm', '.ogv', '.swf', '.ts', '.vob', '.webm', '.wmv', '.wtv']
 const defaultHeader = `[V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Default, Roboto Medium,26,&H00FFFFFF,&H000000FF,&H00020713,&H00000000,0,0,0,0,100,100,0,0,1,1.3,0,2,20,20,23,1
@@ -41,7 +39,7 @@ export default class Subtitles {
         }
         lastStream.destroy()
       })
-      if (this.selected instanceof File) this.parseSubtitles(this.selected, true) // only parse local files
+      // if (this.selected instanceof File) this.parseSubtitles(this.selected, true) // only parse local files
     }
     this.findSubtitleFiles(this.selected)
   }

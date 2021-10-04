@@ -66,7 +66,13 @@
   function updateFiles(files) {
     if (files && files.length) {
       videos = files.filter(file => videoRx.test(file.name))
-      handleCurrent(videos[0])
+      if (videos) {
+        if (!current) {
+          handleCurrent(videos[0])
+        } else {
+          initSubs()
+        }
+      }
     }
   }
 
@@ -109,9 +115,13 @@
             current = file
           })
       }
-      if (subs) subs.destroy()
-      subs = new Subtitles(video, files, current, handleHeaders)
+      initSubs()
     }
+  }
+
+  function initSubs() {
+    if (subs) subs.destroy()
+    subs = new Subtitles(video, files, current, handleHeaders)
   }
 
   function handleMouseDown({ target }) {
