@@ -1,12 +1,11 @@
 const cacheList = {
   shared: {
-    version: '1.0.2',
+    version: '1.0.3',
     resources: [
       'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/css/halfmoon-variables.min.css',
       'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/js/halfmoon.min.js',
       'https://fonts.googleapis.com/icon?family=Material+Icons',
-      'https://fonts.gstatic.com/s/materialicons/v103/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2',
-      'https://fonts.gstatic.com/s/roboto/v20/KFOlCnqEu92Fr1MmEU9fBBc4.woff2'
+      'https://fonts.gstatic.com/s/materialicons/v103/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2'
     ]
   },
   'img-viewer': {
@@ -36,11 +35,12 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '1.3.2',
+    version: '1.3.3',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       '../video-player/public/lib/subtitles-octopus-worker.js',
       '../video-player/public/lib/subtitles-octopus-worker.wasm',
+      '../video-player/public/lib/Roboto.ttf',
       '../video-player/public/server-worker.js',
       '../video-player/public/build/bundle.js',
       '../video-player/public/build/bundle.js.map',

@@ -37,7 +37,7 @@ export default class Subtitles {
             cb(this.stream)
           }
         }
-        lastStream.destroy()
+        lastStream?.destroy()
       })
       // if (this.selected instanceof File) this.parseSubtitles(this.selected, true) // only parse local files
     }
@@ -54,22 +54,21 @@ export default class Subtitles {
       this.parsed = true
       this.current = 0
       for (const [index, file] of subtitleFiles.entries()) {
-        const isAss = file.name.endsWith('.ass') || file.name.endsWith('.ssa')
-        const extension = /\.(\w+)$/
+        const type = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase()
         const name = file.name.replace(targetFile.name, '') === file.name
-          ? file.name.replace(targetFile.name.replace(extension, ''), '').slice(0, -4).replace(/[,._-]/g, ' ').trim()
+          ? file.name.replace(targetFile.name.replace(type, ''), '').slice(0, -4).replace(/[,._-]/g, ' ').trim()
           : file.name.replace(targetFile.name, '').slice(0, -4).replace(/[,._-]/g, ' ').trim()
         const header = {
           header: defaultHeader,
           language: name,
           number: index,
-          type: file.name.match(extension)[1]
+          type
         }
         this.headers.push(header)
         this.onHeader()
         this.tracks[index] = []
-        this.constructor.convertSubFile(file, isAss, subtitles => { // why does .constructor work ;-;
-          if (isAss) {
+        this.constructor.convertSubFile(file, type, subtitles => { // why does .constructor work ;-;
+          if (type === 'ass') {
             this.headers[index].header = subtitles
           } else {
             this.tracks[index] = subtitles
@@ -90,7 +89,7 @@ export default class Subtitles {
         subContent: this.headers[this.current].header.slice(0, -1),
         renderMode: 'offscreen',
         fonts: this.fonts,
-        fallbackFont: 'https://fonts.gstatic.com/s/roboto/v20/KFOlCnqEu92Fr1MmEU9fBBc4.woff2',
+        fallbackFont: 'Roboto.ttf',
         workerUrl: 'lib/subtitles-octopus-worker.js',
         onReady: () => { // weird hack for laggy subtitles, this is some issue in SO
           if (!this.video.paused) {
@@ -106,49 +105,73 @@ export default class Subtitles {
     }
   }
 
-  static convertSubFile (file, isAss, callback) {
-    const regex = /(?:\d+\n)?(\S{9,12})\s?-->\s?(\S{9,12})(.*)\n([\s\S]*)$/i
-    file.text().then(text => {
-      const subtitles = isAss ? text : []
-      if (isAss) {
-        callback(subtitles)
-      } else {
-        const replaced = text.replace(/\r/g, '')
-        for (const split of replaced.split('\n\n')) {
-          const match = split.match(regex)
-          if (match) {
-            match[1] = match[1].match(/.*[.,]\d{2}/)[0]
-            match[2] = match[2].match(/.*[.,]\d{2}/)[0]
-            if (match[1].length === 9) {
-              match[1] = '0:' + match[1]
-            } else {
-              if (match[1][0] === '0') {
-                match[1] = match[1].substring(1)
-              }
+  static convertSubFile (file, type, callback) {
+    const srtRx = /(?:\d+\n)?(\S{9,12})\s?-->\s?(\S{9,12})(.*)\n([\s\S]*)$/i
+    const srt = text => {
+      const subtitles = []
+      const replaced = text.replace(/\r/g, '')
+      for (const split of replaced.split('\n\n')) {
+        const match = split.match(srtRx)
+        if (match) {
+          // timestamps
+          match[1] = match[1].match(/.*[.,]\d{2}/)[0]
+          match[2] = match[2].match(/.*[.,]\d{2}/)[0]
+          if (match[1].length === 9) {
+            match[1] = '0:' + match[1]
+          } else {
+            if (match[1][0] === '0') {
+              match[1] = match[1].substring(1)
             }
-            match[1].replace(',', '.')
-            if (match[2].length === 9) {
-              match[2] = '0:' + match[2]
-            } else {
-              if (match[2][0] === '0') {
-                match[2] = match[2].substring(1)
-              }
-            }
-            match[2].replace(',', '.')
-            const matches = match[4].match(/<[^>]+>/g) // create array of all tags
-            if (matches) {
-              matches.forEach(matched => {
-                if (/<\//.test(matched)) { // check if its a closing tag
-                  match[4] = match[4].replace(matched, matched.replace('</', '{\\').replace('>', '0}'))
-                } else {
-                  match[4] = match[4].replace(matched, matched.replace('<', '{\\').replace('>', '1}'))
-                }
-              })
-            }
-            subtitles.push('Dialogue: 0,' + match[1].replace(',', '.') + ',' + match[2].replace(',', '.') + ',Default,,0,0,0,,' + match[4])
           }
+          match[1].replace(',', '.')
+          if (match[2].length === 9) {
+            match[2] = '0:' + match[2]
+          } else {
+            if (match[2][0] === '0') {
+              match[2] = match[2].substring(1)
+            }
+          }
+          match[2].replace(',', '.')
+          // create array of all tags
+          const matches = match[4].match(/<[^>]+>/g)
+          if (matches) {
+            matches.forEach(matched => {
+              if (/<\//.test(matched)) { // check if its a closing tag
+                match[4] = match[4].replace(matched, matched.replace('</', '{\\').replace('>', '0}'))
+              } else {
+                match[4] = match[4].replace(matched, matched.replace('<', '{\\').replace('>', '1}'))
+              }
+            })
+          }
+          subtitles.push('Dialogue: 0,' + match[1].replace(',', '.') + ',' + match[2].replace(',', '.') + ',Default,,0,0,0,,' + match[4])
         }
+      }
+      callback(subtitles)
+    }
+    const subRx = /[{[](\d+)[}\]][{[](\d+)[}\]](.+)/i
+    const sub = text => {
+      const subtitles = []
+      const replaced = text.replace(/\r/g, '')
+      let frames = 1000 / Number(replaced.match(subRx)[3])
+      if (!frames || isNaN(frames)) frames = 41.708
+      for (const split of replaced.split('\n')) {
+        const match = split.match(subRx)
+        if (match) subtitles.push('Dialogue: 0,' + toTS((match[1] * frames) / 1000, true) + ',' + toTS((match[2] * frames) / 1000, true) + ',Default,,0,0,0,,' + match[3].replace('|', '\n'))
+      }
+      callback(subtitles)
+    }
+    file.text().then(text => {
+      const subtitles = type === 'ass' ? text : []
+      if (type === 'ass') {
         callback(subtitles)
+      } else if (type === 'srt' || type === 'vtt') {
+        srt(text)
+      } else if (type === 'sub') {
+        sub(text)
+      } else {
+        // subbers have a tendency to not set the extensions properly
+        if (srtRx.test(text)) srt(text)
+        if (subRx.test(text)) sub(text)
       }
     })
   }

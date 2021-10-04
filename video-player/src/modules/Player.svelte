@@ -66,7 +66,7 @@
   function updateFiles(files) {
     if (files && files.length) {
       videos = files.filter(file => videoRx.test(file.name))
-      if (videos) {
+      if (videos?.length) {
         if (!current) {
           handleCurrent(videos[0])
         } else {

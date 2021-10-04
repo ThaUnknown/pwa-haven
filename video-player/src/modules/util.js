@@ -12,7 +12,7 @@ export function toTS (sec, full) {
 
 export const videoRx = /\.(3gp|3gpp|3g2|ts|m2ts|mp4|m4p|mp4v|mpg4|qt|mov|omg|ogv|webm|mkv|mk3d|mks)$/i
 export const videoExtensions = ['.3g2', '.3gp', '.asf', '.avi', '.dv', '.flv', '.gxf', '.m2ts', '.m4a', '.m4b', '.m4p', '.m4r', '.m4v', '.mkv', '.mov', '.mp4', '.mpd', '.mpeg', '.mpg', '.mxf', '.nut', '.ogm', '.ogv', '.swf', '.ts', '.vob', '.webm', '.wmv', '.wtv']
-export const subtitleExtensions = ['.srt', '.vtt', '.ass', '.ssa']
+export const subtitleExtensions = ['.srt', '.vtt', '.ass', '.ssa', '.sub', '.txt']
 
 export function requestTimeout (callback, delay) {
   const startedAt = Date.now()

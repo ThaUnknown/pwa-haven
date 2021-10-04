@@ -23,19 +23,22 @@
         return item.getAsFile()
       }
       if (item.type === 'text/plain') {
-        return new Promise(resolve =>
-          item.getAsString(url => {
-            if (videoRx.test(url)) {
-              const name = url.substring(Math.max(url.lastIndexOf('\\') + 2, url.lastIndexOf('/') + 1))
-              resolve({
-                name,
-                url,
-                type: 'video/'
-              })
-            }
-            resolve()
+        if (item.kind === 'string') {
+          return new Promise(resolve => {
+            item.getAsString(url => {
+              if (videoRx.test(url)) {
+                const name = url.substring(Math.max(url.lastIndexOf('\\') + 2, url.lastIndexOf('/') + 1))
+                resolve({
+                  name,
+                  url,
+                  type: 'video/'
+                })
+              }
+            })
           })
-        )
+        } else if (item.kind === 'file') {
+          return item.getAsFile()
+        }
       }
       if (item.type === 'text/html') {
         return new Promise(resolve =>
@@ -65,6 +68,7 @@
       return
     })
     files = files.concat((await Promise.all(promises)).flat().filter(i => i))
+    console.log(files)
   }
 
   if ('launchQueue' in window) {
@@ -81,7 +85,6 @@
           }) === index
         )
       })
-      console.log(files)
     })
   }
   function handlePopup() {
