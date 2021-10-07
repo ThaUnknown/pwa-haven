@@ -14,7 +14,7 @@
   export let files = []
   $: updateFiles(files)
   $: progress = currentTime / duration
-  $: targetTime = currentTime
+  $: targetTime = (!paused && currentTime) || targetTime
   let current = null
   $: setSource(current)
   let songs = []
