@@ -17,7 +17,6 @@
   let current = null
   let subs = null
   let duration = 0.1
-  let currentTime = 0
   let paused = true
   let muted = false
   let wasPaused = true
@@ -33,8 +32,6 @@
   let presentationConnection = null
   let canCast = false
   let isFullscreen = false
-  $: progress = currentTime / duration
-  $: targetTime = currentTime
   let volume = localStorage.getItem('volume') || 1
   $: localStorage.setItem('volume', volume)
   onMount(() => {
@@ -124,6 +121,15 @@
     subs = new Subtitles(video, files, current, handleHeaders)
   }
 
+  let subDelay = 0
+  $: updateDelay(subDelay)
+  function updateDelay(delay) {
+    if (subs?.renderer) subs.renderer.timeOffset = delay
+  }
+
+  let currentTime = 0
+  $: progress = currentTime / duration
+  $: targetTime = (!paused && currentTime) || targetTime
   function handleMouseDown({ target }) {
     wasPaused = paused
     paused = true
@@ -509,7 +515,7 @@
         <img class="ctrl" data-elapsed="00:00" data-name="thumbnail" alt="thumbnail" src={thumbnail} />
       </div>
     </div>
-    {#if subHeaders && subHeaders.length}
+    {#if subHeaders?.length}
       <div class="subtitles dropdown dropup with-arrow">
         <span class="material-icons ctrl" title="Subtitles" id="bcap" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-name="captionsButton">
           subtitles
@@ -524,6 +530,7 @@
               </label>
             {/if}
           {/each}
+          <input type="number" step="0.1" bind:value={subDelay} class="form-control text-right form-control-sm" />
         </div>
       </div>
     {/if}
@@ -840,5 +847,13 @@
     .bottom .ctrl[data-name='toggleFullscreen'] {
       display: none;
     }
+  }
+
+  ::-webkit-inner-spin-button {
+    opacity: 1;
+    margin-left: 0.4rem;
+    margin-right: -0.5rem;
+    filter: invert(0.84);
+    padding-top: 2rem;
   }
 </style>
