@@ -65,11 +65,11 @@
   function handleZoom(e) {
     console.log(e)
     const diff = e.deltaY * -0.01
-    if (diff === -1) {
+    if (diff > 0) {
       if (!(scale < -4)) scale -= 0.5
       old.x /= 1.5
       old.y /= 1.5
-    } else if (diff === 1 && !(scale > 11)) {
+    } else if (diff < 0 && !(scale > 11)) {
       scale += 0.5
       old.x *= 1.5
       old.y *= 1.5
