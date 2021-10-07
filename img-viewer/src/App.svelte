@@ -63,6 +63,7 @@
 
   // zooming
   function handleZoom(e) {
+    console.log(e)
     const diff = e.deltaY * -0.01
     if (diff === -1) {
       if (!(scale < -4)) scale -= 0.5
@@ -158,6 +159,9 @@
   on:paste|preventDefault={handlePaste} />
 
 <style>
+  :global(body) {
+    position: unset !important;
+  }
   img {
     object-fit: contain;
     --top: 0;

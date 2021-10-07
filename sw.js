@@ -9,7 +9,7 @@ const cacheList = {
     ]
   },
   'img-viewer': {
-    version: '1.1.2',
+    version: '1.1.3',
     resources: [
       '../img-viewer/public/build/bundle.js',
       '../img-viewer/public/build/bundle.js.map',
