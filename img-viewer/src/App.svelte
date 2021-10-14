@@ -63,7 +63,6 @@
 
   // zooming
   function handleZoom(e) {
-    console.log(e)
     const diff = e.deltaY * -0.01
     if (diff < 0) {
       if (!(scale < -4)) scale -= 0.5
