@@ -9,7 +9,7 @@ const cacheList = {
     ]
   },
   'img-viewer': {
-    version: '1.1.5',
+    version: '1.1.6',
     resources: [
       '../img-viewer/public/build/bundle.js',
       '../img-viewer/public/build/bundle.js.map',
@@ -35,7 +35,7 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '1.4.0',
+    version: '1.4.1',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       '../video-player/public/lib/subtitles-octopus-worker.js',

@@ -17,10 +17,10 @@ export default class SubtitlesOctopus {
     // choose best render mode based on browser support
     this.renderMode = options.renderMode || 'offscreen'
     if (this.renderMode !== 'blend' && this.renderMode !== 'normal') {
-      if (typeof createImageBitmap === 'undefined') {
+      if (typeof OffscreenCanvas === 'undefined') {
+        this.renderMode = 'fast'
+      } else if (typeof createImageBitmap === 'undefined') {
         this.renderMode = 'normal'
-      } else if (typeof OffscreenCanvas !== 'undefined') {
-        this.renderMode = 'offscreen'
       }
     }
 
