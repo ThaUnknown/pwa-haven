@@ -1,3 +1,4 @@
+/* eslint-env serviceworker */
 const cacheList = {
   shared: {
     version: '1.0.3',
@@ -53,6 +54,18 @@ const cacheList = {
       '../video-player/public/site.webmanifest',
       '../video-player/public/'
     ]
+  },
+  'torrent-client': {
+    version: '1.0.0',
+    resources: [
+      '../torrent-client/public/build/bundle.js',
+      '../torrent-client/public/build/bundle.js.map',
+      '../torrent-client/public/build/bundle.css',
+      '../torrent-client/public/128.png',
+      '../torrent-client/public/512.png',
+      '../torrent-client/public/site.webmanifest',
+      '../torrent-client/public/'
+    ]
   }
 }
 
@@ -78,6 +91,7 @@ self.addEventListener('activate', event => {
         return null
       }))
     })
+
   )
   self.clients.claim()
 })

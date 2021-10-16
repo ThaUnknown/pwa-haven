@@ -1,0 +1,47 @@
+{
+  "name": "Torrent Client",
+  "short_name": "Torrents",
+  "start_url": ".",
+  "display": "fullscreen",
+  "lang": "en-US",
+  "orientation": "landscape",
+  "background_color": "#191c20",
+  "theme_color": "#191c20",
+  "scope": "/torrent-client/public/",
+  "description": "Simple and Fast Torrent Client",
+  "icons": [
+    {
+      "src": "./128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "./512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "intent_filters": {
+    "scope_url_scheme": "https",
+    "scope_url_host": "haven.pages.dev/torrent-client/public/",
+    "scope_url_path": "/"
+  },
+  "capture_links": "existing-client-navigate",
+  "launch_handler": {
+    "route_to": "existing-client",
+    "navigate_existing_client": "always"
+  },
+  "url_handlers": [
+    {
+      "origin": "https://haven.pages.dev/torrent-client/public/"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/torrent-client/public/",
+      "accept": {
+        "application/x-bittorrent": ".torrent"
+      }
+    }
+  ]
+}

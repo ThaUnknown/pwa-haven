@@ -1,0 +1,117 @@
+<script>
+  import InstallPrompt from './components/InstallPrompt.svelte'
+  import Sidebar from './components/sidebar/Sidebar.svelte'
+  import TorrentList from './components/torrentlist/TorrentList.svelte'
+  import TorrentInfo from './components/TorrentInfo.svelte'
+  import AddTorrent from './components/AddTorrent.svelte'
+  import Client from './modules/Client.svelte'
+
+  let name = ''
+  let files = []
+
+  navigator.serviceWorker.register('/sw.js')
+  // loading files
+  function handleDrop({ dataTransfer }) {
+    handleItems([...dataTransfer.items])
+  }
+
+  function handlePaste({ clipboardData }) {
+    handleItems([...clipboardData.items])
+  }
+
+  async function handleItems(items) {
+    const promises = items.map(item => {
+      if (item.kind === 'file') {
+        return item.getAsFile()
+      }
+      if (item.type === 'text/plain') {
+        if (item.kind === 'string') {
+          return new Promise(resolve => {
+            item.getAsString(url => {
+              if (/(^magnet:)|(^[A-F\d]{8,40}$)|(.*\.torrent$)/i.test(url)) {
+                resolve(url)
+              } else {
+                resolve()
+              }
+            })
+          })
+        } else if (item.kind === 'file') {
+          return item.getAsFile()
+        }
+      }
+      if (!item.type) {
+        let entry = item.webkitGetAsEntry()
+        if (entry?.isDirectory) {
+          return new Promise(resolve => {
+            folder.createReader().readEntries(async entries => {
+              const filePromises = entries.filter(entry => entry.isFile).map(file => new Promise(resolve => file.file(resolve)))
+              resolve(await Promise.all(filePromises))
+            })
+          })
+        } else if (entry && !entry.isDirectory) {
+          return new Promise(resolve => entry.file(resolve))
+        }
+        return
+      }
+      return
+    })
+    handleTorrent((await Promise.all(promises)).flat().filter(i => i))
+    prompt.classList.add('show')
+  }
+
+  if ('launchQueue' in window) {
+    launchQueue.setConsumer(async launchParams => {
+      if (!launchParams.files.length) {
+        return
+      }
+      handleTorrent([await launchParams.files[0].getFile()])
+      prompt.classList.add('show')
+    })
+  }
+
+  let current = 'All'
+  let torrents = []
+  let selected = null
+  let addTorrent
+  let client
+  let updateTorrents
+  let handleTorrent
+  let removeTorrent
+  let prompt
+</script>
+
+<div class="sticky-alerts d-flex flex-column-reverse">
+  <InstallPrompt />
+</div>
+<Client bind:addTorrent bind:client bind:current bind:torrents bind:updateTorrents bind:removeTorrent />
+<div class="modal" id="modal-add" tabIndex="-1" role="dialog" data-overlay-dismissal-disabled="true" bind:this={prompt}>
+  <AddTorrent {addTorrent} {removeTorrent} bind:handleTorrent />
+</div>
+<div class="page-wrapper with-sidebar">
+  <Sidebar bind:current />
+  <div class="content-wrapper d-flex flex-column justify-content-between">
+    <div class="overflow-x-auto overflow-y-scroll flex-grow-1">
+      <TorrentList {torrents} bind:selected {updateTorrents} {removeTorrent} />
+    </div>
+    <TorrentInfo bind:selected />
+  </div>
+</div>
+
+<svelte:head>
+  <title>{name || 'Torrent Client'}</title>
+</svelte:head>
+
+<svelte:window on:drop|preventDefault={handleDrop} on:dragover|preventDefault on:paste={handlePaste} />
+
+<style>
+  * {
+    user-select: none;
+  }
+  .sticky-alerts {
+    --sticky-alerts-top: auto;
+    bottom: 1rem;
+  }
+  :global(.pointer) {
+    cursor: pointer;
+  }
+</style>
