@@ -55,6 +55,15 @@
             </div>
           </div>
         </a>
+
+        <a href="torrent-client/public" class="card w-250 mw-full m-0 p-0 d-flex mr-10 mb-10" target="_blank" rel="noopener">
+          <div class="flex-grow-1 overflow-y-hidden d-flex align-items-center position-relative h-120">
+            <div class="p-20 w-full m-auto">
+              <p class="m-0 font-weight-medium text-dark-lm text-light-dm text-reset">Torrent Client</p>
+              <p class="font-size-12 mt-0 mb-0">Simple Torrent Client</p>
+            </div>
+          </div>
+        </a>
       </div>
     </div>
   </div>
