@@ -161,11 +161,11 @@
   }
   function seek(time) {
     if (time === 85 && currentTime < 10) {
-      currentTime = 90
+      targetTime = currentTime = 90
     } else if (time === 85 && duration - currentTime < 90) {
-      currentTime = duration
+      targetTime = currentTime = duration
     } else {
-      currentTime += time
+      targetTime = currentTime += time
     }
   }
   function forward() {

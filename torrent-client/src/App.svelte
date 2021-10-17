@@ -6,9 +6,6 @@
   import AddTorrent from './components/AddTorrent.svelte'
   import Client from './modules/Client.svelte'
 
-  let name = ''
-  let files = []
-
   navigator.serviceWorker.register('/sw.js')
   // loading files
   function handleDrop({ dataTransfer }) {
@@ -98,7 +95,7 @@
 </div>
 
 <svelte:head>
-  <title>{name || 'Torrent Client'}</title>
+  <title>'Torrent Client'</title>
 </svelte:head>
 
 <svelte:window on:drop|preventDefault={handleDrop} on:dragover|preventDefault on:paste={handlePaste} />
