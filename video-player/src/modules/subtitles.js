@@ -39,7 +39,7 @@ export default class Subtitles {
         }
         lastStream?.destroy()
       })
-      // if (this.selected instanceof File) this.parseSubtitles(this.selected, true) // only parse local files
+      if (this.selected instanceof File) this.parseSubtitles(this.selected, true) // only parse local files
     }
     this.findSubtitleFiles(this.selected)
   }
