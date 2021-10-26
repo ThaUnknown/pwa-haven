@@ -457,8 +457,8 @@
     on:loadedmetadata={resolveFps} />
   <!-- svelte-ignore a11y-missing-content -->
   <a href="#player" class="miniplayer" alt="miniplayer" />
-  <div class="top" />
-  <div class="middle">
+  <div class="top z-50" />
+  <div class="middle z-50">
     <div class="ctrl" data-name="ppToggle" on:click={playPause} on:dblclick={toggleFullscreen} />
     {#if videos?.length > 1}
       <span class="material-icons ctrl" data-name="playLast" on:click={playLast}> skip_previous </span>
@@ -471,7 +471,7 @@
     {/if}
     <div data-name="bufferingDisplay" />
   </div>
-  <div class="bottom">
+  <div class="bottom z-50">
     <span class="material-icons ctrl" title="Play/Pause [Space]" data-name="playPause" on:click={playPause}> {paused ? 'play_arrow' : 'pause'} </span>
     {#if videos?.length > 1}
       <span class="material-icons ctrl" title="Next [N]" data-name="playNext" on:click={playNext}> skip_next </span>
