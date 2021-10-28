@@ -61,5 +61,5 @@
     if (torrent.infoHash) set(torrent.infoHash, torrent.torrentFile, idbStore)
   }
 
-  window.addEventListener('beforeunload', client.destroy)
+  window.addEventListener('beforeunload', () => client.destroy())
 </script>

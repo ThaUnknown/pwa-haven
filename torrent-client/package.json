@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "hybrid-chunk-store": "github:ThaUnknown/hybrid-chunk-store",
-    "idb-keyval": "^6.0.2",
+    "idb-keyval": "^6.0.3",
     "webtorrent": "^1.5.6"
   }
 }

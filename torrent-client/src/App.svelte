@@ -4,6 +4,7 @@
   import TorrentList from './components/torrentlist/TorrentList.svelte'
   import TorrentInfo from './components/TorrentInfo.svelte'
   import AddTorrent from './components/AddTorrent.svelte'
+  import Settings from './components/Settings.svelte'
   import Client from './modules/Client.svelte'
 
   navigator.serviceWorker.register('/sw.js')
@@ -87,15 +88,19 @@
 <div class="page-wrapper with-sidebar">
   <Sidebar bind:current />
   <div class="content-wrapper d-flex flex-column justify-content-between">
-    <div class="overflow-x-auto overflow-y-scroll flex-grow-1">
-      <TorrentList {torrents} bind:selected {updateTorrents} {removeTorrent} />
-    </div>
-    <TorrentInfo bind:selected />
+    {#if current !== 'Settings'}
+      <div class="overflow-x-auto overflow-y-scroll flex-grow-1">
+        <TorrentList {torrents} bind:selected {updateTorrents} {removeTorrent} />
+      </div>
+      <TorrentInfo bind:selected />
+    {:else}
+      <Settings />
+    {/if}
   </div>
 </div>
 
 <svelte:head>
-  <title>'Torrent Client'</title>
+  <title>Torrent Client</title>
 </svelte:head>
 
 <svelte:window on:drop|preventDefault={handleDrop} on:dragover|preventDefault on:paste={handlePaste} />
@@ -110,5 +115,19 @@
   }
   :global(.pointer) {
     cursor: pointer;
+  }
+  :root {
+    --tooltip-width: 17rem;
+  }
+  :global(::-webkit-inner-spin-button) {
+    opacity: 1;
+    margin-left: 0.4rem;
+    margin-right: -0.5rem;
+    filter: invert(0.84);
+    padding-top: 2rem;
+  }
+
+  :global(.bg-dark::-webkit-inner-spin-button) {
+    filter: invert(0.942);
   }
 </style>

@@ -35,7 +35,47 @@
   let volume = localStorage.getItem('volume') || 1
   $: localStorage.setItem('volume', volume)
   onMount(() => {
-    video.fps = 23.976
+    if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+      video.fps = new Promise(resolve => {
+        video.addEventListener('loadeddata', () => {
+          video.requestVideoFrameCallback(handleFrames)
+        })
+        let lastmeta = null
+        let waspaused = false
+        let count = 0
+
+        function handleFrames(now, metadata) {
+          if (count) { // resolve on 2nd frame, 1st frame might be a cut-off
+            if (lastmeta) {
+              const msbf = (metadata.mediaTime - lastmeta.mediaTime) / (metadata.presentedFrames - lastmeta.presentedFrames)
+              const rawFPS = (1 / msbf).toFixed(3)
+              if (rawFPS < 25 && rawFPS > 22) { // this is accurate for mp4, mkv is a few ms off
+                  resolve(23.976)
+                } else if (rawFPS < 31 && rawFPS > 28) {
+                  resolve(29.97)
+                } else if (rawFPS < 62 && rawFPS > 58) {
+                  resolve(59.94)
+                } else {
+                  resolve(rawFPS) // smth went VERY wrong
+                }
+              if (waspaused) video.pause()
+            } else {
+              lastmeta = metadata
+              video.requestVideoFrameCallback(handleFrames)
+            }
+          } else {
+            count++
+            if (video.paused) {
+              waspaused = true
+              video.play()
+            }
+            video.requestVideoFrameCallback(handleFrames)
+          }
+        }
+      })
+    } else {
+      video.fps = 23.976
+    }
   })
 
   if ('PresentationRequest' in window) {
@@ -272,18 +312,33 @@
     const context = canvas.getContext('2d', { alpha: false })
     const fps = await video.fps
     let loop = null
+    let destroy = null
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
 
-    const renderFrame = async () => {
-      context.drawImage(video, 0, 0)
-      if (!noSubs) context.drawImage(subs.renderer?.canvas, 0, 0, canvas.width, canvas.height)
-      loop = requestTimeout(renderFrame, 500 / fps) // request x2 fps for smoothness
-    }
-    loop = requestAnimationFrame(renderFrame)
-    const destroy = () => {
-      cancelTimeout(loop)
-      canvas.remove()
+    if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+      const renderFrame = async () => {
+        context.drawImage(video, 0, 0)
+        if (!noSubs) context.drawImage(subs.renderer?.canvas, 0, 0, canvas.width, canvas.height)
+        loop = video.requestVideoFrameCallback(renderFrame)
+      }
+      loop = video.requestVideoFrameCallback(renderFrame)
+      destroy = () => {
+        video.cancelVideoFrameCallback(loop)
+        canvas.remove()
+      }
+    } else {
+      // for the firefox idiots
+      const renderFrame = async () => {
+        context.drawImage(video, 0, 0)
+        if (!noSubs) context.drawImage(subs.renderer?.canvas, 0, 0, canvas.width, canvas.height)
+        loop = requestTimeout(renderFrame, 500 / fps) // request x2 fps for smoothness
+      }
+      loop = requestAnimationFrame(renderFrame)
+      destroy = () => {
+        cancelTimeout(loop)
+        canvas.remove()
+      }
     }
     return { stream: canvas.captureStream(), destroy }
   }
