@@ -112,8 +112,6 @@
       if (videos?.length) {
         if (!current) {
           handleCurrent(videos[0])
-        } else {
-          initSubs()
         }
       }
     }
@@ -316,7 +314,6 @@
   async function getBurnIn(noSubs) {
     const canvas = document.createElement('canvas')
     const context = canvas.getContext('2d', { alpha: false })
-    const fps = await video.fps
     let loop = null
     let destroy = null
     canvas.width = video.videoWidth
@@ -335,6 +332,7 @@
       }
     } else {
       // for the firefox idiots
+      const fps = await video.fps
       const renderFrame = async () => {
         context.drawImage(video, 0, 0)
         if (!noSubs) context.drawImage(subs.renderer?.canvas, 0, 0, canvas.width, canvas.height)
@@ -350,7 +348,7 @@
   }
 
   function initCast(event) {
-    let peer = new Peer({ polite: true })
+    const peer = new Peer({ polite: true })
 
     presentationConnection = event.connection
     presentationConnection.addEventListener('terminate', () => {
@@ -368,7 +366,6 @@
     })
 
     peer.dc.onopen = async () => {
-      await video.fps
       if (peer && presentationConnection) {
         pip = true
         const tracks = []
