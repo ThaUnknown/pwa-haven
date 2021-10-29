@@ -1,11 +1,11 @@
 <script>
   import { Tabs, TabLabel, Tab } from '../modules/Tabination.js'
   import { fastPrettyBytes } from '../modules/util.js'
-  export let addTorrent = () => {}
-  export let removeTorrent = () => {}
+  import { addTorrent, removeTorrent } from '../modules/client.js'
   let value = ''
   let torrent = null
   let files = []
+  let fileInput
   const defaultData = {
     announce: ['wss://tracker.openwebtorrent.com', 'wss://spacetradersapi-chatbox.herokuapp.com:443/announce', 'wss://peertube.cpy.re:443/tracker/socket'],
     comment: 'Created With PWA Haven',
@@ -19,6 +19,8 @@
     torrent = null
     value = ''
     createTorrent = Object.assign({}, defaultData)
+    fileInput.files = null
+    fileInput.value = null
   }
   function handleFileInput({ target }) {
     files = [...target.files]
@@ -31,7 +33,7 @@
   let peers = []
   export function handleTorrent(fileList, skip) {
     if (!skip) files = fileList
-    const initTorrent = () => {
+    const initTorrent = async () => {
       let id = null
       if (fileList.length === 1) {
         if (typeof fileList[0] === 'string' && torrentRx.test(fileList[0])) {
@@ -41,7 +43,7 @@
         }
       }
       if (id) {
-        torrent = addTorrent(id)
+        torrent = await addTorrent(id)
         torrent.once('ready', () => {
           torrent.pause()
           files = torrent.files
@@ -101,7 +103,7 @@
       <div class="text-right mt-20">
         <div class="input-group">
           <div class="input-group-prepend">
-            <input type="file" class="d-none" id="torrent-file-input" on:input={handleFileInput} multiple />
+            <input type="file" class="d-none" id="torrent-file-input" bind:this={fileInput} on:input={handleFileInput} multiple />
             <label for="torrent-file-input" class="btn btn-primary">Select File</label>
           </div>
           <input type="text" class="form-control" placeholder="File, Magnet or InfoHash" {value} on:input={handleTextInput} />

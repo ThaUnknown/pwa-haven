@@ -1,11 +1,11 @@
 <script>
+  import { current } from '../../modules/client.js'
   export let value = ''
   export let icon = ''
-  export let current = null
   export let other = {}
-  $: selected = value === current
+  $: selected = value === $current
   function click() {
-    if (current) current = value
+    if ($current) $current = value
   }
 </script>
 

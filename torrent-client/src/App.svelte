@@ -5,7 +5,7 @@
   import TorrentInfo from './components/TorrentInfo.svelte'
   import AddTorrent from './components/AddTorrent.svelte'
   import Settings from './components/Settings.svelte'
-  import Client from './modules/Client.svelte'
+  import { current } from './modules/client.js'
 
   navigator.serviceWorker.register('/sw.js')
   // loading files
@@ -66,31 +66,23 @@
       prompt.classList.add('show')
     })
   }
-
-  let current = 'All'
-  let torrents = []
   let selected = null
-  let addTorrent
-  let client
-  let updateTorrents
   let handleTorrent
-  let removeTorrent
   let prompt
 </script>
 
 <div class="sticky-alerts d-flex flex-column-reverse">
   <InstallPrompt />
 </div>
-<Client bind:addTorrent bind:client bind:current bind:torrents bind:updateTorrents bind:removeTorrent />
 <div class="modal" id="modal-add" tabIndex="-1" role="dialog" data-overlay-dismissal-disabled="true" bind:this={prompt}>
-  <AddTorrent {addTorrent} {removeTorrent} bind:handleTorrent />
+  <AddTorrent bind:handleTorrent />
 </div>
 <div class="page-wrapper with-sidebar">
-  <Sidebar bind:current />
+  <Sidebar />
   <div class="content-wrapper d-flex flex-column justify-content-between">
-    {#if current !== 'Settings'}
+    {#if $current !== 'Settings'}
       <div class="overflow-x-auto overflow-y-scroll flex-grow-1">
-        <TorrentList {torrents} bind:selected {updateTorrents} {removeTorrent} />
+        <TorrentList bind:selected />
       </div>
       <TorrentInfo bind:selected />
     {:else}

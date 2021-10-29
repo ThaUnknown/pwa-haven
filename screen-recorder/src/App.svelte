@@ -1,6 +1,7 @@
 <script>
   import InstallPrompt from './modules/InstallPrompt.svelte'
-  import ysFixWebmDuration from 'fix-webm-duration'
+  // import ysFixWebmDuration from 'fix-webm-duration'
+  import { fixDuration } from './lib/durationfix.js'
 
   navigator.serviceWorker.register('/sw.js')
   let downloadLink
@@ -27,13 +28,12 @@
         track.stop()
       }
 
-      ysFixWebmDuration(blob.slice(0, 64), duration, file => {
-        console.log(file, duration)
-        const patched = new Blob([file, blob.slice(64)])
-        downloadLink.href = URL.createObjectURL(patched)
-        downloadLink.download = `${Date.now()}.mkv`
-        downloadLink.click()
-      })
+      const file = await fixDuration(blob.slice(0, 64), duration)
+      console.log(file, duration)
+      const patched = new Blob([file, blob.slice(64)])
+      downloadLink.href = URL.createObjectURL(patched)
+      downloadLink.download = `${Date.now()}.mkv`
+      downloadLink.click()
     }
 
     mediaRecorder.start(200) // here 200ms is interval of chunk collection

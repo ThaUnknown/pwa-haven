@@ -36,7 +36,7 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '1.4.5',
+    version: '1.4.6',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       '../video-player/public/lib/subtitles-octopus-worker.js',
@@ -56,7 +56,7 @@ const cacheList = {
     ]
   },
   'torrent-client': {
-    version: '1.0.0',
+    version: '1.0.1',
     resources: [
       '../torrent-client/public/build/bundle.js',
       '../torrent-client/public/build/bundle.js.map',
