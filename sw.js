@@ -66,6 +66,18 @@ const cacheList = {
       '../torrent-client/public/site.webmanifest',
       '../torrent-client/public/'
     ]
+  },
+  'screen-recorder': {
+    version: '1.0.0',
+    resources: [
+      '../screen-recorder/public/build/bundle.js',
+      '../screen-recorder/public/build/bundle.js.map',
+      '../screen-recorder/public/build/bundle.css',
+      '../screen-recorder/public/128.png',
+      '../screen-recorder/public/512.png',
+      '../screen-recorder/public/site.webmanifest',
+      '../screen-recorder/public/'
+    ]
   }
 }
 

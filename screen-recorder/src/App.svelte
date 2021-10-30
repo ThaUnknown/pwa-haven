@@ -1,73 +1,250 @@
 <script>
   import InstallPrompt from './modules/InstallPrompt.svelte'
-  // import ysFixWebmDuration from 'fix-webm-duration'
   import { fixDuration } from './lib/durationfix.js'
+  import { createStore, get, set } from 'idb-keyval'
 
   navigator.serviceWorker.register('/sw.js')
-  let downloadLink
+
+  const customStore = createStore('screen-recorder-settings', 'settings')
+  let settings = {
+    fps: 60,
+    folder: null,
+    vidrate: 25,
+    audrate: 128,
+    mic: true,
+    supression: true,
+    cancellation: true,
+    channels: 2,
+    samplesize: 24,
+    samplerate: 48,
+    codec: 'vp9',
+    container: 'mkv',
+    cursor: 'never'
+  }
+  let folderName = null
+
+  get('settings', customStore).then(obj => {
+    if (obj) {
+      settings = obj
+      if (obj.folder) folderName = obj.folder.name || 'none'
+    }
+  })
+
+  $: set('settings', settings, customStore)
+  async function pickFolder() {
+    const handle = await window.showDirectoryPicker()
+    await handle.requestPermission({ mode: 'readwrite' })
+    settings.folder = handle
+    folderName = handle.name || 'none'
+  }
+
   let startTime = null
-  let mediaRecorder
-  const handleRecord = function ({ stream, mimeType }) {
+  let mediaRecorder = null
+  let displayStream = null
+  let voiceStream = null
+  let audioContext = null
+  const handleRecord = async stream => {
     // to collect stream chunks
     let recordedChunks = []
     mediaRecorder = new MediaRecorder(stream, {
-      audioBitsPerSecond: 128000,
-      videoBitsPerSecond: 2500000,
-      mimeType: 'video/x-matroska'
+      audioBitsPerSecond: settings.audrate * 1000,
+      videoBitsPerSecond: settings.vidrate * 1000000,
+      mimeType: `video/${settings.container === 'mkv' ? 'x-matroska' : 'webm'};codecs=${settings.codec}`
     })
-
-    mediaRecorder.ondataavailable = function (e) {
-      if (e.data.size > 0) {
-        recordedChunks.push(e.data)
+    startTime = Date.now()
+    const fileHandle = await settings.folder?.getFileHandle(`${startTime}.${settings.container}`, { create: true })
+    console.log(fileHandle)
+    const fileStream = await fileHandle.createWritable()
+    mediaRecorder.ondataavailable = ({ data }) => {
+      if (data.size > 0) {
+        if (fileStream) {
+          fileStream.write(data)
+        } else {
+          recordedChunks.push(data)
+        }
       }
     }
-    mediaRecorder.onstop = async function () {
+    mediaRecorder.onstop = async () => {
       const duration = Date.now() - startTime
       const blob = new Blob(recordedChunks)
       for (const track of stream.getTracks()) {
         track.stop()
       }
-
-      const file = await fixDuration(blob.slice(0, 64), duration)
-      console.log(file, duration)
-      const patched = new Blob([file, blob.slice(64)])
-      downloadLink.href = URL.createObjectURL(patched)
-      downloadLink.download = `${Date.now()}.mkv`
-      downloadLink.click()
+      if (fileStream) {
+        await fileStream.close()
+        const file = await fileHandle.getFile()
+        const fixed = await fixDuration(file.slice(0, 64), duration)
+        const fixStream = await fileHandle.createWritable({ keepExistingData: true })
+        fixStream.write({ type: 'write', position: 0, data: fixed })
+        fixStream.close()
+      } else {
+        const file = await fixDuration(blob.slice(0, 64), duration)
+        const patched = new Blob([file, blob.slice(64)])
+        const downloadLink = document.createElement('a')
+        downloadLink.href = URL.createObjectURL(patched)
+        downloadLink.download = `${startTime}.${settings.container}`
+        downloadLink.click()
+      }
     }
 
-    mediaRecorder.start(200) // here 200ms is interval of chunk collection
-    startTime = Date.now()
+    mediaRecorder.start(200) // 200ms interval
   }
   async function record() {
-    if (mediaRecorder) return mediaRecorder.stop()
-    const mimeType = 'video/x-matroska'
-    const displayStream = await navigator.mediaDevices.getDisplayMedia({
-      video: { frameRate: 60, cursor: 'always' },
+    if ('showDirectoryPicker' in window && !settings.folder) await pickFolder()
+    if (settings.folder) settings.folder.requestPermission({ mode: 'readwrite' })
+    if (mediaRecorder) {
+      mediaRecorder.stop()
+      mediaRecorder = null
+      return
+    }
+    displayStream = await navigator.mediaDevices.getDisplayMedia({
+      video: { frameRate: settings.fps, cursor: settings.cursor },
       audio: {
-        sampleSize: 256,
-        channelCount: 2,
-        echoCancellation: false
+        echoCancellation: false,
+        noiseSuppression: false
       }
     })
-    displayStream.oninactive = () => {
-      voiceStream.getAudioTracks()[0].stop()
+    displayStream.getVideoTracks()[0].onended = () => {
+      for (const track of [...displayStream.getTracks(), ...voiceStream.getTracks()]) {
+        track.stop()
+      }
+      if (audioContext) audioContext.close()
+      mediaRecorder.stop()
+      mediaRecorder = null
     }
-    console.log(displayStream)
-    // voiceStream for recording voice with screen recording
-    const voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-    let tracks = [...displayStream.getTracks(), voiceStream.getAudioTracks()[0]]
-    const stream = new MediaStream(tracks)
-    handleRecord({ stream, mimeType })
+    let tracks = displayStream.getTracks()
+    if (settings.mic) {
+      audioContext = new AudioContext()
+      voiceStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: settings.cancellation,
+          noiseSuppression: settings.supression
+        },
+        video: false
+      })
+      const audio1 = audioContext.createMediaStreamSource(voiceStream)
+      const audio2 = audioContext.createMediaStreamSource(displayStream)
+      const dest = audioContext.createMediaStreamDestination()
+      audio1.connect(dest)
+      audio2.connect(dest)
+      tracks = [...displayStream.getVideoTracks(), ...dest.stream.getAudioTracks()]
+    }
+    handleRecord(new MediaStream(tracks))
   }
 </script>
 
 <div class="sticky-alerts d-flex flex-column-reverse">
   <InstallPrompt />
 </div>
-<div class="w-full h-full overflow-hidden position-relative dragarea">
-  <button class="btn" on:click={record} />
-  <a bind:this={downloadLink} />
+<div class="w-full h-full overflow-hidden position-relative dragarea d-flex align-items-center justify-content-center overflow-auto">
+  <div class="content flex-row flex-wrap mw-600">
+    {#if 'showDirectoryPicker' in window}
+      <div class="input-group mb-10 w-300" on:click={pickFolder}>
+        <div class="input-group-prepend">
+          <button class="btn btn-primary w-150" type="button">Choose Folder</button>
+        </div>
+        <input type="text" class="form-control pl-10" placeholder="Folder" value={folderName} />
+      </div>
+    {/if}
+    <div class="input-group mb-10 w-300">
+      <div class="input-group-prepend">
+        <span class="input-group-text w-150 justify-content-center">Cursor Display</span>
+      </div>
+      <select class="form-control" bind:value={settings.cursor}>
+        <option value="never">Never</option>
+        <option value="always">Always</option>
+        <option value="motion">Motion</option>
+      </select>
+    </div>
+    <div class="input-group mb-10 w-300">
+      <div class="input-group-prepend">
+        <span class="input-group-text w-150 justify-content-center">Video Container</span>
+      </div>
+      <select class="form-control" bind:value={settings.container}>
+        <option value="mkv">mkv</option>
+        <option value="webm">webm</option>
+      </select>
+    </div>
+    <div class="input-group mb-10 w-300">
+      <div class="input-group-prepend">
+        <span class="input-group-text w-150 justify-content-center">Video Codec</span>
+      </div>
+      <select class="form-control" bind:value={settings.codec}>
+        <option value="vp9">vp9</option>
+        <option value="vp8">vp8</option>
+        <option value="h264">h264</option>
+        <option value="avc1">avc1</option>
+      </select>
+    </div>
+    <div class="input-group w-300 mb-10">
+      <div class="input-group-prepend">
+        <span class="input-group-text w-150 justify-content-center">Video Framerate</span>
+      </div>
+      <input type="number" bind:value={settings.fps} min="0" max="120" class="form-control" />
+      <div class="input-group-append">
+        <span class="input-group-text w-50">FPS</span>
+      </div>
+    </div>
+    <div class="input-group w-300 mb-10">
+      <div class="input-group-prepend">
+        <span class="input-group-text w-150 justify-content-center">Video Bitrate</span>
+      </div>
+      <input type="number" bind:value={settings.vidrate} min="0" max="50" class="form-control" />
+      <div class="input-group-append">
+        <span class="input-group-text w-50">MB/s</span>
+      </div>
+    </div>
+    <div class="input-group w-300 mb-10">
+      <div class="input-group-prepend">
+        <span class="input-group-text w-150 justify-content-center">Audio Bitrate</span>
+      </div>
+      <input type="number" bind:value={settings.audrate} min="0" max="128" class="form-control" />
+      <div class="input-group-append">
+        <span class="input-group-text w-50">KB/s</span>
+      </div>
+    </div>
+    <div class="input-group w-300 mb-10">
+      <div class="input-group-prepend">
+        <span class="input-group-text w-150 justify-content-center">Sample Rate</span>
+      </div>
+      <input type="number" bind:value={settings.samplerate} min="22" max="192" class="form-control" />
+      <div class="input-group-append">
+        <span class="input-group-text w-50">KHz</span>
+      </div>
+    </div>
+    <div class="input-group w-300 mb-10">
+      <div class="input-group-prepend">
+        <span class="input-group-text w-150 justify-content-center">Sample Size</span>
+      </div>
+      <input type="number" bind:value={settings.samplesize} min="8" max="32" class="form-control" />
+      <div class="input-group-append">
+        <span class="input-group-text w-50">bits</span>
+      </div>
+    </div>
+    <div class="input-group w-300 mb-10">
+      <div class="input-group-prepend">
+        <span class="input-group-text w-150 justify-content-center">Audio Channels</span>
+      </div>
+      <input type="number" bind:value={settings.channels} min="1" max="8" class="form-control" />
+      <div class="input-group-append">
+        <span class="input-group-text">Channels</span>
+      </div>
+    </div>
+    <div class="custom-switch mb-10 font-size-16 w-300">
+      <input type="checkbox" id="compact" bind:checked={settings.mic} />
+      <label for="compact">Record Microphone</label>
+    </div>
+    <div class="custom-switch mb-10 font-size-16 w-300">
+      <input type="checkbox" id="mic" bind:checked={settings.supression} />
+      <label for="mic">Noise Suppression</label>
+    </div>
+    <div class="custom-switch mb-10 font-size-16 w-300">
+      <input type="checkbox" id="cancel" bind:checked={settings.cancellation} />
+      <label for="cancel">Echo Cancellation</label>
+    </div>
+
+    <button class="btn mt-10" on:click={record}>{mediaRecorder ? 'Stop Recording' : 'Start Recording'}</button>
+  </div>
 </div>
 
 <svelte:head>
@@ -75,8 +252,25 @@
 </svelte:head>
 
 <style>
+  * {
+    user-select: none;
+  }
+  :root {
+    --tooltip-width: 17rem;
+  }
   .sticky-alerts {
     --sticky-alerts-top: auto;
     bottom: 1rem;
+  }
+  :global(::-webkit-inner-spin-button) {
+    opacity: 1;
+    margin-left: 0.4rem;
+    margin-right: -0.5rem;
+    filter: invert(0.84);
+    padding-top: 2rem;
+  }
+
+  :global(.bg-dark::-webkit-inner-spin-button) {
+    filter: invert(0.942);
   }
 </style>
