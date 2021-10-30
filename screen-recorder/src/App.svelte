@@ -53,8 +53,7 @@
     })
     startTime = Date.now()
     const fileHandle = await settings.folder?.getFileHandle(`${startTime}.${settings.container}`, { create: true })
-    console.log(fileHandle)
-    const fileStream = await fileHandle.createWritable()
+    const fileStream = await fileHandle?.createWritable()
     mediaRecorder.ondataavailable = ({ data }) => {
       if (data.size > 0) {
         if (fileStream) {
@@ -73,13 +72,13 @@
       if (fileStream) {
         await fileStream.close()
         const file = await fileHandle.getFile()
-        const fixed = await fixDuration(file.slice(0, 64), duration)
+        const fixed = await fixDuration(file.slice(0, 78), duration)
         const fixStream = await fileHandle.createWritable({ keepExistingData: true })
         fixStream.write({ type: 'write', position: 0, data: fixed })
         fixStream.close()
       } else {
-        const file = await fixDuration(blob.slice(0, 64), duration)
-        const patched = new Blob([file, blob.slice(64)])
+        const file = await fixDuration(blob.slice(0, 78), duration)
+        const patched = new Blob([file, blob.slice(78)])
         const downloadLink = document.createElement('a')
         downloadLink.href = URL.createObjectURL(patched)
         downloadLink.download = `${startTime}.${settings.container}`
@@ -114,7 +113,6 @@
     }
     let tracks = displayStream.getTracks()
     if (settings.mic) {
-      audioContext = new AudioContext()
       voiceStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: settings.cancellation,
@@ -122,12 +120,16 @@
         },
         video: false
       })
-      const audio1 = audioContext.createMediaStreamSource(voiceStream)
-      const audio2 = audioContext.createMediaStreamSource(displayStream)
-      const dest = audioContext.createMediaStreamDestination()
-      audio1.connect(dest)
-      audio2.connect(dest)
-      tracks = [...displayStream.getVideoTracks(), ...dest.stream.getAudioTracks()]
+      let dest = null
+      if (displayStream.getAudioTracks().length) {
+        audioContext = new AudioContext()
+        const audio1 = audioContext.createMediaStreamSource(voiceStream)
+        const audio2 = audioContext.createMediaStreamSource(displayStream)
+        dest = audioContext.createMediaStreamDestination()
+        audio1.connect(dest)
+        audio2.connect(dest)
+      }
+      tracks = [...displayStream.getVideoTracks(), ...(dest?.stream || voiceStream).getAudioTracks()]
     }
     handleRecord(new MediaStream(tracks))
   }
