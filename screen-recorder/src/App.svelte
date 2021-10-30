@@ -64,18 +64,26 @@
       }
     }
     mediaRecorder.onstop = async () => {
+      console.log('stopped')
       const duration = Date.now() - startTime
       const blob = new Blob(recordedChunks)
-      for (const track of stream.getTracks()) {
-        track.stop()
-      }
+      cleanup()
       if (fileStream) {
         await fileStream.close()
         const file = await fileHandle.getFile()
         const fixed = await fixDuration(file.slice(0, 78), duration)
-        const fixStream = await fileHandle.createWritable({ keepExistingData: true })
-        fixStream.write({ type: 'write', position: 0, data: fixed })
-        fixStream.close()
+        if (fixed.size !== 78) {
+          const fixHandle = await settings.folder.getFileHandle(`${startTime + 1}.${settings.container}`, { create: true })
+          const fixStream = await fixHandle.createWritable()
+          await fixStream.write(fixed)
+          await fixStream.write(file.slice(78))
+          fixStream.close()
+          settings.folder.removeEntry(`${startTime}.${settings.container}`)
+        } else {
+          const fixStream = await fileHandle.createWritable({ keepExistingData: true })
+          await fixStream.write({ type: 'write', position: 0, data: fixed })
+          fixStream.close()
+        }
       } else {
         const file = await fixDuration(blob.slice(0, 78), duration)
         const patched = new Blob([file, blob.slice(78)])
@@ -88,17 +96,24 @@
 
     mediaRecorder.start(200) // 200ms interval
   }
+  function cleanup() {
+    for (const track of [...displayStream.getTracks(), ...voiceStream.getTracks()]) {
+      track.stop()
+    }
+    if (audioContext) {
+      audioContext.close()
+      audioContext = null
+    }
+    mediaRecorder?.stop()
+    mediaRecorder = null
+  }
   async function record() {
     if ('showDirectoryPicker' in window && !settings.folder) {
       await pickFolder()
     } else if (settings.folder) {
       settings.folder.requestPermission({ mode: 'readwrite' })
     }
-    if (mediaRecorder) {
-      mediaRecorder.stop()
-      mediaRecorder = null
-      return
-    }
+    if (mediaRecorder) return cleanup()
     displayStream = await navigator.mediaDevices.getDisplayMedia({
       video: { frameRate: settings.fps, cursor: settings.cursor },
       audio: {
@@ -106,14 +121,7 @@
         noiseSuppression: false
       }
     })
-    displayStream.getTracks()[0].onended = () => {
-      for (const track of [...displayStream.getTracks(), ...voiceStream.getTracks()]) {
-        track.stop()
-      }
-      if (audioContext) audioContext.close()
-      mediaRecorder.stop()
-      mediaRecorder = null
-    }
+    displayStream.getTracks()[0].onended = cleanup
     let tracks = displayStream.getTracks()
     if (settings.mic) {
       voiceStream = await navigator.mediaDevices.getUserMedia({
