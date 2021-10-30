@@ -54,9 +54,14 @@
     startTime = Date.now()
     const fileHandle = await settings.folder?.getFileHandle(`${startTime}.${settings.container}`, { create: true })
     const fileStream = await fileHandle?.createWritable()
+    let metadata = null
     mediaRecorder.ondataavailable = ({ data }) => {
       if (data.size > 0) {
         if (fileStream) {
+          if (!metadata) {
+            fileStream.seek(4)
+            metadata = data.slice(0, 78)
+          }
           fileStream.write(data)
         } else {
           recordedChunks.push(data)
@@ -69,21 +74,9 @@
       const blob = new Blob(recordedChunks)
       cleanup()
       if (fileStream) {
-        await fileStream.close()
-        const file = await fileHandle.getFile()
-        const fixed = await fixDuration(file.slice(0, 78), duration)
-        if (fixed.size !== 78) {
-          const fixHandle = await settings.folder.getFileHandle(`${startTime + 1}.${settings.container}`, { create: true })
-          const fixStream = await fixHandle.createWritable()
-          await fixStream.write(fixed)
-          await fixStream.write(file.slice(78))
-          fixStream.close()
-          settings.folder.removeEntry(`${startTime}.${settings.container}`)
-        } else {
-          const fixStream = await fileHandle.createWritable({ keepExistingData: true })
-          await fixStream.write({ type: 'write', position: 0, data: fixed })
-          fixStream.close()
-        }
+        const fixed = await fixDuration(metadata, duration)
+        await fileStream.write({ type: 'write', position: 0, data: fixed })
+        fileStream.close()
       } else {
         const file = await fixDuration(blob.slice(0, 78), duration)
         const patched = new Blob([file, blob.slice(78)])
@@ -96,8 +89,9 @@
 
     mediaRecorder.start(200) // 200ms interval
   }
+  let tracks = []
   function cleanup() {
-    for (const track of [...displayStream.getTracks(), ...voiceStream.getTracks()]) {
+    for (const track of tracks) {
       track.stop()
     }
     if (audioContext) {
@@ -121,8 +115,9 @@
         noiseSuppression: false
       }
     })
-    displayStream.getTracks()[0].onended = cleanup
-    let tracks = displayStream.getTracks()
+    const displayTracks = displayStream.getTracks()
+    tracks.push(...displayTracks)
+    displayTracks[0].onended = cleanup
     if (settings.mic) {
       voiceStream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -131,6 +126,7 @@
         },
         video: false
       })
+      tracks.push(...voiceStream.getTracks())
       let dest = null
       if (displayStream.getAudioTracks().length) {
         audioContext = new AudioContext()
@@ -140,9 +136,10 @@
         audio1.connect(dest)
         audio2.connect(dest)
       }
-      tracks = [...displayStream.getVideoTracks(), ...(dest?.stream || voiceStream).getAudioTracks()]
+      handleRecord(new MediaStream([...displayStream.getVideoTracks(), ...(dest?.stream || voiceStream).getAudioTracks()]))
+    } else {
+      handleRecord(new MediaStream(displayTracks))
     }
-    handleRecord(new MediaStream(tracks))
   }
 </script>
 
