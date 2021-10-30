@@ -89,8 +89,11 @@
     mediaRecorder.start(200) // 200ms interval
   }
   async function record() {
-    if ('showDirectoryPicker' in window && !settings.folder) await pickFolder()
-    if (settings.folder) settings.folder.requestPermission({ mode: 'readwrite' })
+    if ('showDirectoryPicker' in window && !settings.folder) {
+      await pickFolder()
+    } else if (settings.folder) {
+      settings.folder.requestPermission({ mode: 'readwrite' })
+    }
     if (mediaRecorder) {
       mediaRecorder.stop()
       mediaRecorder = null
@@ -103,7 +106,7 @@
         noiseSuppression: false
       }
     })
-    displayStream.getVideoTracks()[0].onended = () => {
+    displayStream.getTracks()[0].onended = () => {
       for (const track of [...displayStream.getTracks(), ...voiceStream.getTracks()]) {
         track.stop()
       }
