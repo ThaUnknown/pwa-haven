@@ -84,6 +84,7 @@
         downloadLink.href = URL.createObjectURL(patched)
         downloadLink.download = `${startTime}.${settings.container}`
         downloadLink.click()
+        URL.revokeObjectURL(patched)
       }
     }
 

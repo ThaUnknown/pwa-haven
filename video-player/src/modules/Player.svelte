@@ -112,6 +112,9 @@
       if (videos?.length) {
         if (!current) {
           handleCurrent(videos[0])
+        } else {
+          subs.files = files || []
+          subs.findSubtitleFiles(current)
         }
       }
     }
