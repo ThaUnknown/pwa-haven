@@ -32,6 +32,7 @@
   let presentationConnection = null
   let canCast = false
   let isFullscreen = false
+  let ended = false
   let volume = localStorage.getItem('volume') || 1
   $: localStorage.setItem('volume', volume)
   onMount(() => {
@@ -417,39 +418,6 @@
       resetImmerse()
     }, 150)
   }
-
-  function resolveFps() {
-    if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
-      video.fps = new Promise(resolve => {
-        const resolveFps = () => {
-          video.removeEventListener('timeupdate', resolveFps)
-          if (!paused) {
-            setTimeout(
-              () =>
-                video.requestVideoFrameCallback((now, metaData) => {
-                  let duration = 0
-                  for (let index = video.played.length; index--; ) {
-                    duration += video.played.end(index) - video.played.start(index)
-                  }
-                  const rawFPS = metaData.presentedFrames / duration
-                  if (rawFPS < 28) {
-                    resolve(23.976)
-                  } else if (rawFPS <= 35) {
-                    resolve(29.97)
-                  } else if (rawFPS <= 70) {
-                    resolve(59.94)
-                  } else {
-                    resolve(23.976) // smth went VERY wrong
-                  }
-                }),
-              2000
-            )
-          }
-        }
-        video.addEventListener('timeupdate', resolveFps)
-      })
-    }
-  }
   $: navigator.mediaSession?.setPositionState({
     duration: Math.max(0, duration || 0),
     playbackRate: 1,
@@ -486,6 +454,42 @@
     navigator.mediaSession.setActionHandler('seekforward', forward)
     navigator.mediaSession.setActionHandler('seekbackward', rewind)
   }
+  let stats = null
+  let requestCallback = null
+  function toggleStats() {
+    if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+      if (requestCallback) {
+        stats = null
+        video.cancelVideoFrameCallback(requestCallback)
+        requestCallback = null
+      } else {
+        requestCallback = video.requestVideoFrameCallback((a, b) => {
+          stats = {}
+          handleStats(a, b)
+        })
+      }
+    }
+  }
+  async function handleStats(now, metadata) {
+    if (stats) {
+      stats = {
+        fps: await video.fps,
+        presented: metadata.presentedFrames,
+        processing: metadata.processingDuration + ' ms',
+        viewport: video.clientWidth + 'x' + video.clientHeight,
+        resolution: video.videoWidth + 'x' + video.videoHeight,
+        buffer: getBufferHealth(metadata.mediaTime) + ' s'
+      }
+      setTimeout(() => video.requestVideoFrameCallback(handleStats), 200)
+    }
+  }
+  function getBufferHealth(time) {
+    for (let index = video.buffered.length; index--; ) {
+      if (time < video.buffered.end(index) && time > video.buffered.start(index)) {
+        return parseInt(video.buffered.end(index) - time)
+      }
+    }
+  }
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
@@ -500,7 +504,8 @@
   on:mousemove={resetImmerse}
   on:touchmove={resetImmerse}
   on:keypress={resetImmerse}
-  on:mouseleave={immersePlayer}>
+  on:mouseleave={immersePlayer}
+  on:contextmenu|preventDefault={toggleStats}>
   <video
     {src}
     bind:this={video}
@@ -509,15 +514,24 @@
     bind:duration
     bind:currentTime
     bind:paused
+    bind:ended
     bind:muted
     on:waiting={showBuffering}
     on:loadeddata={hideBuffering}
     on:canplay={hideBuffering}
     on:playing={hideBuffering}
-    on:loadedmetadata={hideBuffering}
-    on:loadedmetadata={resolveFps} />
+    on:loadedmetadata={hideBuffering} />
   <!-- svelte-ignore a11y-missing-content -->
-  <a href="#player" class="miniplayer" alt="miniplayer" />
+  {#if stats}
+    <div class="position-absolute top-0 bg-very-dark p-5">
+      FPS: {stats.fps}<br />
+      Presented frames: {stats.presented}<br />
+      Frame time: {stats.processing}<br />
+      Viewport: {stats.viewport}<br />
+      Resolution: {stats.resolution}<br />
+      Buffer health: {stats.buffer}
+    </div>
+  {/if}
   <div class="top z-50" />
   <div class="middle z-50">
     <div class="ctrl" data-name="ppToggle" on:click={playPause} on:dblclick={toggleFullscreen} />
@@ -525,7 +539,7 @@
       <span class="material-icons ctrl" data-name="playLast" on:click={playLast}> skip_previous </span>
     {/if}
     <span class="material-icons ctrl" data-name="rewind" on:click={rewind}> fast_rewind </span>
-    <span class="material-icons ctrl" data-name="playPause" on:click={playPause}> {paused ? 'play_arrow' : 'pause'} </span>
+    <span class="material-icons ctrl" data-name="playPause" on:click={playPause}> {ended ? 'replay' : paused ? 'play_arrow' : 'pause'} </span>
     <span class="material-icons ctrl" data-name="forward" on:click={forward}> fast_forward </span>
     {#if videos?.length > 1}
       <span class="material-icons ctrl" data-name="playNext" on:click={playNext}> skip_next </span>
@@ -533,7 +547,7 @@
     <div data-name="bufferingDisplay" />
   </div>
   <div class="bottom z-50">
-    <span class="material-icons ctrl" title="Play/Pause [Space]" data-name="playPause" on:click={playPause}> {paused ? 'play_arrow' : 'pause'} </span>
+    <span class="material-icons ctrl" title="Play/Pause [Space]" data-name="playPause" on:click={playPause}> {ended ? 'replay' : paused ? 'play_arrow' : 'pause'} </span>
     {#if videos?.length > 1}
       <span class="material-icons ctrl" title="Next [N]" data-name="playNext" on:click={playNext}> skip_next </span>
     {/if}
@@ -630,6 +644,7 @@
     height: auto;
     transition: width 0.2s ease;
     overflow: hidden;
+    background: #000;
   }
 
   .player:not(.miniplayer) {
@@ -661,13 +676,6 @@
     background: none;
   }
 
-  a.miniplayer {
-    z-index: 5;
-    position: absolute;
-    width: 100%;
-    height: 100%;
-  }
-
   .pip {
     background: #000;
   }
@@ -693,7 +701,6 @@
     opacity: 0;
   }
 
-  .player:not(.miniplayer) a.miniplayer,
   .bottom img[src=' '],
   video[src='']:not([poster]),
   :fullscreen .ctrl[data-name='toggleCast'],
