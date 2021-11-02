@@ -163,6 +163,7 @@
       initSubs()
     }
   }
+  $: initSubs(current)
 
   function initSubs() {
     if (subs) subs.destroy()
