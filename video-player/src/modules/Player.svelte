@@ -151,8 +151,8 @@
             const urlfile = new URLFile(file)
             await urlfile.ready
             setFile(urlfile)
-            current = urlfile
             src = `player/${urlfile.name}`
+            current = urlfile
           })
           .catch(() => {
             setFile(null)
@@ -160,14 +160,15 @@
             current = file
           })
       }
-      initSubs()
     }
   }
   $: initSubs(current)
 
-  function initSubs() {
-    if (subs) subs.destroy()
-    subs = new Subtitles(video, files, current, handleHeaders)
+  function initSubs(current) {
+    if (current) {
+      if (subs) subs.destroy()
+      subs = new Subtitles(video, files, current, handleHeaders)
+    }
   }
 
   let subDelay = 0
