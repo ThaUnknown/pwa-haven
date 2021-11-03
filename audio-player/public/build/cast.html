@@ -9,7 +9,7 @@
       width: 100vw;
       height: 100vh;
       color: #fff;
-      font-size: 50px;
+      font-size: 40px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
       font-weight: 400;
       text-align: center;
@@ -23,27 +23,31 @@
       display: flex;
       flex-direction: row;
       height: 100%;
-      backdrop-filter: blur(10px) brightness(30%);
+      backdrop-filter: blur(15px) brightness(30%);
     }
 
     .half {
       width: 50%;
       height: 100%;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
+      flex-direction: column;
+      margin: 0 35px;
     }
 
     .half>* {
-      width: 90%;
-      height: 80%;
+      max-width: 90%;
+      height: 50%;
+      border-radius: 3px;
     }
 
     .half>div {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       flex-direction: column;
+      text-align: left;
     }
 
     img:not([src]) {
@@ -52,6 +56,7 @@
 
     img {
       object-fit: contain;
+      align-self: end;
     }
 
     .backdrop {
@@ -65,10 +70,38 @@
 
     .title {
       font-weight: bold;
+      font-size: 70px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 100%;
+      overflow: hidden;
+      padding-bottom: 10px;
     }
 
     .time {
-      padding-top: 50px;
+      padding-top: 25px;
+      font-size: 18px;
+      font-weight: 500;
+      font-family: Roboto, monospace
+    }
+
+    progress[value]::-webkit-progress-value {
+      background-color: #fff;
+      border-radius: 3.2rem;
+    }
+
+
+    progress[value] {
+      -webkit-appearance: none;
+      appearance: none;
+      background-color: rgba(255, 255, 255, .1);
+      height: 0.45rem;
+      font-size: 2.4rem;
+      line-height: 0;
+      border-radius: 3.2rem;
+      overflow: hidden;
+      vertical-align: 0.16rem;
+      margin: 0 0.8rem;
     }
   </style>
 </head>
@@ -86,7 +119,7 @@
         <div class="artist"></div>
         <div class="time">
           <span class="current"></span>
-          /
+          <progress max="1"></progress>
           <span class="duration"></span>
         </div>
       </div>
@@ -114,6 +147,7 @@ const artist = document.querySelector('.artist')
 const title = document.querySelector('.title')
 const cover = document.querySelector('.cover')
 const backdrop = document.querySelector('.backdrop')
+const progress = document.querySelector('progress')
 
 function addConnection (connection) {
   peer = new window.Peer({ polite: false })
@@ -134,16 +168,21 @@ function addConnection (connection) {
     backdrop.src = url
     imageData = []
   }
+  let dur
   dataport.onmessage = ({ data }) => {
     if (data instanceof ArrayBuffer) {
       imageData.push(data)
     } else {
       const parsed = JSON.parse(data)
-      if (parsed.duration) duration.textContent = toTS(parsed.duration)
+      if (parsed.duration) {
+        dur = parsed.duration
+        duration.textContent = toTS(parsed.duration)
+      }
       if (parsed.current) current.textContent = toTS(parsed.current)
       if (parsed.artist) artist.textContent = parsed.artist
       if (parsed.title) title.textContent = parsed.title
       if (parsed.ended) buildImage()
+      if (parsed.current && dur) progress.value = parsed.current / dur
     }
   }
 

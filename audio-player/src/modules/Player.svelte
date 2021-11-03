@@ -103,7 +103,7 @@
         JSON.stringify({
           duration: current.duration,
           current: currentTime,
-          arist: current.artist,
+          artist: current.artist,
           title: current.name
         })
       )
