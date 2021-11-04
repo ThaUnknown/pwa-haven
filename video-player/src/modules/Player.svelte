@@ -319,7 +319,7 @@
 
   async function getBurnIn(noSubs) {
     const canvas = document.createElement('canvas')
-    const context = canvas.getContext('2d', { alpha: false })
+    const context = canvas.getContext('2d', { alpha: false, colorSpace: 'display-p3' })
     let loop = null
     let destroy = null
     canvas.width = video.videoWidth
@@ -350,11 +350,31 @@
         canvas.remove()
       }
     }
-    return { stream: canvas.captureStream(), destroy }
+    return { stream: canvas.captureStream(await video.fps), destroy }
   }
 
   function initCast(event) {
-    const peer = new Peer({ polite: true })
+    // these quality settings are likely to make cast overheat, oh noes!
+    let peer = new Peer({
+      polite: true,
+      quality: {
+        audio: {
+          stereo: 1,
+          'sprop-stereo': 1,
+          maxaveragebitrate: 510000,
+          maxplaybackrate: 510000,
+          cbr: 0,
+          useinbandfec: 1,
+          usedtx: 1,
+          maxptime: 20,
+          minptime: 10
+        },
+        video: {
+          bitrate: 2000000,
+          codecs: ['VP9', 'VP8', 'H264']
+        }
+      }
+    })
 
     presentationConnection = event.connection
     presentationConnection.addEventListener('terminate', () => {
@@ -375,7 +395,7 @@
       if (peer && presentationConnection) {
         pip = true
         const tracks = []
-        const videostream = video.captureStream()
+        const videostream = video.captureStream(await video.fps)
         if (true) {
           // TODO: check if cast supports codecs
           const { stream, destroy } = await getBurnIn(!subs?.renderer)

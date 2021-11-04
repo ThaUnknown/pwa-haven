@@ -8,7 +8,8 @@ const prod = mode === 'production'
 
 module.exports = {
   entry: {
-    'build/bundle': ['./src/main.js']
+    'build/bundle': ['./src/main.js'],
+    'build/cast': ['./src/cast.js']
   },
   externals: {
     anitomyscript: 'anitomyscript'
@@ -61,7 +62,9 @@ module.exports = {
     new webpack.ProvidePlugin({
       process: 'process-fast'
     }),
-    new NodePolyfillPlugin(),
+    new NodePolyfillPlugin({
+      excludeAliases: ['process']
+    }),
     new MiniCssExtractPlugin({
       filename: '[name].css'
     })
