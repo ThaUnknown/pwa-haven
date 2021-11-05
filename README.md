@@ -5,6 +5,9 @@ Make sure to enable `chrome://flags#file-handling-api` if you want to be able to
 
 The main goal is to replace oversized native apps, with simple, lightweight browser based apps, which don't create copies of processes, but instead share one environment, which likely was already in-use by the user, for for example browsing the web or reading articles, eliminating those duplicate processes. Additionally they don't create any new background processes or services when not in use.
 
+## What are the features?
+You can see the list of features [here!](/features.md)
+
 ## Why are the names so generic?
 Because these are generic apps, they are essentially no different in functionality from their native counterparts [even if what they accomplish is unique for the web, but not for native apps], which also means they have no compromises from their decent native counterparts, and bring nothing new to the table, outside of their VERY low resource usage and load times.
 
