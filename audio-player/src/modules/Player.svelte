@@ -13,11 +13,11 @@
   $: progress = currentTime / duration
   $: targetTime = (!paused && currentTime) || targetTime
   let current = null
-  $: setSource(current)
   $: setCurrent(songs)
   function setCurrent(songs) {
     if (!current && songs.length) current = songs[0]
   }
+  $: setSource(current)
   export let songs = []
   let duration = 0.1
   let currentTime = 0

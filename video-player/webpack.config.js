@@ -19,7 +19,10 @@ module.exports = {
       svelte: path.dirname(require.resolve('svelte/package.json'))
     },
     extensions: ['.mjs', '.js', '.svelte'],
-    mainFields: ['svelte', 'browser', 'module', 'main']
+    mainFields: ['svelte', 'browser', 'module', 'main'],
+    fallback: {
+      zlib: require.resolve('pako')
+    }
   },
   output: {
     path: path.join(__dirname, '/public'),
@@ -63,7 +66,35 @@ module.exports = {
       process: 'process-fast'
     }),
     new NodePolyfillPlugin({
-      excludeAliases: ['process']
+      excludeAliases: [
+        'assert',
+        'buffer',
+        'console',
+        'constants',
+        'crypto',
+        'domain',
+        'events',
+        'http',
+        'https',
+        'os',
+        'path',
+        'punycode',
+        'process',
+        'querystring',
+        '_stream_duplex',
+        '_stream_passthrough',
+        '_stream_readable',
+        '_stream_transform',
+        '_stream_writable',
+        'string_decoder',
+        'sys',
+        'timers',
+        'tty',
+        'url',
+        'util',
+        'vm',
+        'zlib'
+      ]
     }),
     new MiniCssExtractPlugin({
       filename: '[name].css'

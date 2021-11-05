@@ -22,7 +22,7 @@ const cacheList = {
     ]
   },
   'audio-player': {
-    version: '1.5.1',
+    version: '1.5.2',
     resources: [
       '../audio-player/public/build/bundle.js',
       '../audio-player/public/build/bundle.js.map',
@@ -36,7 +36,7 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '1.5.0',
+    version: '1.5.1',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       '../video-player/public/lib/subtitles-octopus-worker.js',

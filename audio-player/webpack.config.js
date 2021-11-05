@@ -62,8 +62,39 @@ module.exports = {
     new webpack.ProvidePlugin({
       process: 'process-fast'
     }),
+    // this one is really weird, it still includes shit that you dont need, but when you specify that you dont need it, it will only include it if its ACTUALLY needed.
+    // tldr exclude ALL, loose filesize
     new NodePolyfillPlugin({
-      excludeAliases: ['process']
+      excludeAliases: [
+        'assert',
+        'buffer',
+        'console',
+        'constants',
+        'crypto',
+        'domain',
+        'events',
+        'http',
+        'https',
+        'os',
+        'path',
+        'punycode',
+        'process',
+        'querystring',
+        'stream',
+        '_stream_duplex',
+        '_stream_passthrough',
+        '_stream_readable',
+        '_stream_transform',
+        '_stream_writable',
+        'string_decoder',
+        'sys',
+        'timers',
+        'tty',
+        'url',
+        'util',
+        'vm',
+        'zlib'
+      ]
     }),
     new MiniCssExtractPlugin({
       filename: '[name].css'
