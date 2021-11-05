@@ -1,12 +1,12 @@
 /* eslint-env serviceworker */
 const cacheList = {
   shared: {
-    version: '1.0.3',
+    version: '1.0.4',
     resources: [
       'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/css/halfmoon-variables.min.css',
       'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/js/halfmoon.min.js',
       'https://fonts.googleapis.com/icon?family=Material+Icons',
-      'https://fonts.gstatic.com/s/materialicons/v103/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2'
+      'https://fonts.gstatic.com/s/materialicons/v114/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2'
     ]
   },
   'img-viewer': {
@@ -98,11 +98,11 @@ self.addEventListener('activate', event => {
       if (key) { // dump all outdates caches on load
         const [name, version] = key.split(' v.')
         if (cacheList[name].version !== version) {
+          const promise = caches.delete(key)
           for (const tab of tabs) {
-            console.log(tab.url, location.origin + '/' + name)
             if (tab.url.indexOf(location.origin + '/' + name) === 0) tab.navigate(tab.url)
           }
-          return caches.delete(key)
+          return promise
         }
       }
       return null
