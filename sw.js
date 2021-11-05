@@ -22,7 +22,7 @@ const cacheList = {
     ]
   },
   'audio-player': {
-    version: '1.5.2',
+    version: '1.5.3',
     resources: [
       '../audio-player/public/build/bundle.js',
       '../audio-player/public/build/bundle.js.map',
@@ -91,20 +91,23 @@ self.addEventListener('install', event => {
 })
 
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keyList => {
-      return Promise.all(keyList.map(key => {
-        if (key) { // dump all outdates caches on load
-          const [name, version] = key.split(' v.')
-          if (cacheList[name].version !== version) {
-            return caches.delete(key)
+  event.waitUntil((async () => {
+    const keyList = await caches.keys()
+    const tabs = await self.clients.matchAll({ type: 'window' })
+    return Promise.all(keyList.map(key => {
+      if (key) { // dump all outdates caches on load
+        const [name, version] = key.split(' v.')
+        if (cacheList[name].version !== version) {
+          for (const tab of tabs) {
+            console.log(tab.url, location.origin + '/' + name)
+            if (tab.url.indexOf(location.origin + '/' + name) === 0) tab.navigate(tab.url)
           }
+          return caches.delete(key)
         }
-        return null
-      }))
-    })
-
-  )
+      }
+      return null
+    }))
+  })())
   self.clients.claim()
 })
 
