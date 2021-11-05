@@ -12,6 +12,9 @@
   const dimensions = { x: null, y: null }
   const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser())
   const units = [' B', ' KB', ' MB', ' GB']
+  let files = []
+  let current = null
+  $: setSource(current)
 
   navigator.serviceWorker.register('/sw.js')
 
@@ -23,17 +26,19 @@
   }
 
   function setSource(target) {
-    if (src) URL.revokeObjectURL(src) // gc
-    if (target.constructor === String) {
-      src = target
-      const startIndex = Math.max(target.lastIndexOf('\\'), target.lastIndexOf('/')) + 1
-      name = target.substring(startIndex)
-      fileSize = null
-    } else {
-      src = URL.createObjectURL(target)
-      const startIndex = Math.max(target.name.lastIndexOf('\\'), target.name.lastIndexOf('/')) + 1
-      name = target.name.substring(startIndex)
-      fileSize = target.size
+    if (target) {
+      if (src) URL.revokeObjectURL(src) // gc
+      if (target.constructor === String) {
+        src = target
+        const startIndex = Math.max(target.lastIndexOf('\\'), target.lastIndexOf('/')) + 1
+        name = target.substring(startIndex)
+        fileSize = null
+      } else {
+        src = URL.createObjectURL(target)
+        const startIndex = Math.max(target.name.lastIndexOf('\\'), target.name.lastIndexOf('/')) + 1
+        name = target.name.substring(startIndex)
+        fileSize = target.size
+      }
     }
   }
 
@@ -60,6 +65,13 @@
     position.y = old.y + e.clientY - initial.y
     handlePosition()
   }
+  function viewNext() {
+    current = files[(files.indexOf(current) + 1) % files.length]
+  }
+  function viewLast() {
+    const index = files.indexOf(current)
+    current = files[index === 0 ? files.length - 1 : index - 1]
+  }
 
   // zooming
   function handleZoom(e) {
@@ -84,24 +96,44 @@
   }
   // loading files
   function handleDrop({ dataTransfer }) {
-    if (dataTransfer.items) handleItems(dataTransfer.items[0])
+    if (dataTransfer.items) handleItems([...dataTransfer.items])
   }
 
   function handlePaste({ clipboardData }) {
-    if (clipboardData.items) handleItems(clipboardData.items[0])
+    if (clipboardData.items) handleItems([...clipboardData.items])
   }
-  function handleItems(item) {
+  async function handleItems(items) {
     // don't support multi-image x)
-    if (item?.type.indexOf('image') === 0) {
-      setSource(item.getAsFile())
-    } else if (item?.type === 'text/plain') {
-      item.getAsString(setSource)
-    } else if (item?.type === 'text/html') {
-      item.getAsString(text => {
-        const img = DOMPARSER(text, 'text/html').querySelector('img')
-        if (img) setSource(img.src)
-      })
-    }
+    const promises = items.map(item => {
+      if (item?.type.indexOf('image') === 0) {
+        return item.getAsFile()
+      } else if (item?.type === 'text/plain') {
+        return new Promise(resolve => item.getAsString(resolve))
+      } else if (item?.type === 'text/html') {
+        return new Promise(resolve => {
+          item.getAsString(text => {
+            const elems = DOMPARSER(text, 'text/html').querySelectorAll('img')
+            if (elems?.length) resolve(elems.map(img => img?.src))
+            resolve()
+          })
+        })
+      } else if (item && !item.type) {
+        let folder = item.webkitGetAsEntry()
+        folder = folder.isDirectory && folder
+        if (folder) {
+          return new Promise(resolve => {
+            folder.createReader().readEntries(async entries => {
+              const filePromises = entries.filter(entry => entry.isFile).map(file => new Promise(resolve => file.file(resolve)))
+              resolve(await Promise.all(filePromises))
+            })
+          })
+        }
+        return
+      }
+      return
+    })
+    files = files.concat((await Promise.all(promises)).flat().filter(i => i))
+    if (!current && files?.length) current = files[0]
   }
 
   if ('launchQueue' in window) {
@@ -109,7 +141,16 @@
       if (!launchParams.files.length) {
         return
       }
-      setSource(await launchParams.files[0].getFile())
+      const promises = launchParams.files.map(file => file.getFile())
+      // for some fucking reason, the same file can get passed multiple times, why? I still want to future-proof multi-files
+      files = (await Promise.all(promises)).filter((file, index, all) => {
+        return (
+          all.findIndex(search => {
+            return search.name === file.name && search.size === file.size && search.lastModified === file.lastModified
+          }) === index
+        )
+      })
+      current = files[0]
     })
   }
 
@@ -138,11 +179,17 @@
   <img {src} class:transition alt="view" class="w-full h-full position-absolute" bind:this={image} on:load={handleImage} />
 </div>
 
-<div class="btn-group position-absolute bg-dark-dm bg-light-lm">
+<div class="btn-group position-absolute bg-dark-dm bg-light-lm rounded">
+  {#if files.length > 1}
+    <button class="btn btn-lg btn-square material-icons" type="button" on:click={viewLast}> arrow_back </button>
+  {/if}
   <button class="btn btn-lg btn-square material-icons" type="button" on:click={toggleBlur}>
     {isBlurred ? 'blur_off' : 'blur_on'}
   </button>
   <button class="btn btn-lg btn-square material-icons" type="button" on:click={resetPos}> fit_screen </button>
+  {#if files.length > 1}
+    <button class="btn btn-lg btn-square material-icons" type="button" on:click={viewNext}> arrow_forward </button>
+  {/if}
 </div>
 
 <svelte:head>
