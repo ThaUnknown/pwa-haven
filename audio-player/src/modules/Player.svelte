@@ -2,7 +2,6 @@
   import { toTS } from './util.js'
   import SongList from './SongList.svelte'
   import { createEventDispatcher } from 'svelte'
-  import { parseBlob } from 'music-metadata-browser'
   import Peer from './peer.js'
 
   const dispatch = createEventDispatcher()
@@ -11,13 +10,15 @@
   let audio = null
   let volume = localStorage.getItem('volume') || 1
   $: localStorage.setItem('volume', volume)
-  export let files = []
-  $: updateFiles(files)
   $: progress = currentTime / duration
   $: targetTime = (!paused && currentTime) || targetTime
   let current = null
   $: setSource(current)
-  let songs = []
+  $: setCurrent(songs)
+  function setCurrent(songs) {
+    if (!current && songs.length) current = songs[0]
+  }
+  export let songs = []
   let duration = 0.1
   let currentTime = 0
   let paused = true
@@ -139,32 +140,6 @@
       presentationPort = peer.pc.createDataChannel('current', { negotiated: true, id: 2 })
       presentationConnection.addEventListener('terminate', () => presentationPort.close())
       presentationPort.onopen = () => updateCastState(current)
-    }
-  }
-
-  async function updateFiles(files) {
-    if (files.length) {
-      const image = files.find(file => file.type.indexOf('image') === 0)
-      const audio = files.filter(file => file.type.indexOf('audio') === 0)
-      if (audio) {
-        songs = []
-        current = null
-        src = null
-        paused = true
-      }
-      const songDataPromises = audio.map(async file => {
-        const { common, format } = await parseBlob(file)
-        const name = common?.title || file.name.substring(0, file.name.lastIndexOf('.')) || file.name
-        const artist = common?.artist
-        const album = common?.album
-        // note: this is utterly fucking retarded, the browser isn't capable of creating a object url from an image file blob in this case, but a data URI works!!!!! WHY?
-        const cover = (common?.picture?.length && new Blob([common.picture[0].data], { type: common.picture[0].format })) || image
-        const duration = format?.duration
-        const number = common?.track?.no
-        return { file, name, artist, album, cover, duration, number }
-      })
-      songs = (await Promise.all(songDataPromises)).sort((a, b) => (a.file.name > b.file.name ? 1 : b.file.name > a.file.name ? -1 : 0))
-      current = songs[0]
     }
   }
 

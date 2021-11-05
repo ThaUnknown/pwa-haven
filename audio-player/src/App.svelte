@@ -1,6 +1,7 @@
 <script>
   import InstallPrompt from './modules/InstallPrompt.svelte'
   import Player from './modules/Player.svelte'
+  import { parseBlob } from 'music-metadata-browser'
 
   const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser())
   let name = ''
@@ -62,7 +63,7 @@
       }
       return
     })
-    files = (await Promise.all(promises)).flat().filter(i => i)
+    processFiles((await Promise.all(promises)).flat().filter(i => i))
   }
 
   if ('launchQueue' in window) {
@@ -72,27 +73,47 @@
       }
       const promises = launchParams.files.map(file => file.getFile())
       // for some fucking reason, the same file can get passed multiple times, why? I still want to future-proof multi-files
-      files = (await Promise.all(promises)).filter((file, index, all) => {
-        return (
-          all.findIndex(search => {
-            return search.name === file.name && search.size === file.size && search.lastModified === file.lastModified
-          }) === index
-        )
-      })
+      processFiles(
+        (await Promise.all(promises)).filter((file, index, all) => {
+          return (
+            all.findIndex(search => {
+              return search.name === file.name && search.size === file.size && search.lastModified === file.lastModified
+            }) === index
+          )
+        })
+      )
       console.log(files)
     })
   }
   function handlePopup() {
-    if (!files.length) {
+    if (!songs.length) {
       let input = document.createElement('input')
       input.type = 'file'
       input.multiple = 'multiple'
 
       input.onchange = ({ target }) => {
-        files = [...target.files]
+        processFiles([...target.files])
         input = null
       }
       input.click()
+    }
+  }
+  let songs = []
+  async function processFiles(files) {
+    if (files.length) {
+      const image = files.find(file => file.type.indexOf('image') === 0)
+      const audio = files.filter(file => file.type.indexOf('audio') === 0)
+      const songDataPromises = audio.map(async file => {
+        const { common, format } = await parseBlob(file)
+        const name = common?.title || file.name.substring(0, file.name.lastIndexOf('.')) || file.name
+        const artist = common?.artist
+        const album = common?.album
+        const cover = (common?.picture?.length && new Blob([common.picture[0].data], { type: common.picture[0].format })) || image
+        const duration = format?.duration
+        const number = common?.track?.no
+        return { file, name, artist, album, cover, duration, number }
+      })
+      songs = songs.concat(await Promise.all(songDataPromises)).sort((a, b) => (a.file.name > b.file.name ? 1 : b.file.name > a.file.name ? -1 : 0))
     }
   }
 </script>
@@ -101,7 +122,7 @@
   <InstallPrompt />
 </div>
 <div class="page-wrapper with-navbar-fixed-bottom">
-  <Player bind:name bind:files on:popup={handlePopup} />
+  <Player bind:name {songs} on:popup={handlePopup} />
 </div>
 
 <svelte:head>
