@@ -9,6 +9,7 @@
   const initial = { x: 0, y: 0 }
   const old = { x: 0, y: 0 }
   const position = { x: 0, y: 0 }
+  let disPos = initial
   const dimensions = { x: null, y: null }
   const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser())
   const units = [' B', ' KB', ' MB', ' GB']
@@ -27,17 +28,16 @@
 
   function setSource(target) {
     if (target) {
-      if (src) URL.revokeObjectURL(src) // gc
       if (target.constructor === String) {
-        src = target
         const startIndex = Math.max(target.lastIndexOf('\\'), target.lastIndexOf('/')) + 1
         name = target.substring(startIndex)
         fileSize = null
+        src = target
       } else {
-        src = URL.createObjectURL(target)
         const startIndex = Math.max(target.name.lastIndexOf('\\'), target.name.lastIndexOf('/')) + 1
         name = target.name.substring(startIndex)
         fileSize = target.size
+        src = target.url
       }
     }
   }
@@ -63,7 +63,7 @@
   function handleDrag(e) {
     position.x = old.x + e.clientX - initial.x
     position.y = old.y + e.clientY - initial.y
-    handlePosition()
+    disPos = position
   }
   function viewNext() {
     current = files[(files.indexOf(current) + 1) % files.length]
@@ -74,8 +74,9 @@
   }
 
   // zooming
-  function handleZoom(e) {
-    const diff = e.deltaY * -0.01
+  let zoom = 1
+  function handleZoom({ deltaY }) {
+    const diff = deltaY * -0.01
     if (diff < 0) {
       if (!(scale < -4)) scale -= 0.5
       old.x /= 1.5
@@ -85,15 +86,10 @@
       old.x *= 1.5
       old.y *= 1.5
     }
-    image.style.setProperty('--zoom', 2 ** scale)
-    handlePosition(old)
+    zoom = 2 ** scale
+    disPos = old
   }
 
-  // position
-  function handlePosition(pos = position) {
-    image.style.setProperty('--left', pos.x + 'px')
-    image.style.setProperty('--top', pos.y + 'px')
-  }
   // loading files
   function handleDrop({ dataTransfer }) {
     if (dataTransfer.items) handleItems([...dataTransfer.items])
@@ -132,7 +128,11 @@
       }
       return
     })
-    files = files.concat((await Promise.all(promises)).flat().filter(i => i))
+    const newFiles = (await Promise.all(promises)).flat().filter(i => i)
+    for (const file of newFiles) {
+      if (file.constructor !== String) file.url = URL.createObjectURL(file)
+    }
+    files = files.concat(newFiles)
     if (!current && files?.length) current = files[0]
   }
 
@@ -150,6 +150,9 @@
           }) === index
         )
       })
+      for (const file of files) {
+        file.url = URL.createObjectURL(file)
+      }
       current = files[0]
     })
   }
@@ -163,13 +166,35 @@
     old.x = 0
     old.y = 0
     scale = 0
-    image.style.setProperty('--zoom', 1)
-    handlePosition(old)
+    zoom = 1
+    disPos = old
   }
   function handleImage() {
     dimensions.x = image.naturalWidth
     dimensions.y = image.naturalHeight
   }
+  let rotation = 0
+  // this is bad, but %360 causes css animation bug :(
+  function rotateL() {
+    rotation -= 90
+  }
+  function rotateR() {
+    rotation += 90
+  }
+  let flip = false
+  function toggleFlip() {
+    flip = !flip
+  }
+  let mirror = false
+  function toggleMirror() {
+    mirror = !mirror
+  }
+  function handleStyle({ disPos, mirror, flip, rotation, zoom }) {
+    image?.style.setProperty('transform', `rotate(${rotation}deg) ` + `scaleX(${mirror ? -1 : 1}) ` + `scaleY(${flip ? -1 : 1}) ` + `scale(${zoom})`)
+    image?.style.setProperty('--left', disPos.x + 'px')
+    image?.style.setProperty('--top', disPos.y + 'px')
+  }
+  $: handleStyle({ disPos, mirror, flip, rotation, zoom })
 </script>
 
 <div class="sticky-alerts d-flex flex-column-reverse">
@@ -179,17 +204,30 @@
   <img {src} class:transition alt="view" class="w-full h-full position-absolute" bind:this={image} on:load={handleImage} />
 </div>
 
-<div class="btn-group position-absolute bg-dark-dm bg-light-lm rounded">
+<div class="position-absolute buttons d-flex">
   {#if files.length > 1}
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={viewLast}> arrow_back </button>
+    <div class="btn-group bg-dark-dm bg-light-lm rounded mr-10">
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={viewLast}>arrow_back</button>
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={viewNext}>arrow_forward</button>
+    </div>
   {/if}
-  <button class="btn btn-lg btn-square material-icons" type="button" on:click={toggleBlur}>
-    {isBlurred ? 'blur_off' : 'blur_on'}
-  </button>
-  <button class="btn btn-lg btn-square material-icons" type="button" on:click={resetPos}> fit_screen </button>
-  {#if files.length > 1}
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={viewNext}> arrow_forward </button>
-  {/if}
+
+  <div class="btn-group input-group bg-dark-dm bg-light-lm rounded mr-10 w-200">
+    <button class="btn btn-lg btn-square material-icons" type="button" on:click={resetPos}>zoom_out_map</button>
+    <button class="btn btn-lg btn-square material-icons" type="button" on:click={()=>handleZoom({deltaY: 100})}>remove</button>
+    <input type="number" step="0.1" min="0.1" class="form-control form-control-lg text-right" placeholder="Scale" readonly value={zoom.toFixed(1)} />
+    <button class="btn btn-lg btn-square material-icons" type="button" on:click={()=>handleZoom({deltaY: -100})}>add</button>
+  </div>
+
+  <div class="btn-group bg-dark-dm bg-light-lm rounded">
+    <button class="btn btn-lg btn-square material-icons" type="button" on:click={toggleBlur}>
+      {isBlurred ? 'blur_off' : 'blur_on'}
+    </button>
+    <button class="btn btn-lg btn-square material-icons" type="button" on:click={rotateL}>rotate_left</button>
+    <button class="btn btn-lg btn-square material-icons" type="button" on:click={rotateR}>rotate_right</button>
+    <button class="btn btn-lg btn-square material-icons" type="button" on:click={toggleFlip}><div class="flip">flip</div></button>
+    <button class="btn btn-lg btn-square material-icons" type="button" on:click={toggleMirror}>flip</button>
+  </div>
 </div>
 
 <svelte:head>
@@ -212,12 +250,16 @@
     object-fit: contain;
     --top: 0;
     --left: 0;
-    --zoom: 1;
     --pixel: 'crisp-edges';
     top: var(--top);
     left: var(--left);
     image-rendering: var(--pixel);
-    transform: scale(var(--zoom));
+  }
+  .flip {
+    transform: rotate(90deg);
+  }
+  .input-group button {
+    flex: unset;
   }
   .transition {
     transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -230,7 +272,7 @@
     user-select: none;
     cursor: grab;
   }
-  .btn-group {
+  .buttons {
     bottom: 8rem;
     left: 50%;
     transform: translate(-50%, 0);
@@ -238,5 +280,8 @@
   .sticky-alerts {
     --sticky-alerts-top: auto;
     bottom: 1rem;
+  }
+  input::-webkit-inner-spin-button {
+    display: none;
   }
 </style>
