@@ -156,6 +156,11 @@
       current = files[0]
     })
   }
+  const search = new URLSearchParams(location.search)
+  for (const param of search) {
+    files.push(param[1])
+    if (!current) current = files[0]
+  }
 
   // UI
   function toggleBlur() {
@@ -214,9 +219,9 @@
 
   <div class="btn-group input-group bg-dark-dm bg-light-lm rounded mr-10 w-200">
     <button class="btn btn-lg btn-square material-icons" type="button" on:click={resetPos}>zoom_out_map</button>
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={()=>handleZoom({deltaY: 100})}>remove</button>
+    <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => handleZoom({ deltaY: 100 })}>remove</button>
     <input type="number" step="0.1" min="0.1" class="form-control form-control-lg text-right" placeholder="Scale" readonly value={zoom.toFixed(1)} />
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={()=>handleZoom({deltaY: -100})}>add</button>
+    <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => handleZoom({ deltaY: -100 })}>add</button>
   </div>
 
   <div class="btn-group bg-dark-dm bg-light-lm rounded">

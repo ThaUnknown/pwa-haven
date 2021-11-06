@@ -66,6 +66,8 @@
       prompt.classList.add('show')
     })
   }
+  const search = new URLSearchParams(location.search)
+  handleTorrent([search[0].param[1]])
   let selected = null
   let handleTorrent
   let prompt

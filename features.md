@@ -5,6 +5,7 @@ These features are shared between all PWA's:
 - Fully offline capable
 - Very Lightweight
 - Support for multiple concurrent files
+- Support for URL search parameters `[treats any parameter as file URL, ex: ?foo=file.png&bar=file2.png]`
 - Support for files, folders*, URLs, URIs and XML
   - Clipboard support 
   - Drag & Drop support

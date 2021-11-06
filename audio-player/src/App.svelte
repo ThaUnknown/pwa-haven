@@ -82,8 +82,12 @@
           )
         })
       )
-      console.log(files)
     })
+  }
+  const search = new URLSearchParams(location.search)
+  for (const param of search) {
+    files.push(param[1])
+    if (!current) current = files[0]
   }
   function handlePopup() {
     if (!songs.length) {
