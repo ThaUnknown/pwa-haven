@@ -264,6 +264,8 @@
       on:mousedown={handleMouseDown}
       on:mouseup={handleMouseUp}
       on:input={handleProgress}
+      on:touchstart={handleMouseDown}
+      on:touchend={handleMouseUp}
       step="any"
       style="--value: {progress * 100}%" />
   </div>
@@ -328,6 +330,10 @@
   input[type='range']::-webkit-slider-runnable-track {
     height: 3px;
   }
+  input[type='range']::-moz-range-track {
+    height: 3px;
+    border: none;
+  }
 
   input[type='range']::-webkit-slider-thumb {
     height: 0;
@@ -338,8 +344,23 @@
     appearance: none;
     transition: all 0.1s ease;
   }
+  input[type='range']::-moz-range-thumb {
+    height: 0;
+    width: 0;
+    border-radius: 50%;
+    background: #ff3c00;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: all 0.1s ease;
+    border: none;
+  }
 
   input[type='range']:hover::-webkit-slider-thumb {
+    height: 12px;
+    width: 12px;
+    margin-top: -4px;
+  }
+  input[type='range']:hover::-moz-range-thumb {
     height: 12px;
     width: 12px;
     margin-top: -4px;
@@ -350,6 +371,10 @@
   }
 
   input[type='range']::-webkit-slider-runnable-track {
+    background: linear-gradient(90deg, #ff3c00 var(--value), rgba(255, 255, 255, 0.2) var(--value));
+  }
+
+  input[type='range']::-moz-range-track {
     background: linear-gradient(90deg, #ff3c00 var(--value), rgba(255, 255, 255, 0.2) var(--value));
   }
 
