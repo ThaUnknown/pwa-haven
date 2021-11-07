@@ -91,6 +91,19 @@
       createTorrent.announce = target.value.split('\n')
     }
   }
+  // this should be in the app.svelte, but then i'd need to make a store, and i'm lazy
+  const search = new URLSearchParams(location.search)
+  if(search[0]) handleTorrent([search[0].param[1]])
+  
+  if ('launchQueue' in window) {
+    launchQueue.setConsumer(async launchParams => {
+      if (!launchParams.files.length) {
+        return
+      }
+      handleTorrent([await launchParams.files[0].getFile()])
+      prompt.classList.add('show')
+    })
+  }
 </script>
 
 <div class="modal-dialog" role="document">

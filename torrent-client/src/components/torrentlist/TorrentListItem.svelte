@@ -1,6 +1,6 @@
 <script>
   import { onDestroy, afterUpdate } from 'svelte'
-  import { updateTorrents } from '../../modules/client.js'
+  import { updateTorrents, removeTorrent } from '../../modules/client.js'
   import { fastPrettyBytes, fastToTS } from '../../modules/util.js'
   export let torrent = null
   export let selected = null

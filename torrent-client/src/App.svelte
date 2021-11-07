@@ -56,18 +56,6 @@
     handleTorrent((await Promise.all(promises)).flat().filter(i => i))
     prompt.classList.add('show')
   }
-
-  if ('launchQueue' in window) {
-    launchQueue.setConsumer(async launchParams => {
-      if (!launchParams.files.length) {
-        return
-      }
-      handleTorrent([await launchParams.files[0].getFile()])
-      prompt.classList.add('show')
-    })
-  }
-  const search = new URLSearchParams(location.search)
-  handleTorrent([search[0].param[1]])
   let selected = null
   let handleTorrent
   let prompt
