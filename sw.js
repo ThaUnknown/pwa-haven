@@ -10,10 +10,9 @@ const cacheList = {
     ]
   },
   'img-viewer': {
-    version: '1.1.9',
+    version: '1.1.10',
     resources: [
       '../img-viewer/public/build/bundle.js',
-      '../img-viewer/public/build/bundle.js.map',
       '../img-viewer/public/build/bundle.css',
       '../img-viewer/public/128.png',
       '../img-viewer/public/512.png',
@@ -22,21 +21,20 @@ const cacheList = {
     ]
   },
   'audio-player': {
-    version: '1.5.5',
+    version: '1.5.6',
     resources: [
       '../audio-player/public/build/bundle.js',
-      '../audio-player/public/build/bundle.js.map',
       '../audio-player/public/build/bundle.css',
       '../audio-player/public/128.png',
       '../audio-player/public/512.png',
-      '../audio-player/public/build/peer.js',
+      '../audio-player/public/build/cast.js',
       '../audio-player/public/build/cast.html',
       '../audio-player/public/site.webmanifest',
       '../audio-player/public/'
     ]
   },
   'video-player': {
-    version: '1.5.4',
+    version: '1.5.5',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       '../video-player/public/lib/subtitles-octopus-worker.js',
@@ -44,9 +42,8 @@ const cacheList = {
       '../video-player/public/lib/Roboto.ttf',
       '../video-player/public/server-worker.js',
       '../video-player/public/build/bundle.js',
-      '../video-player/public/build/bundle.js.map',
       '../video-player/public/build/bundle.css',
-      '../video-player/public/build/peer.js',
+      '../video-player/public/build/cast.js',
       '../video-player/public/build/cast.html',
       '../video-player/public/128.png',
       '../video-player/public/512.png',
@@ -55,10 +52,9 @@ const cacheList = {
     ]
   },
   'torrent-client': {
-    version: '1.1.1',
+    version: '1.1.2',
     resources: [
       '../torrent-client/public/build/bundle.js',
-      '../torrent-client/public/build/bundle.js.map',
       '../torrent-client/public/build/bundle.css',
       '../torrent-client/public/128.png',
       '../torrent-client/public/512.png',
@@ -67,10 +63,9 @@ const cacheList = {
     ]
   },
   'screen-recorder': {
-    version: '1.0.4',
+    version: '1.0.5',
     resources: [
       '../screen-recorder/public/build/bundle.js',
-      '../screen-recorder/public/build/bundle.js.map',
       '../screen-recorder/public/build/bundle.css',
       '../screen-recorder/public/128.png',
       '../screen-recorder/public/512.png',
