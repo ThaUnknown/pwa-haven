@@ -586,7 +586,7 @@
         <div class="dropdown-menu dropdown-menu-left ctrl custom-radio p-10 pb-5 text-capitalize" aria-labelledby="baudio" data-name="selectAudio">
           {#each video.audioTracks as track}
             <input name="audio-radio-set" type="radio" id="audio-{track.id}-radio" value={track.id} checked={track.enabled} />
-            <label for="audio-{track.id}-radio" on:click={() => selectAudio(track.id)}>
+            <label for="audio-{track.id}-radio" on:click={() => selectAudio(track.id)} class="text-truncate pb-5">
               {(track.language || (!Object.values(video.audioTracks).some(track => track.language === 'eng' || track.language === 'en') ? 'eng' : track.label)) +
                 (track.label ? ' - ' + track.label : '')}</label>
           {/each}
@@ -623,7 +623,7 @@
           {#each subHeaders as track}
             {#if track}
               <input name="subtitle-radio-set" type="radio" id="subtitle-{track.number}-radio" value={track.numer} checked={track.number === subs.current} />
-              <label for="subtitle-{track.numer}-radio" on:click={() => subs.selectCaptions(track.number)}>
+              <label for="subtitle-{track.nubmer}-radio" on:click={() => subs.selectCaptions(track.number)} class="text-truncate pb-5">
                 {(track.language || (!Object.values(subs.headers).some(header => header.language === 'eng' || header.language === 'en') ? 'eng' : track.type)) +
                   (track.name ? ' - ' + track.name : '')}
               </label>
@@ -971,5 +971,96 @@
     margin-right: -0.5rem;
     filter: invert(0.84);
     padding-top: 2rem;
+  }
+
+  /* Radio debloat for halfmoon */
+  .custom-radio {
+    display: flex;
+    flex-direction: column;
+  }
+  .custom-radio label {
+    position: relative;
+  }
+  .custom-radio input[type='radio']:hover + label:before {
+    background-color: var(--lm-radio-bg-color-hover);
+    border-color: var(--lm-radio-border-color-hover);
+  }
+  .custom-radio input[type='radio']:focus + label:before {
+    border-color: var(--lm-radio-border-color-focus);
+    -moz-box-shadow: var(--lm-radio-box-shadow-focus);
+    -webkit-box-shadow: var(--lm-radio-box-shadow-focus);
+    box-shadow: var(--lm-radio-box-shadow-focus);
+  }
+  .custom-radio input[type='radio']:checked + label:before {
+    background-color: var(--lm-radio-bg-color-checked);
+    border-color: var(--lm-radio-border-color-checked);
+  }
+  .custom-radio input[type='radio']:checked:focus + label:before {
+    border-color: var(--lm-radio-border-color-checked-focus);
+    -moz-box-shadow: var(--lm-radio-box-shadow-checked-focus);
+    -webkit-box-shadow: var(--lm-radio-box-shadow-checked-focus);
+    box-shadow: var(--lm-radio-box-shadow-checked-focus);
+  }
+  .dark-mode .custom-radio label:before {
+    background-color: var(--dm-radio-bg-color);
+    border-color: var(--dm-radio-border-color);
+  }
+  .dark-mode .custom-radio input[type='radio']:hover + label:before {
+    background-color: var(--dm-radio-bg-color-hover);
+    border-color: var(--dm-radio-border-color-hover);
+  }
+  .dark-mode .custom-radio input[type='radio']:focus + label:before {
+    border-color: var(--dm-radio-border-color-focus);
+    -moz-box-shadow: var(--dm-radio-box-shadow-focus);
+    -webkit-box-shadow: var(--dm-radio-box-shadow-focus);
+    box-shadow: var(--dm-radio-box-shadow-focus);
+  }
+  .dark-mode .custom-radio input[type='radio']:checked + label:before {
+    background-color: var(--dm-radio-bg-color-checked);
+    border-color: var(--dm-radio-border-color-checked);
+  }
+  .dark-mode .custom-radio input[type='radio']:checked:focus + label:before {
+    border-color: var(--dm-radio-border-color-checked-focus);
+    -moz-box-shadow: var(--dm-radio-box-shadow-checked-focus);
+    -webkit-box-shadow: var(--dm-radio-box-shadow-checked-focus);
+    box-shadow: var(--dm-radio-box-shadow-checked-focus);
+  }
+  .custom-radio label:after {
+    content: '';
+    position: absolute;
+    display: none;
+    top: var(--radio-checkmark-top);
+    left: var(--radio-checkmark-left);
+    width: var(--radio-checkmark-width-height);
+    height: var(--radio-checkmark-width-height);
+    background-color: var(--lm-radio-checkmark-color);
+    border-radius: var(--radio-checkmark-border-radius);
+  }
+  .custom-radio input[type='radio']:checked + label:after {
+    display: block;
+  }
+  .custom-radio input[type='radio']:disabled + label {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .custom-radio input[type='radio']:disabled + label:before,
+  .custom-radio input[type='radio']:hover:disabled + label:before {
+    background-color: var(--lm-radio-bg-color);
+    border-color: var(--lm-radio-border-color);
+  }
+  .custom-radio input[type='radio']:disabled:checked + label:before,
+  .custom-radio input[type='radio']:hover:disabled:checked + label:before {
+    background-color: var(--lm-radio-bg-color-checked);
+    border-color: var(--lm-radio-border-color-checked);
+  }
+  .dark-mode .custom-radio input[type='radio']:disabled + label:before,
+  .dark-mode .custom-radio input[type='radio']:hover:disabled + label:before {
+    background-color: var(--dm-radio-bg-color);
+    border-color: var(--dm-radio-border-color);
+  }
+  .dark-mode .custom-radio input[type='radio']:disabled:checked + label:before,
+  .dark-mode .custom-radio input[type='radio']:hover:disabled:checked + label:before {
+    background-color: var(--dm-radio-bg-color-checked);
+    border-color: var(--dm-radio-border-color-checked);
   }
 </style>
