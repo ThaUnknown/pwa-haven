@@ -37,6 +37,7 @@ const cacheList = {
     version: '1.5.5',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
+      'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.wasm',
       '../video-player/public/lib/subtitles-octopus-worker.js',
       '../video-player/public/lib/subtitles-octopus-worker.wasm',
       '../video-player/public/lib/Roboto.ttf',
