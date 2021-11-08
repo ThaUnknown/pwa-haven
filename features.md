@@ -1,7 +1,10 @@
 # **Shared**
 These resources are shared between all apps, no matter how many instances of the apps you run, this will only be used once:
+
 Shared filesize <500KB
+
 RAM usage <30MB
+
 These features are shared between all PWA's:
 - Single, shared update controller
 - Instant updating
@@ -18,6 +21,7 @@ These features are shared between all PWA's:
 
 # **Image Viewer**
 Filesize <25KB
+
 RAM usage <30MB per instance
 - Support for a lot of formats `[apng, avif, bmp, gif, jpg, jpeg, png, svg, tiff, webp, ico and others]`
 - Transforms: zoom, rotate, flip, mirror
@@ -27,6 +31,7 @@ RAM usage <30MB per instance
 
 # **Audio Player**
 Filesize <350KB
+
 RAM usage <40MB per instance
 - Support for a lot of formats `[3gpp, 3g2, acc, ac3*, amr, eac3*, flac, mp3, mp4, mpeg, ogg, opus, raw, wav, weba and others]`
 - Support for a lot of metadata tags `[ape, asf, exif, id3, riff/info]`
@@ -43,6 +48,7 @@ RAM usage <40MB per instance
 
 # **Video Player**
 Filesize <3.2MB
+
 RAM usage <70MB per instance `[note: this can sometimes exceed 0.5GB based on the video which is being played because of video caching]`
 - Support for a lot of video formats `[3gpp, 3g2, m4v, mp4, qt, ogg, webm, m2ts*, mkv and others]`
 - Support for the most popular video codecs `[av1, h.264, h.265*, theora, vp9, vp9 and others]`
@@ -64,6 +70,7 @@ RAM usage <70MB per instance `[note: this can sometimes exceed 0.5GB based on th
 
 # **Screen Recorder**
 Filesize <45KB
+
 RAM usage <300MB per instance `[35MB when idle]`
 - Saves directly to drive `[chromium only]`
 - Very wide range of settings `[container, coded, framerate, bit rates, sample rates, sample sizes, audio channels, system audio recording, microphone recording, noise supression, echo cancellation]`
@@ -71,6 +78,7 @@ RAM usage <300MB per instance `[35MB when idle]`
 
 # **Torrent Client**
 Filesize <1.1MB
+
 RAM usage 100MB-300MB+ `[this can vary greatly based on the amt of active torrents, and network connections]`
 - WebRTC only
 - Saves directly to drive `[chromium only]`
