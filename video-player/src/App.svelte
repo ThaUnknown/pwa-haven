@@ -7,7 +7,6 @@
   let name = ''
   let files
 
-  navigator.serviceWorker.register('/sw.js')
   // loading files
   function handleDrop({ dataTransfer }) {
     handleItems([...dataTransfer.items])

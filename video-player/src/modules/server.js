@@ -1,6 +1,5 @@
-
-const scope = location.pathname.substr(0, location.pathname.lastIndexOf('/') + 1)
-const worker = location.origin + scope + 'server-worker.js' === navigator.serviceWorker?.controller?.scriptURL && navigator.serviceWorker.controller
+/* eslint-env browser */
+const worker = navigator.serviceWorker.controller
 const keepAliveTime = 20000
 
 let workerPortCount = 0
@@ -23,7 +22,7 @@ if (worker) {
   handleWorker(worker)
 } else {
   navigator.serviceWorker
-    .register('server-worker.js', { scope })
+    .register('/sw.js')
     .then(reg => {
       handleWorker(reg.active || reg.waiting || reg.installing)
     })
@@ -46,7 +45,7 @@ function loadWorker (controller) {
   navigator.serviceWorker.addEventListener('message', event => {
     const { data } = event
     if (!data?.type === 'player' || !data.url) return null
-    const filePath = decodeURI(data.url.slice(data.url.indexOf(data.scope + 'player/') + 7 + data.scope.length))
+    const filePath = decodeURI(data.url.slice(data.url.indexOf(data.scope + 'video-player/public/player/') + 27 + data.scope.length))
     if (!filePath) return null
 
     const file = findFile(filePath)

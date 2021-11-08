@@ -1,4 +1,4 @@
-/* eslint-env serviceworker */
+/* eslint-env serviceworker, browser */
 const cacheList = {
   shared: {
     version: '1.0.4',
@@ -34,14 +34,13 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '1.5.6',
+    version: '1.5.7',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.wasm',
       '../video-player/public/lib/subtitles-octopus-worker.js',
       '../video-player/public/lib/subtitles-octopus-worker.wasm',
       '../video-player/public/lib/Roboto.ttf',
-      '../video-player/public/server-worker.js',
       '../video-player/public/build/bundle.js',
       '../video-player/public/build/bundle.css',
       '../video-player/public/build/cast.js',
@@ -89,41 +88,117 @@ self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     const keyList = await caches.keys()
     const tabs = await self.clients.matchAll({ type: 'window' })
-    return Promise.all(keyList.map(key => {
+    return Promise.all(keyList.map(async key => {
       if (key) { // dump all outdates caches on load
         const [name, version] = key.split(' v.')
         if (cacheList[name].version !== version) {
-          const promise = caches.delete(key)
+          caches.delete(key)
+          const cache = await caches.open(name + ' v.' + cacheList[name].version)
+          await cache.addAll(cacheList[name].resources)
           for (const tab of tabs) {
             if (tab.url.indexOf(location.origin + '/' + name) === 0) tab.navigate(tab.url)
           }
-          return promise
         }
       }
-      return null
     }))
   })())
   self.clients.claim()
 })
 
 self.addEventListener('fetch', event => {
-  event.respondWith((async () => {
-    let match = await caches.match(event.request)
-    if (!match) { // not in cache
-      const url = event.request.url
-      if (url.indexOf(self.registration.scope) !== -1) { // in origin
-        const path = url.slice(self.registration.scope.length)
-        const app = path.slice(0, path.indexOf('/'))
-        if (cacheList[app]) { // in cachelist
-          const keys = await caches.keys()
-          if (!keys.includes(app + ' v.' + cacheList[app].version)) { // cache doesnt exist
-            const cache = await caches.open(app + ' v.' + cacheList[app].version)
-            await cache.addAll(cacheList[app].resources)
-            match = await caches.match(event.request)
+  let res = proxyResponse(event)
+  if (!res) {
+    res = (async () => {
+      let match = await caches.match(event.request)
+      if (!match) { // not in cache
+        const url = event.request.url
+        if (url.indexOf(self.registration.scope) !== -1) { // in origin
+          const path = url.slice(self.registration.scope.length)
+          const app = path.slice(0, path.indexOf('/'))
+          if (cacheList[app]) { // in cachelist
+            const keys = await caches.keys()
+            if (!keys.includes(app + ' v.' + cacheList[app].version)) { // cache doesnt exist
+              const cache = await caches.open(app + ' v.' + cacheList[app].version)
+              await cache.addAll(cacheList[app].resources)
+              match = await caches.match(event.request)
+            }
           }
         }
       }
-    }
-    return match || fetch(event.request)
-  })())
+      return match || fetch(event.request)
+    })()
+  }
+  event.respondWith(res)
 })
+
+const portTimeoutDuration = 5000
+function proxyResponse (event) {
+  const { request } = event
+  const { url, method, headers, destination } = request
+  if (!url.includes(self.registration.scope + 'video-player/public/player/')) return null
+  if (url.includes(self.registration.scope + 'video-player/public/player/keepalive/')) return new Response()
+
+  return clients.matchAll({ type: 'window', includeUncontrolled: true })
+    .then(clients => {
+      return new Promise(resolve => {
+        // Use race condition for whoever controls the response stream
+        for (const client of clients) {
+          const messageChannel = new MessageChannel()
+          const { port1, port2 } = messageChannel
+          port1.onmessage = event => {
+            resolve([event.data, messageChannel])
+          }
+          client.postMessage({
+            url,
+            method,
+            headers: Object.fromEntries(headers.entries()),
+            scope: self.registration.scope,
+            destination,
+            type: 'player'
+          }, [port2])
+        }
+      })
+    })
+    .then(([data, messageChannel]) => {
+      if (data.body === 'STREAM' || data.body === 'DOWNLOAD') {
+        let timeOut = null
+        return new Response(new ReadableStream({
+          pull (controller) {
+            return new Promise(resolve => {
+              messageChannel.port1.onmessage = event => {
+                if (event.data) {
+                  controller.enqueue(event.data) // event.data is Uint8Array
+                } else {
+                  clearTimeout(timeOut)
+                  controller.close() // event.data is null, means the stream ended
+                  messageChannel.port1.onmessage = null
+                }
+                resolve()
+              }
+
+              // 'media player' does NOT signal a close on the stream and we cannot close it because it's locked to the reader,
+              // so we just empty it after 5s of inactivity, the browser will request another port anyways
+              clearTimeout(timeOut)
+              if (data.body === 'STREAM') {
+                timeOut = setTimeout(() => {
+                  controller.close()
+                  messageChannel.port1.postMessage(false) // send timeout
+                  messageChannel.port1.onmessage = null
+                  resolve()
+                }, portTimeoutDuration)
+              }
+
+              messageChannel.port1.postMessage(true) // send a pull request
+            })
+          },
+          cancel () {
+            // This event is never executed
+            messageChannel.port1.postMessage(false) // send a cancel request
+          }
+        }), data)
+      }
+
+      return new Response(data.body, data)
+    })
+    .catch(console.error)
+}
