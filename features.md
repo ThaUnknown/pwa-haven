@@ -31,8 +31,8 @@ RAM usage <40MB per instance
 - Support for a lot of formats `[3gpp, 3g2, acc, ac3*, amr, eac3*, flac, mp3, mp4, mpeg, ogg, opus, raw, wav, weba and others]`
 - Support for a lot of metadata tags `[ape, asf, exif, id3, riff/info]`
 - Support for external cover files
-- Basic playback controls `[play, pause, last, next, progress, volume, mute, loop one, shuffle, cast]`
-- Keybinds `[space, n, m, c, leftarr, rightarr, uparr, downarr]`
+- Basic playback controls `[play, pause, last, next, progress, volume, mute, loop one, shuffle, cast, playback speed]`
+- Keybinds `[space, n, m, c, leftarr, rightarr, uparr, downarr, [, ], \]`
 - Media Session support, with audio metadata
 - Media Controls support, with audio metadata
 - Cast support

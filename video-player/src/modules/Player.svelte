@@ -34,6 +34,7 @@
   let isFullscreen = false
   let ended = false
   let volume = localStorage.getItem('volume') || 1
+  let playbackRate = 1
   $: localStorage.setItem('volume', volume)
   onMount(() => {
     if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
@@ -314,6 +315,15 @@
       case 'ArrowDown':
         volume = Math.max(0, volume - 0.05)
         break
+      case '[':
+        playbackRate -= 0.1
+        break
+      case ']':
+        playbackRate += 0.1
+        break
+      case '\\':
+        playbackRate = 1
+        break
     }
   }
 
@@ -379,7 +389,6 @@
     presentationConnection = event.connection
     presentationConnection.addEventListener('terminate', () => {
       presentationConnection = null
-      pip = false
       peer = null
     })
 
@@ -393,7 +402,6 @@
 
     peer.dc.onopen = async () => {
       if (peer && presentationConnection) {
-        pip = true
         const tracks = []
         const videostream = video.captureStream(await video.fps)
         if (true) {
@@ -538,11 +546,13 @@
     bind:paused
     bind:ended
     bind:muted
+    bind:playbackRate
     on:waiting={showBuffering}
     on:loadeddata={hideBuffering}
     on:canplay={hideBuffering}
     on:playing={hideBuffering}
-    on:loadedmetadata={hideBuffering} />
+    on:loadedmetadata={hideBuffering}
+    on:leavepictureinpicture={() => (pip = false)} />
   <!-- svelte-ignore a11y-missing-content -->
   {#if stats}
     <div class="position-absolute top-0 bg-very-dark p-5">
