@@ -5,7 +5,7 @@
 
   const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser())
   let name = ''
-  let files
+  let files = []
 
   // loading files
   function handleDrop({ dataTransfer }) {
