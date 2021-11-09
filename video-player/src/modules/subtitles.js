@@ -1,6 +1,7 @@
+/* eslint-env browser */
 import { SubtitleParser, SubtitleStream } from 'matroska-subtitles'
 import SubtitlesOctopus from '../lib/subtitles-octopus.js'
-import { toTS, subtitleExtensions, videoExtensions } from './util.js'
+import { toTS, videoRx, subRx } from './util.js'
 
 const defaultHeader = `[V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
@@ -22,7 +23,7 @@ export default class Subtitles {
     this.parser = null
     this.current = 0
     this.onHeader = onHeader
-    this.videoFiles = files.filter(file => videoExtensions.some(ext => file.name.endsWith(ext)))
+    this.videoFiles = files.filter(file => videoRx.test(file.name))
     this.timeout = null
 
     if (this.selected.name.endsWith('.mkv') && this.selected.createReadStream) {
@@ -48,7 +49,7 @@ export default class Subtitles {
     const videoName = targetFile.name.substring(0, targetFile.name.lastIndexOf('.')) || targetFile.name
     // array of subtitle files that match video name, or all subtitle files when only 1 vid file
     const subtitleFiles = this.files.filter(file => {
-      return subtitleExtensions.some(ext => file.name.endsWith(ext)) && (this.videoFiles.length === 1 ? true : file.name.includes(videoName))
+      return subRx.test(file.name) && (this.videoFiles.length === 1 ? true : file.name.includes(videoName))
     })
     if (subtitleFiles.length) {
       this.parsed = true
@@ -192,16 +193,16 @@ export default class Subtitles {
       subtitle.text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, '\\h')
     }
     return 'Dialogue: ' +
-    (subtitle.layer || 0) + ',' +
-    toTS(subtitle.time / 1000, true) + ',' +
-    toTS((subtitle.time + subtitle.duration) / 1000, true) + ',' +
-    (subtitle.style || 'Default') + ',' +
-    (subtitle.name || '') + ',' +
-    (subtitle.marginL || '0') + ',' +
-    (subtitle.marginR || '0') + ',' +
-    (subtitle.marginV || '0') + ',' +
-    (subtitle.effect || '') + ',' +
-    subtitle.text || ''
+      (subtitle.layer || 0) + ',' +
+      toTS(subtitle.time / 1000, true) + ',' +
+      toTS((subtitle.time + subtitle.duration) / 1000, true) + ',' +
+      (subtitle.style || 'Default') + ',' +
+      (subtitle.name || '') + ',' +
+      (subtitle.marginL || '0') + ',' +
+      (subtitle.marginR || '0') + ',' +
+      (subtitle.marginV || '0') + ',' +
+      (subtitle.effect || '') + ',' +
+      subtitle.text || ''
   }
 
   parseSubtitles (file, skipFiles) { // parse subtitles fully after a download is finished

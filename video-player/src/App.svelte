@@ -1,6 +1,6 @@
 <script>
   import Player from './modules/Player.svelte'
-  import { videoRx, subtitleExtensions } from './modules/util.js'
+  import { videoRx, subRx } from './modules/util.js'
   import InstallPrompt from './modules/InstallPrompt.svelte'
 
   const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser())
@@ -25,14 +25,14 @@
         if (item.kind === 'string') {
           return new Promise(resolve => {
             item.getAsString(url => {
-              if (videoRx.test(url)) {
+              if (videoRx.test(url) || subRx.test(url)) {
                 const name = url.substring(Math.max(url.lastIndexOf('\\') + 2, url.lastIndexOf('/') + 1))
                 resolve({
                   name,
-                  url,
-                  type: 'video/'
+                  url
                 })
               }
+              resolve()
             })
           })
         } else if (item.kind === 'file') {
@@ -43,7 +43,13 @@
         return new Promise(resolve =>
           item.getAsString(string => {
             const elems = DOMPARSER(string, 'text/html').querySelectorAll('video')
-            if (elems.length) resolve(elems.map(video => video?.src))
+            if (elems.length)
+              resolve(
+                elems.map(video => {
+                  const name = video.src.substring(Math.max(video.src.lastIndexOf('\\') + 2, video.src.lastIndexOf('/') + 1))
+                  return { url: video.src, name }
+                })
+              )
             resolve()
           })
         )
@@ -58,7 +64,7 @@
             })
           })
         } else if (entry && !entry.isDirectory) {
-          if (subtitleExtensions.some(ext => entry.name.endsWith(ext))) {
+          if (videoRx.test(entry.name) || subRx.test(entry.name)) {
             return new Promise(resolve => entry.file(resolve))
           }
         }
@@ -88,14 +94,12 @@
   }
   const search = new URLSearchParams(location.search)
   for (const param of search) {
-    if (videoRx.test(param[1])) {
+    if (videoRx.test(param[1]) || subRx.test(param[1])) {
       const name = param[1].substring(Math.max(param[1].lastIndexOf('\\') + 2, param[1].lastIndexOf('/') + 1))
       files.push({
         name,
-        url: param[1],
-        type: 'video/'
+        url: param[1]
       })
-      if (!current) current = files[0]
     }
   }
   function handlePopup() {

@@ -2,10 +2,11 @@
   import InstallPrompt from './modules/InstallPrompt.svelte'
   import Player from './modules/Player.svelte'
   import { parseBlob } from 'music-metadata-browser'
+  import { URLFile } from './modules/File.js'
 
   const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser())
   let name = ''
-  let files
+  let files = []
 
   navigator.serviceWorker.register('/sw.js')
 
@@ -29,11 +30,7 @@
             if (audioRx.test(url)) {
               const filename = url.substring(Math.max(url.lastIndexOf('\\'), url.lastIndexOf('/')) + 1)
               const name = filename.substring(0, filename.lastIndexOf('.')) || filename
-              resolve({
-                name,
-                url,
-                type: 'audio/'
-              })
+              resolve(new URLFile({ name, url, type: 'audio/' }))
             }
             resolve()
           })
@@ -43,7 +40,14 @@
         return new Promise(resolve =>
           item.getAsString(string => {
             const elems = DOMPARSER(string, 'text/html').querySelectorAll('audio')
-            if (elems.length) resolve(elems.map(audio => audio?.src))
+            if (elems.length)
+              resolve(
+                elems.map(audio => {
+                  const filename = audio.src.substring(Math.max(audio.src.lastIndexOf('\\'), audio.src.lastIndexOf('/')) + 1)
+                  const name = filename.substring(0, filename.lastIndexOf('.')) || filename
+                  return new URLFile({ url: audio.src, name, type: 'audio/' })
+                })
+              )
             resolve()
           })
         )
@@ -63,7 +67,7 @@
       }
       return
     })
-    processFiles((await Promise.all(promises)).flat().filter(i => i))
+    files = (await Promise.all(promises)).flat().filter(i => i)
   }
 
   if ('launchQueue' in window) {
@@ -73,15 +77,13 @@
       }
       const promises = launchParams.files.map(file => file.getFile())
       // for some fucking reason, the same file can get passed multiple times, why? I still want to future-proof multi-files
-      processFiles(
-        (await Promise.all(promises)).filter((file, index, all) => {
-          return (
-            all.findIndex(search => {
-              return search.name === file.name && search.size === file.size && search.lastModified === file.lastModified
-            }) === index
-          )
-        })
-      )
+      files = (await Promise.all(promises)).filter((file, index, all) => {
+        return (
+          all.findIndex(search => {
+            return search.name === file.name && search.size === file.size && search.lastModified === file.lastModified
+          }) === index
+        )
+      })
     })
   }
   const search = new URLSearchParams(location.search)
@@ -89,12 +91,7 @@
     if (audioRx.test(param[1])) {
       const filename = param[1].substring(Math.max(param[1].lastIndexOf('\\'), param[1].lastIndexOf('/')) + 1)
       const name = filename.substring(0, filename.lastIndexOf('.')) || filename
-      files.push({
-        name,
-        url: param[1],
-        type: 'audio/'
-      })
-      if (!current) current = files[0]
+      files.push(new URLFile({ name, url: param[1], type: 'audio/' }))
     }
   }
   function handlePopup() {
@@ -104,13 +101,14 @@
       input.multiple = 'multiple'
 
       input.onchange = ({ target }) => {
-        processFiles([...target.files])
+        files = [...target.files]
         input = null
       }
       input.click()
     }
   }
   let songs = []
+  $: processFiles(files)
   async function processFiles(files) {
     if (files.length) {
       const image = files.find(file => file.type.indexOf('image') === 0)

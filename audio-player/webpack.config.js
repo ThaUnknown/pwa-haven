@@ -80,7 +80,6 @@ module.exports = {
         'punycode',
         'process',
         'querystring',
-        'stream',
         '_stream_duplex',
         '_stream_passthrough',
         '_stream_readable',
