@@ -88,8 +88,15 @@
   }
   const search = new URLSearchParams(location.search)
   for (const param of search) {
-    files.push(param[1])
-    if (!current) current = files[0]
+    if (videoRx.test(param[1])) {
+      const name = param[1].substring(Math.max(param[1].lastIndexOf('\\') + 2, param[1].lastIndexOf('/') + 1))
+      files.push({
+        name,
+        url: param[1],
+        type: 'video/'
+      })
+      if (!current) current = files[0]
+    }
   }
   function handlePopup() {
     if (!files.length) {

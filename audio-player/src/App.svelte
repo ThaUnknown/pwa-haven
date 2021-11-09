@@ -86,8 +86,16 @@
   }
   const search = new URLSearchParams(location.search)
   for (const param of search) {
-    files.push(param[1])
-    if (!current) current = files[0]
+    if (audioRx.test(param[1])) {
+      const filename = param[1].substring(Math.max(param[1].lastIndexOf('\\'), param[1].lastIndexOf('/')) + 1)
+      const name = filename.substring(0, filename.lastIndexOf('.')) || filename
+      files.push({
+        name,
+        url: param[1],
+        type: 'audio/'
+      })
+      if (!current) current = files[0]
+    }
   }
   function handlePopup() {
     if (!songs.length) {
