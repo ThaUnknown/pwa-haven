@@ -161,6 +161,7 @@
             current = file
           })
       }
+      video.play()
     }
   }
   $: initSubs(current)
@@ -539,7 +540,6 @@
   <video
     {src}
     bind:this={video}
-    autoplay
     bind:volume
     bind:duration
     bind:currentTime
