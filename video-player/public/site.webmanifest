@@ -6,7 +6,7 @@
   "lang": "en-US",
   "orientation": "landscape",
   "background_color": "#191c20",
-  "theme_color": "#191c20",
+  "theme_color": "#000",
   "scope": "/video-player/public/",
   "description": "Simple and Powerful Video Player",
   "icons": [

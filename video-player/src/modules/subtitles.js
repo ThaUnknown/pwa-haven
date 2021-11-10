@@ -40,7 +40,6 @@ export default class Subtitles {
         }
         lastStream?.destroy()
       })
-      if (this.selected instanceof File) this.parseSubtitles(this.selected, true) // only parse local files
     }
     this.findSubtitleFiles(this.selected)
   }
@@ -51,6 +50,8 @@ export default class Subtitles {
     const subtitleFiles = this.files.filter(file => {
       return subRx.test(file.name) && (this.videoFiles.length === 1 ? true : file.name.includes(videoName))
     })
+    this.headers = []
+    this.tracks = []
     if (subtitleFiles.length) {
       this.parsed = true
       this.current = 0
@@ -205,11 +206,11 @@ export default class Subtitles {
       subtitle.text || ''
   }
 
-  parseSubtitles (file, skipFiles) { // parse subtitles fully after a download is finished
+  parseSubtitles () { // parse all existing subtitles for a file
     return new Promise((resolve) => {
-      if (file.name.endsWith('.mkv')) {
+      if (this.selected.name.endsWith('.mkv')) {
         let parser = new SubtitleParser()
-        this.handleSubtitleParser(parser, skipFiles)
+        this.handleSubtitleParser(parser, true)
         const finish = () => {
           console.log('Sub parsing finished', toTS((performance.now() - t0) / 1000))
           this.parsed = true
@@ -228,7 +229,7 @@ export default class Subtitles {
         parser.once('finish', finish)
         const t0 = performance.now()
         console.log('Sub parsing started')
-        const fileStream = file.createReadStream()
+        const fileStream = this.selected.createReadStream()
         this.parser = fileStream.pipe(parser)
       } else {
         resolve()
@@ -301,22 +302,22 @@ export default class Subtitles {
       if (!this.timeout) {
         this.timeout = setTimeout(() => {
           this.timeout = undefined
-          this.renderer?.setTrack(trackNumber !== -1 ? this.headers[trackNumber].header.slice(0, -1) + Array.from(this.tracks[trackNumber]).join('\n') : defaultHeader)
+          if (this.renderer && this.headers) this.renderer.setTrack(trackNumber !== -1 ? this.headers[trackNumber].header.slice(0, -1) + Array.from(this.tracks[trackNumber]).join('\n') : defaultHeader)
         }, 1000)
       }
     }
   }
 
   destroy () {
+    this.stream?.destroy()
+    this.parser?.destroy()
+    this.renderer?.destroy()
     this.files = null
     this.video = null
     this.selected = null
-    this.renderer?.destroy()
     this.tracks = null
     this.headers = null
     this.onHeader()
-    this.stream?.destroy()
-    this.parser?.destroy()
     this.fonts?.forEach(file => URL.revokeObjectURL(file))
   }
 }

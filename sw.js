@@ -34,7 +34,7 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '1.5.10',
+    version: '1.6.0',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.wasm',
@@ -135,8 +135,8 @@ const portTimeoutDuration = 5000
 function proxyResponse (event) {
   const { request } = event
   const { url, method, headers, destination } = request
-  if (!url.includes(self.registration.scope + 'video-player/public/player/')) return null
-  if (url.includes(self.registration.scope + 'video-player/public/player/keepalive/')) return new Response()
+  if (!(url.includes(self.registration.scope) && url.includes('/server/'))) return null
+  if (url.includes(self.registration.scope) && url.includes('/server/keepalive/')) return new Response()
 
   return clients.matchAll({ type: 'window', includeUncontrolled: true })
     .then(clients => {
@@ -152,9 +152,8 @@ function proxyResponse (event) {
             url,
             method,
             headers: Object.fromEntries(headers.entries()),
-            scope: self.registration.scope,
             destination,
-            type: 'player'
+            type: 'server'
           }, [port2])
         }
       })

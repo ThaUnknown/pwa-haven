@@ -1,13 +1,16 @@
 /* eslint-env browser */
+import speedometer from 'speedometer'
 const worker = navigator.serviceWorker.controller
 const keepAliveTime = 20000
 
 let workerPortCount = 0
 let workerKeepAliveInterval = null
 let file = null
+export let speed = speedometer(1)
 
 export function setFile (streamable) {
   file = streamable
+  speed = speedometer(1)
 }
 
 const handleWorker = worker => {
@@ -44,8 +47,8 @@ function loadWorker (controller) {
   if (controller.state !== 'activated') throw new Error('Worker isn\'t activated')
   navigator.serviceWorker.addEventListener('message', event => {
     const { data } = event
-    if (!data?.type === 'player' || !data.url) return null
-    const filePath = decodeURI(data.url.slice(data.url.indexOf(data.scope + 'video-player/public/player/') + 27 + data.scope.length))
+    if (!data?.type === 'server' || !data.url) return null
+    const filePath = decodeURI(data.url.slice(data.url.indexOf('/server/') + 8))
     if (!filePath) return null
 
     const file = findFile(filePath)
@@ -72,6 +75,7 @@ function loadWorker (controller) {
         let chunk
         try {
           chunk = (await asyncIterator.next()).value
+          speed(chunk.length)
         } catch (e) {
           // chunk is yet to be downloaded or it somehow failed, should this be logged?
         }
@@ -79,7 +83,7 @@ function loadWorker (controller) {
         if (!chunk) cleanup()
         if (!workerKeepAliveInterval) {
           workerKeepAliveInterval = setInterval(
-            () => fetch(`${controller.scriptURL.substr(0, controller.scriptURL.lastIndexOf('/') + 1).slice(window.location.origin.length)}player/keepalive/`),
+            () => fetch(`${controller.scriptURL.substr(0, controller.scriptURL.lastIndexOf('/') + 1).slice(window.location.origin.length)}server/keepalive/`),
             keepAliveTime
           )
         }

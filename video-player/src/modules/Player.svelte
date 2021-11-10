@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { setFile } from './server.js'
+  import { setFile, speed } from './server.js'
   import Peer from '../lib/peer.js'
   import './File.js'
   import Subtitles from './subtitles.js'
@@ -41,7 +41,6 @@
       video.addEventListener('loadeddata', () => {
         video.fps = new Promise(resolve => {
           let lastmeta = null
-          let waspaused = false
           let count = 0
 
           function handleFrames(now, metadata) {
@@ -64,17 +63,13 @@
                 } else {
                   resolve(rawFPS)
                 }
-                if (waspaused) paused = true
               } else {
                 lastmeta = metadata
                 video.requestVideoFrameCallback(handleFrames)
               }
             } else {
               count++
-              if (paused) {
-                waspaused = paused
-                paused = false
-              }
+              paused = false
               video.requestVideoFrameCallback(handleFrames)
             }
           }
@@ -124,16 +119,17 @@
 
   async function handleCurrent(file) {
     if (file) {
-      URL.revokeObjectURL(current?.name) // eh just in case
+      if (thumbnailData.video?.src) URL.revokeObjectURL(video?.src)
+      Object.assign(thumbnailData, {
+        thumbnails: [],
+        interval: undefined,
+        video: undefined
+      })
       if (file instanceof File) {
-        if (file.name.endsWith('.mkv')) {
-          setFile(file)
-          src = `player/${file.name}`
-        } else {
-          setFile(null)
-          src = URL.createObjectURL(file)
-        }
+        setFile(file)
+        src = `server/${file.name}`
         current = file
+        fast = false
       } else {
         await new Promise((resolve, reject) => {
           if (!file.name.endsWith('.mkv')) return reject()
@@ -152,7 +148,7 @@
             const urlfile = new URLFile(file)
             await urlfile.ready
             setFile(urlfile)
-            src = `player/${urlfile.name}`
+            src = `server/${urlfile.name}`
             current = urlfile
           })
           .catch(() => {
@@ -161,7 +157,6 @@
             current = file
           })
       }
-      video.play()
     }
   }
   $: initSubs(current)
@@ -432,7 +427,7 @@
     } else {
       immersed = false
     }
-    immerseTimeout = setTimeout(immersePlayer, 5 * 1000)
+    immerseTimeout = setTimeout(immersePlayer, 8 * 1000)
   }
 
   function hideBuffering() {
@@ -454,22 +449,31 @@
     playbackRate: 1,
     position: Math.max(0, currentTime || 0)
   })
-  async function mediaChange(current) {
+  async function dataURItoBlob(dataURI) {
+    const res = await fetch(dataURI)
+    const ab = await res.arrayBuffer()
+    return new Blob([ab], { type: 'image/png' })
+  }
+  async function mediaChange(current, image) {
     if (current) {
       const { release_group, anime_title, episode_number } = await anitomyscript(current.name)
       // honestly, this is made for anime, but works fantastic for everything else.
       name = [anime_title, episode_number].filter(i => i).join(' - ')
       if ('mediaSession' in navigator) {
-        const metadata = new MediaMetadata({
-          title: name || 'Video Player'
-          // artwork: [
-          //   {
-          //     src: null,
-          //     sizes: '256x256',
-          //     type: 'image/jpg'
-          //   }
-          // ]
-        })
+        const metadata = image
+          ? new MediaMetadata({
+              title: name || 'Video Player',
+              artwork: [
+                {
+                  src: image,
+                  sizes: '256x256',
+                  type: 'image/jpg'
+                }
+              ]
+            })
+          : new MediaMetadata({
+              title: name || 'Video Player'
+            })
         if (release_group) metadata.artist = release_group
         navigator.mediaSession.metadata = metadata
       }
@@ -521,13 +525,94 @@
       }
     }
   }
+  let fast = false
+  async function checkSpeed() {
+    if (!fast && current instanceof File && duration) {
+      const byterate = current.size / duration
+      const currBps = speed()
+      if (currBps > 5 * byterate) {
+        console.log('Access speed exceeds x5 bitrate')
+        fast = true
+        await subs?.parseSubtitles()
+        finishThumbnails()
+      }
+    }
+  }
+  const thumbCanvas = document.createElement('canvas')
+  thumbCanvas.width = 200
+  const thumbnailData = {
+    thumbnails: [],
+    canvas: thumbCanvas,
+    context: thumbCanvas.getContext('2d'),
+    interval: null,
+    video: null
+  }
+  let hover = null
+  let hoverTime = 0
+  let hoverOffset = 0
+  function handleHover({ offsetX, target }) {
+    hoverOffset = offsetX / target.clientWidth
+    hoverTime = duration * hoverOffset
+    hover.style.setProperty('left', hoverOffset * 100 + '%')
+    thumbnail = thumbnailData.thumbnails[Math.floor(hoverTime / thumbnailData.interval)] || ' '
+  }
+  function createThumbnail(vid = video) {
+    if (vid?.readyState >= 2) {
+      const index = Math.floor(vid.currentTime / thumbnailData.interval)
+      if (!thumbnailData.thumbnails[index]) {
+        thumbnailData.context.fillRect(0, 0, 200, thumbnailData.canvas.height)
+        thumbnailData.context.drawImage(vid, 0, 0, 200, thumbnailData.canvas.height)
+        thumbnailData.thumbnails[index] = thumbnailData.canvas.toDataURL('image/jpeg')
+        if (index === 5) mediaChange(current, thumbnailData.thumbnails[index])
+      }
+    }
+  }
+  function initThumbnails() {
+    const height = 200 / (video.videoWidth / video.videoHeight)
+    thumbnailData.interval = duration / 300 < 5 ? 5 : duration / 300
+    thumbnailData.canvas.height = height
+  }
+
+  function finishThumbnails() {
+    const t0 = performance.now()
+    const video = document.createElement('video')
+    let index = 0
+    video.preload = 'none'
+    video.volume = 0
+    video.playbackRate = 0
+    video.addEventListener('loadeddata', () => loadTime())
+    video.addEventListener('canplay', () => {
+      createThumbnail(thumbnailData.video)
+      loadTime()
+    })
+    thumbnailData.video = video
+    const loadTime = () => {
+      while (thumbnailData.thumbnails[index] && index <= Math.floor(thumbnailData.video.duration / thumbnailData.interval)) {
+        // only create thumbnails that are missing
+        index++
+      }
+      if (thumbnailData.video?.currentTime !== thumbnailData.video?.duration && thumbnailData.video) {
+        thumbnailData.video.currentTime = index * thumbnailData.interval
+      } else {
+        thumbnailData.video?.removeAttribute('src')
+        thumbnailData.video?.load()
+        thumbnailData.video?.remove()
+        delete thumbnailData.video
+        console.log('Thumbnail creating finished', index, toTS((performance.now() - t0) / 1000))
+      }
+      index++
+    }
+    thumbnailData.video.src = current instanceof File ? URL.createObjectURL(current) : current.url
+    thumbnailData.video.load()
+    console.log('Thumbnail creating started')
+  }
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
 
 <!-- svelte-ignore a11y-media-has-caption -->
 <div
-  class="player"
+  class="player w-full h-full d-flex flex-column"
   class:pip
   class:immersed
   class:buffering
@@ -538,6 +623,8 @@
   on:mouseleave={immersePlayer}
   on:contextmenu|preventDefault={toggleStats}>
   <video
+    class="position-absolute h-full w-full"
+    autoplay
     {src}
     bind:this={video}
     bind:volume
@@ -547,6 +634,9 @@
     bind:ended
     bind:muted
     bind:playbackRate
+    on:timeupdate={checkSpeed}
+    on:timeupdate={() => createThumbnail()}
+    on:loadedmetadata={initThumbnails}
     on:waiting={showBuffering}
     on:loadeddata={hideBuffering}
     on:canplay={hideBuffering}
@@ -555,7 +645,7 @@
     on:leavepictureinpicture={() => (pip = false)} />
   <!-- svelte-ignore a11y-missing-content -->
   {#if stats}
-    <div class="position-absolute top-0 bg-very-dark p-5">
+    <div class="position-absolute top-0 nerd p-10 m-15 text-monospace rounded">
       FPS: {stats.fps}<br />
       Presented frames: {stats.presented}<br />
       Frame time: {stats.processing}<br />
@@ -565,8 +655,8 @@
     </div>
   {/if}
   <div class="top z-50" />
-  <div class="middle z-50">
-    <div class="ctrl" data-name="ppToggle" on:click={playPause} on:dblclick={toggleFullscreen} />
+  <div class="middle d-flex align-items-center justify-content-center flex-grow-1 z-50">
+    <div class="position-abolute w-full h-full" on:click={playPause} on:dblclick={toggleFullscreen} />
     {#if videos?.length > 1}
       <span class="material-icons ctrl" data-name="playLast" on:click={playLast}> skip_previous </span>
     {/if}
@@ -576,14 +666,14 @@
     {#if videos?.length > 1}
       <span class="material-icons ctrl" data-name="playNext" on:click={playNext}> skip_next </span>
     {/if}
-    <div data-name="bufferingDisplay" />
+    <div data-name="bufferingDisplay" class="position-absolute" />
   </div>
-  <div class="bottom z-50">
+  <div class="bottom d-flex z-50">
     <span class="material-icons ctrl" title="Play/Pause [Space]" data-name="playPause" on:click={playPause}> {ended ? 'replay' : paused ? 'play_arrow' : 'pause'} </span>
     {#if videos?.length > 1}
       <span class="material-icons ctrl" title="Next [N]" data-name="playNext" on:click={playNext}> skip_next </span>
     {/if}
-    <div class="volume">
+    <div class="d-flex w-auto volume">
       <span class="material-icons ctrl" title="Mute [M]" data-name="toggleMute" on:click={toggleMute}> {muted ? 'volume_off' : 'volume_up'} </span>
       <input class="ctrl" type="range" min="0" max="1" step="any" data-name="setVolume" bind:value={volume} style="--value: {volume * 100}%" />
     </div>
@@ -603,11 +693,11 @@
         </div>
       </div>
     {/if}
-    <div class="ctrl" data-name="progressWrapper" data-elapsed="00:00" data-remaining="00:00">
-      <div>
-        <div class="ts">{toTS(targetTime)}</div>
+    <div class="w-full d-flex align-items-center" data-name="progressWrapper">
+      <div class="ts">{toTS(targetTime)}</div>
+      <div class="w-full h-full position-relative">
         <input
-          class="ctrl"
+          class="ctrl w-full h-full"
           type="range"
           min="0"
           max="1"
@@ -616,13 +706,17 @@
           bind:value={progress}
           on:mousedown={handleMouseDown}
           on:mouseup={handleMouseUp}
+          on:mousemove={handleHover}
           on:input={handleProgress}
           on:touchstart={handleMouseDown}
           on:touchend={handleMouseUp}
           style="--value: {progress * 100}%" />
-        <div class="ts">{toTS(duration)}</div>
-        <img class="ctrl" data-elapsed="00:00" data-name="thumbnail" alt="thumbnail" src={thumbnail} />
+        <div class="hover position-absolute d-flex flex-column align-items-center" bind:this={hover}>
+          <img alt="thumbnail" class="w-full mb-10" src={thumbnail} />
+          <div class="ts">{toTS(hoverTime)}</div>
+        </div>
       </div>
+      <div class="ts">{toTS(duration)}</div>
     </div>
     {#if subHeaders?.length}
       <div class="subtitles dropdown dropup with-arrow">
@@ -660,57 +754,13 @@
 </div>
 
 <style>
-  /* yes these are duplicates with framework */
+  .nerd {
+    background: #000000bb;
+  }
   .player {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-content: center;
-    color: #ececec;
     user-select: none;
     font-family: Roboto, Arial, Helvetica, sans-serif;
-    z-index: 10;
-    will-change: width, right, bottom, position, display;
-    bottom: 2rem;
-    right: 2rem;
-    width: 25%;
-    height: auto;
     transition: width 0.2s ease;
-    overflow: hidden;
-    background: #000;
-  }
-
-  .player:not(.miniplayer) {
-    bottom: 0;
-    right: 0;
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: none !important;
-  }
-
-  .player:not(.miniplayer) .middle,
-  .player:not(.miniplayer) .bottom {
-    display: flex;
-  }
-
-  video {
-    position: relative;
-    flex: 0 1 auto;
-    z-index: -1;
-    width: 100%;
-    height: 100%;
-    background: #191c209d;
-    backdrop-filter: blur(10px);
-  }
-
-  .player:not(.miniplayer) video {
-    position: absolute;
-    background: none;
-  }
-
-  .pip {
     background: #000;
   }
 
@@ -746,27 +796,6 @@
     visibility: hidden;
   }
 
-  .top {
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4) 25%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.1) 75%, transparent);
-    display: none;
-    transition: 0.5s opacity ease;
-    border-width: 0;
-    border-top-width: 1px;
-    border-image-slice: 1;
-    border-style: solid;
-    border-image-source: linear-gradient(90deg, #e5204c var(--download), rgba(0, 0, 0, 0.8) var(--download));
-    grid-template-columns: 1fr auto 1fr;
-  }
-  .middle {
-    height: 100%;
-    flex: 1;
-    display: none;
-    flex-direction: row;
-    position: relative;
-    justify-content: center;
-    align-items: center;
-  }
-
   .middle div[data-name='bufferingDisplay'] {
     border: 4px solid #ffffff00;
     border-top: 4px solid #fff;
@@ -776,7 +805,6 @@
     animation: spin 1s linear infinite;
     opacity: 0;
     transition: 0.5s opacity ease;
-    position: absolute;
     filter: drop-shadow(0 0 8px #000);
   }
 
@@ -792,14 +820,6 @@
     100% {
       transform: rotate(360deg);
     }
-  }
-
-  .middle .ctrl[data-name='ppToggle'] {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    display: block;
-    z-index: 2;
   }
 
   .middle .ctrl {
@@ -826,7 +846,6 @@
 
   .bottom {
     background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4) 25%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.1) 75%, transparent);
-    display: none;
     transition: 0.5s opacity ease;
   }
 
@@ -887,22 +906,12 @@
     margin-top: -4px;
   }
 
-  input[type='range'] {
-    --volume: 0%;
-  }
-
   input[type='range']::-moz-range-track {
     background: linear-gradient(90deg, #ff3c00 var(--value), rgba(255, 255, 255, 0.2) var(--value));
   }
   input[type='range']::-webkit-slider-runnable-track {
     background: linear-gradient(90deg, #ff3c00 var(--value), rgba(255, 255, 255, 0.2) var(--value));
   }
-
-  .bottom .volume {
-    display: flex;
-    width: auto;
-  }
-
   .bottom .volume:hover input[type='range'] {
     width: 5vw;
     display: inline-block;
@@ -916,42 +925,19 @@
     height: 100%;
   }
 
-  .bottom input[type='range'][data-name='setProgress'],
-  .bottom div[data-name='progressWrapper'],
-  .bottom div[data-name='progressWrapper'] > div {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    position: relative;
-  }
-
-  .bottom input[type='range'][data-name='setProgress'] ~ img,
-  .bottom input[type='range'][data-name='setProgress']::before {
-    pointer-events: none;
+  .bottom [data-name='setProgress'] ~ .hover {
     opacity: 0;
-    position: absolute;
+    top: 1.2rem;
     transform: translate(-50%, -100%);
+    position: absolute;
     font-family: Roboto, Arial, Helvetica, sans-serif;
     white-space: nowrap;
-    align-self: center;
-    left: var(--progress);
     font-weight: 600;
+    width: 200px;
     transition: 0.2s opacity ease;
   }
 
-  .bottom input[type='range'][data-name='setProgress'] ~ img {
-    top: -2rem;
-    width: 150px;
-  }
-
-  .bottom input[type='range'][data-name='setProgress']::before {
-    top: 0.5rem;
-    content: attr(data-elapsed);
-    color: #ececec;
-  }
-
-  .bottom input[type='range'][data-name='setProgress']:active ~ img,
-  .bottom input[type='range'][data-name='setProgress']:active::before {
+  .bottom [data-name='setProgress']:hover ~ .hover {
     opacity: 1;
   }
 
@@ -960,7 +946,6 @@
     font-size: 1.8rem !important;
     white-space: nowrap;
     align-self: center;
-    cursor: default;
     line-height: var(--base-line-height);
     padding: 0 1.2rem;
     font-weight: 600;
