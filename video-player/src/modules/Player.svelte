@@ -625,6 +625,7 @@
   <video
     class="position-absolute h-full w-full"
     autoplay
+    preload="auto"
     {src}
     bind:this={video}
     bind:volume
@@ -651,7 +652,7 @@
       Frame time: {stats.processing}<br />
       Viewport: {stats.viewport}<br />
       Resolution: {stats.resolution}<br />
-      Buffer health: {stats.buffer}
+      Buffer health: {stats.buffer || 0}
     </div>
   {/if}
   <div class="top z-50" />
@@ -712,7 +713,7 @@
           on:touchend={handleMouseUp}
           style="--value: {progress * 100}%" />
         <div class="hover position-absolute d-flex flex-column align-items-center" bind:this={hover}>
-          <img alt="thumbnail" class="w-full mb-10" src={thumbnail} />
+          <img alt="thumbnail" class="w-full mb-5 shadow-lg" src={thumbnail} />
           <div class="ts">{toTS(hoverTime)}</div>
         </div>
       </div>
@@ -840,7 +841,9 @@
   }
 
   .middle .ctrl,
-  .bottom .ctrl:hover {
+  .bottom .ctrl:hover,
+  .bottom .ts:hover,
+  .bottom .hover .ts {
     filter: drop-shadow(0 0 8px #000);
   }
 
