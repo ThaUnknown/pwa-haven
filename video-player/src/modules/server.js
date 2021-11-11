@@ -6,11 +6,11 @@ const keepAliveTime = 20000
 let workerPortCount = 0
 let workerKeepAliveInterval = null
 let file = null
-export let speed = speedometer(1)
+export let speed = speedometer(5)
 
 export function setFile (streamable) {
   file = streamable
-  speed = speedometer(1)
+  speed = speedometer(5)
 }
 
 const handleWorker = worker => {
