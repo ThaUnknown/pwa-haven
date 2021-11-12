@@ -49,13 +49,13 @@
     initial.x = e.clientX
     initial.y = e.clientY
     image.onpointermove = handleDrag
-    image.setPointerCapture(e.pointerId)
+    if (e.pointerId) image.setPointerCapture(e.pointerId)
   }
   function dragEnd(e) {
     if (image.onpointermove) {
       transition = true
       image.onpointermove = null
-      image.releasePointerCapture(e.pointerId)
+      if (e.pointerId) image.releasePointerCapture(e.pointerId)
       old.x += e.clientX - initial.x
       old.y += e.clientY - initial.y
     }
@@ -205,26 +205,26 @@
 <div class="sticky-alerts d-flex flex-column-reverse">
   <InstallPrompt />
 </div>
-<div class="w-full h-full overflow-hidden position-relative dragarea" on:pointerdown={dragStart} on:pointerup={dragEnd} on:wheel|passive={handleZoom}>
+<div class="w-full h-full overflow-hidden position-relative dragarea" on:pointerdown={dragStart} on:pointerup={dragEnd} on:wheel|passive={handleZoom} on:touchend={dragEnd}>
   <img {src} class:transition alt="view" class="w-full h-full position-absolute" bind:this={image} on:load={handleImage} />
 </div>
 
-<div class="position-absolute buttons d-flex">
+<div class="position-absolute buttons row w-full justify-content-center">
   {#if files.length > 1}
-    <div class="btn-group bg-dark-dm bg-light-lm rounded mr-10">
+    <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
       <button class="btn btn-lg btn-square material-icons" type="button" on:click={viewLast}>arrow_back</button>
       <button class="btn btn-lg btn-square material-icons" type="button" on:click={viewNext}>arrow_forward</button>
     </div>
   {/if}
 
-  <div class="btn-group input-group bg-dark-dm bg-light-lm rounded mr-10 w-200">
+  <div class="btn-group input-group bg-dark-dm bg-light-lm rounded m-5 w-200 col-auto">
     <button class="btn btn-lg btn-square material-icons" type="button" on:click={resetPos}>zoom_out_map</button>
     <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => handleZoom({ deltaY: 100 })}>remove</button>
     <input type="number" step="0.1" min="0.1" class="form-control form-control-lg text-right" placeholder="Scale" readonly value={zoom.toFixed(1)} />
     <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => handleZoom({ deltaY: -100 })}>add</button>
   </div>
 
-  <div class="btn-group bg-dark-dm bg-light-lm rounded">
+  <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
     <button class="btn btn-lg btn-square material-icons" type="button" on:click={toggleBlur}>
       {isBlurred ? 'blur_off' : 'blur_on'}
     </button>
@@ -276,6 +276,7 @@
     background: repeating-conic-gradient(rgba(0, 0, 0, 0.3) 0% 25%, transparent 0% 50%) 50% / 20px 20px;
     user-select: none;
     cursor: grab;
+    touch-action: none;
   }
   .buttons {
     bottom: 8rem;
