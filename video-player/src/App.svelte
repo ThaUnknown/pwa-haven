@@ -8,7 +8,7 @@
   let files = []
 
   // mistakes have been made
-  if (navigator.serviceWorker.controller.scriptURL.endsWith('server-worker.js')) {
+  if (navigator.serviceWorker?.controller?.scriptURL.endsWith('server-worker.js')) {
     navigator.serviceWorker.ready.then(reg => {
       reg.unregister().then(() => location.reload())
     })

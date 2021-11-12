@@ -512,7 +512,7 @@
         presented: metadata.presentedFrames,
         processing: metadata.processingDuration + ' ms',
         viewport: video.clientWidth + 'x' + video.clientHeight,
-        resolution: video.videoWidth + 'x' + video.videoHeight,
+        resolution: videoWidth + 'x' + videoHeight,
         buffer: getBufferHealth(metadata.mediaTime) + ' s'
       }
       setTimeout(() => video.requestVideoFrameCallback(handleStats), 200)
@@ -567,10 +567,12 @@
       }
     }
   }
-  function initThumbnails() {
-    const height = 200 / (video.videoWidth / video.videoHeight)
-    thumbnailData.interval = duration / 300 < 5 ? 5 : duration / 300
-    thumbnailData.canvas.height = height
+  $: initThumbnails(200 / (videoWidth / videoHeight))
+  function initThumbnails(height) {
+    if (!isNaN(height)) {
+      thumbnailData.interval = duration / 300 < 5 ? 5 : duration / 300
+      thumbnailData.canvas.height = height
+    }
   }
 
   function finishThumbnails() {
@@ -606,9 +608,31 @@
     thumbnailData.video.load()
     console.log('Thumbnail creating started')
   }
+  let isStandalone = window.matchMedia('(display-mode: standalone)').matches
+  window.matchMedia('(display-mode: standalone)').addEventListener('change', ({ matches }) => {
+    isStandalone = matches
+  })
+  let innerWidth, outerHeight, innerHeight, videoWidth, videoHeight
+  let menubarOffset = 0
+  $: calcMenubarOffset(innerWidth, outerHeight, innerHeight, videoWidth, videoHeight, isStandalone)
+  function calcMenubarOffset(innerWidth, outerHeight, innerHeight, videoWidth, videoHeight, isStandalone) {
+    // this can potentially be bad logic? could have some edge case animation transitions with css. idk tired.
+    if (isStandalone && videoWidth && videoHeight) {
+      const menubar = outerHeight - innerHeight
+      const ratio = videoWidth / videoHeight
+      // needs x2 menubar size [window/player bottom and screen top]
+      if ((innerHeight - videoHeight) * ratio > innerWidth - videoWidth + menubar * 2) {
+        // so windows is very dumb, and calculates windowed mode as if it was window XP, with the old bars, but not when maximised
+        const isMaximised = screen.availWidth === window.innerWidth && screen.availHeight === window.innerHeight
+        menubarOffset = (menubar / 2 + (navigator.appVersion.includes('Windows') && !isMaximised ? 8 : 0)) * -1
+      } else {
+        menubarOffset = 0
+      }
+    }
+  }
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window on:keydown={handleKeydown} bind:innerWidth bind:outerHeight bind:innerHeight />
 
 <!-- svelte-ignore a11y-media-has-caption -->
 <div
@@ -624,9 +648,12 @@
   on:contextmenu|preventDefault={toggleStats}>
   <video
     class="position-absolute h-full w-full"
+    style={`margin-top: ${menubarOffset}px`}
     autoplay
     preload="auto"
     {src}
+    bind:videoHeight
+    bind:videoWidth
     bind:this={video}
     bind:volume
     bind:duration
@@ -637,7 +664,6 @@
     bind:playbackRate
     on:timeupdate={checkSpeed}
     on:timeupdate={() => createThumbnail()}
-    on:loadedmetadata={initThumbnails}
     on:waiting={showBuffering}
     on:loadeddata={hideBuffering}
     on:canplay={hideBuffering}
@@ -758,6 +784,9 @@
   .nerd {
     background: #000000bb;
   }
+  video {
+    transition: margin-top 0.2s ease;
+  }
   .player {
     user-select: none;
     font-family: Roboto, Arial, Helvetica, sans-serif;
@@ -787,7 +816,6 @@
   }
 
   .bottom img[src=' '],
-  video[src='']:not([poster]),
   :fullscreen .ctrl[data-name='toggleCast'],
   :fullscreen .ctrl[data-name='togglePopout'] {
     display: none !important;
