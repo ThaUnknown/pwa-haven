@@ -16,7 +16,7 @@ export default class Subtitles {
     this.files = files || []
     this.headers = []
     this.tracks = []
-    this.fonts = []
+    this.fonts = ['Roboto.ttf']
     this.renderer = null
     this.parsed = false
     this.stream = null
@@ -24,6 +24,7 @@ export default class Subtitles {
     this.current = 0
     this.onHeader = onHeader
     this.videoFiles = files.filter(file => videoRx.test(file.name))
+    this.subtitleFiles = []
     this.timeout = null
 
     if (this.selected.name.endsWith('.mkv') && this.selected.createReadStream) {
@@ -47,26 +48,27 @@ export default class Subtitles {
   findSubtitleFiles (targetFile) {
     const videoName = targetFile.name.substring(0, targetFile.name.lastIndexOf('.')) || targetFile.name
     // array of subtitle files that match video name, or all subtitle files when only 1 vid file
-    const subtitleFiles = this.files.filter(file => {
-      return subRx.test(file.name) && (this.videoFiles.length === 1 ? true : file.name.includes(videoName))
+    const subfiles = this.files.filter(file => {
+      return !this.subtitleFiles.some(sub => { // exclude already existing files
+        return sub.lastModified === file.lastModified && sub.name === file.name && sub.size === file.size
+      }) && subRx.test(file.name) && (this.videoFiles.length === 1 ? true : file.name.includes(videoName))
     })
-    this.headers = []
-    this.tracks = []
-    if (subtitleFiles.length) {
+    if (subfiles.length) {
       this.parsed = true
-      this.current = 0
-      for (const [index, file] of subtitleFiles.entries()) {
+      const length = this.headers.length
+      for (const [i, file] of subfiles.entries()) {
+        const index = i + length
+        this.subtitleFiles[index] = file
         const type = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase()
         const name = file.name.replace(targetFile.name, '') === file.name
           ? file.name.replace(targetFile.name.replace(type, ''), '').slice(0, -4).replace(/[,._-]/g, ' ').trim()
           : file.name.replace(targetFile.name, '').slice(0, -4).replace(/[,._-]/g, ' ').trim()
-        const header = {
+        this.headers[index] = {
           header: defaultHeader,
           language: name,
           number: index,
           type
         }
-        this.headers.push(header)
         this.onHeader()
         this.tracks[index] = []
         this.constructor.convertSubFile(file, type, subtitles => { // why does .constructor work ;-;
@@ -75,10 +77,13 @@ export default class Subtitles {
           } else {
             this.tracks[index] = subtitles
           }
-          if (this.current === index) this.selectCaptions(this.current)
-          this.onHeader()
         })
-        this.initSubtitleRenderer()
+      }
+      if (!this.current) {
+        this.current = 0
+        if (!this.renderer) this.initSubtitleRenderer()
+        this.selectCaptions(this.current)
+        this.onHeader()
       }
     }
   }
