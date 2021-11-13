@@ -61,9 +61,11 @@
     }
   }
   function handleDrag(e) {
-    position.x = old.x + e.clientX - initial.x
-    position.y = old.y + e.clientY - initial.y
-    disPos = position
+    if (!pinching) {
+      position.x = old.x + e.clientX - initial.x
+      position.y = old.y + e.clientY - initial.y
+      disPos = position
+    }
   }
   function viewNext() {
     current = files[(files.indexOf(current) + 1) % files.length]
@@ -74,6 +76,22 @@
   }
 
   // zooming
+  let pinching = false
+  function checkPinch({ touches }) {
+    if (touches.length === 2) pinching = true
+  }
+  let lasthypot = 0
+  function handlePinch({ touches }) {
+    if (touches.length === 2 && pinching === true) {
+      const last = lasthypot
+      lasthypot = Math.hypot(touches[0].pageX - touches[1].pageX, touches[0].pageY - touches[1].pageY)
+      handleZoom({ deltaY: last - lasthypot > 0 ? -100 : 100 })
+    }
+  }
+  function endPinch() {
+    pinching = false
+    lasthypot = 0
+  }
   let zoom = 1
   function handleZoom({ deltaY }) {
     const diff = deltaY * -0.01
@@ -205,7 +223,15 @@
 <div class="sticky-alerts d-flex flex-column-reverse">
   <InstallPrompt />
 </div>
-<div class="w-full h-full overflow-hidden position-relative dragarea" on:pointerdown={dragStart} on:pointerup={dragEnd} on:wheel|passive={handleZoom} on:touchend={dragEnd}>
+<div
+  class="w-full h-full overflow-hidden position-relative dragarea"
+  on:pointerdown={dragStart}
+  on:pointerup={dragEnd}
+  on:wheel|passive={handleZoom}
+  on:touchend={dragEnd}
+  on:touchstart={checkPinch}
+  on:touchmove={handlePinch}
+  on:touchend={endPinch}>
   <img {src} class:transition alt="view" class="w-full h-full position-absolute" bind:this={image} on:load={handleImage} />
 </div>
 
