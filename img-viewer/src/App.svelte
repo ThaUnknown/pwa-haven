@@ -82,7 +82,7 @@
   function checkPinch({ touches }) {
     if (touches.length === 2) {
       pinching = true
-      dragEnd(touches[0])
+      dragEnd({ clientX: touches[0].clientX + touches[1].clientX / 2, clientY: touches[0].clientY + touches[1].clientY / 2 })
     }
   }
   let lasthypot = 0
@@ -93,7 +93,7 @@
       lasthypot = Math.hypot(touches[0].pageX - touches[1].pageX, touches[0].pageY - touches[1].pageY)
       hypotdelta += last - lasthypot
       if (hypotdelta > 20 || hypotdelta < -20) {
-        handleZoom({ deltaY: hypotdelta > 0 ? -100 : 100 })
+        handleZoom({ deltaY: hypotdelta > 0 ? 100 : -100 })
         hypotdelta = 0
       }
     }
