@@ -85,7 +85,10 @@
   // zooming
   let pinching = false
   function checkPinch({ touches }) {
-    if (touches.length === 2) pinching = true
+    if (touches.length === 2) {
+      pinching = true
+      transition = true
+    }
   }
   let lasthypot = 0
   let hypotdelta = 0
