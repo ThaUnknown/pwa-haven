@@ -58,8 +58,13 @@
       transition = true
       image.onpointermove = null
       if (e.pointerId || pid) image.releasePointerCapture(e.pointerId || pid)
-      old.x += e.clientX - initial.x
-      old.y += e.clientY - initial.y
+      if (pinching) {
+        pinching = false
+        lasthypot = 0
+      } else {
+        old.x += e.clientX - initial.x
+        old.y += e.clientY - initial.y
+      }
     }
   }
   function handleDrag(e) {
@@ -80,10 +85,7 @@
   // zooming
   let pinching = false
   function checkPinch({ touches }) {
-    if (touches.length === 2) {
-      pinching = true
-      dragEnd({ clientX: touches[0].clientX + touches[1].clientX / 2, clientY: touches[0].clientY + touches[1].clientY / 2 })
-    }
+    if (touches.length === 2) pinching = true
   }
   let lasthypot = 0
   let hypotdelta = 0
@@ -97,10 +99,6 @@
         hypotdelta = 0
       }
     }
-  }
-  function endPinch() {
-    pinching = false
-    lasthypot = 0
   }
   let zoom = 1
   function handleZoom({ deltaY }) {
@@ -240,8 +238,7 @@
   on:wheel|passive={handleZoom}
   on:touchend={dragEnd}
   on:touchstart={checkPinch}
-  on:touchmove={handlePinch}
-  on:touchend={endPinch}>
+  on:touchmove={handlePinch}>
   <img {src} class:transition alt="view" class="w-full h-full position-absolute" bind:this={image} on:load={handleImage} />
 </div>
 
