@@ -43,19 +43,21 @@
   }
 
   let transition = true
+  let pid = null
   // dragging around
   function dragStart(e) {
     transition = false
     initial.x = e.clientX
     initial.y = e.clientY
     image.onpointermove = handleDrag
+    pid = e.pointerId
     if (e.pointerId) image.setPointerCapture(e.pointerId)
   }
   function dragEnd(e) {
     if (image.onpointermove) {
       transition = true
       image.onpointermove = null
-      if (e.pointerId) image.releasePointerCapture(e.pointerId)
+      if (e.pointerId || pid) image.releasePointerCapture(e.pointerId || pid)
       old.x += e.clientX - initial.x
       old.y += e.clientY - initial.y
     }
@@ -78,14 +80,22 @@
   // zooming
   let pinching = false
   function checkPinch({ touches }) {
-    if (touches.length === 2) pinching = true
+    if (touches.length === 2) {
+      pinching = true
+      dragEnd(touches[0])
+    }
   }
   let lasthypot = 0
+  let hypotdelta = 0
   function handlePinch({ touches }) {
     if (touches.length === 2 && pinching === true) {
       const last = lasthypot
       lasthypot = Math.hypot(touches[0].pageX - touches[1].pageX, touches[0].pageY - touches[1].pageY)
-      handleZoom({ deltaY: last - lasthypot > 0 ? -100 : 100 })
+      hypotdelta += last - lasthypot
+      if (hypotdelta > 20 || hypotdelta < -20) {
+        handleZoom({ deltaY: hypotdelta > 0 ? -100 : 100 })
+        hypotdelta = 0
+      }
     }
   }
   function endPinch() {
@@ -315,5 +325,8 @@
   }
   input::-webkit-inner-spin-button {
     display: none;
+  }
+  input {
+    -moz-appearance: textfield;
   }
 </style>
