@@ -12,7 +12,7 @@ You can see the list of features [here!](/features.md)
 Because these are generic apps, they are essentially no different in functionality from their native counterparts [even if what they accomplish is unique for the web, but not for native apps], which also means they have no compromises from their decent native counterparts, and bring nothing new to the table, outside of their VERY low resource usage and load times.
 
 ## Will I notice any difference from native apps?
-You shouldn't. The apps work fully offline, auto-update instantly and benefit from all the other goodies native apps have. The only feature they lack is the prompt to open a folder multiple files at once, however the user can just drag-drop the folder/files into the app instead.
+You shouldn't. The apps work fully offline, auto-update instantly and benefit from all the other goodies native apps have. The only feature they lack is the prompt to open a folder&/multiple files at once, however the user can just drag-drop the folder/files into the app instead.
 
 ## What browsers are supported?
 Even tho the target is chromium, all browsers should work, some however with compromises, ex: Brave and mobile chromium can't handle native files but when there are no active files, interacting with any app will prompt a file selection menu, Firefox can't install as PWA and has worse performance in the video player and doesn't support cast, safari hopefully won't work at all, etc. So while all apps should work on all browsers [except safari, go cry to daddy steve], some might loose features, the apps are however designed in a way as for that to not cause any issues during usage. 
