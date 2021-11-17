@@ -1,4 +1,4 @@
-import Peer from './modules/peer.js'
+import Peer from '../../shared/Peer.js'
 function toTS (sec, full) {
   if (isNaN(sec) || sec < 0) {
     return full ? '00:00' : '0:00'

@@ -1,10 +1,9 @@
 <script>
-  import { toTS } from './util.js'
+  import { toTS } from '../../../shared/util.js'
   import SongList from './SongList.svelte'
-  import { createEventDispatcher } from 'svelte'
-  import Peer from './peer.js'
+  import Peer from '../../../shared/Peer.js'
+  import { URLFile } from '../../../shared/URLFile.js'
 
-  const dispatch = createEventDispatcher()
   export let name = ''
   let src = null
   let audio = null
@@ -163,7 +162,6 @@
     }
   }
 
-  // todo use a store
   function handleMouseDown({ target }) {
     wasPaused = paused
     paused = true
@@ -251,7 +249,7 @@
   <div class="col-md-7 p-20 center h-half h-md-full bg-dark">
     <img src={cover} alt="cover" class="shadow-lg pointer" on:click={playPause} />
   </div>
-  <SongList {songs} bind:current on:popup={() => dispatch('popup')} />
+  <SongList {songs} bind:current />
 </div>
 <nav class="navbar navbar-fixed-bottom p-0 d-flex flex-column border-0 shadow-lg bg-dark-light">
   <div class="d-flex w-full prog">
@@ -284,7 +282,8 @@
       <div class="text-truncate text-muted">{[current?.artist, current?.name].filter(c => c).join(' - ')}</div>
     </div>
     <div class="d-flex align-items-center">
-      {#if 'PresentationRequest' in window && canCast}
+      <!-- svelte-ignore missing-declaration -->
+      {#if 'PresentationRequest' in window && canCast && (!current || current.file instanceof File || current.file instanceof URLFile)}
         <span class="material-icons font-size-20 ctrl pointer" title="Cast Video [C]" data-name="toggleCast" on:click={toggleCast}>
           {presentationConnection ? 'cast_connected' : 'cast'}
         </span>

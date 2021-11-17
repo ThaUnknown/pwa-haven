@@ -1,12 +1,12 @@
 <script>
   import { onMount } from 'svelte'
   import { setFile, speed } from './server.js'
-  import Peer from '../lib/peer.js'
+  import Peer from '../../../shared/Peer.js'
   import './File.js'
   import Subtitles from './subtitles.js'
-  import { toTS, videoRx, requestTimeout, cancelTimeout } from './util.js'
+  import { toTS, videoRx, requestTimeout, cancelTimeout } from '../../../shared/util.js'
   import anitomyscript from 'anitomyscript'
-  import { URLFile } from './File.js'
+  import { URLFile } from '../../../shared/URLFile.js'
 
   $: updateFiles(files)
   export let files = []
@@ -125,37 +125,16 @@
         interval: undefined,
         video: undefined
       })
-      if (file instanceof File) {
+      if (file instanceof File || file instanceof URLFile) {
         setFile(file)
         src = `server/${file.name}`
         current = file
         fast = false
       } else {
-        await new Promise((resolve, reject) => {
-          if (!file.name.endsWith('.mkv')) return reject()
-          // check if the media can be fetched [CORS, origin, token etc]
-          fetch(file.url, { method: 'HEAD' })
-            .then(res => {
-              if (!res.ok) {
-                reject()
-              } else {
-                resolve()
-              }
-            })
-            .catch(reject)
-        })
-          .then(async () => {
-            const urlfile = new URLFile(file)
-            await urlfile.ready
-            setFile(urlfile)
-            src = `server/${urlfile.name}`
-            current = urlfile
-          })
-          .catch(() => {
-            setFile(null)
-            src = file.url
-            current = file
-          })
+        setFile(null)
+        src = file.url
+        current = file
+        fast = true
       }
     }
   }
@@ -449,11 +428,6 @@
     playbackRate: 1,
     position: Math.max(0, currentTime || 0)
   })
-  async function dataURItoBlob(dataURI) {
-    const res = await fetch(dataURI)
-    const ab = await res.arrayBuffer()
-    return new Blob([ab], { type: 'image/png' })
-  }
   async function mediaChange(current, image) {
     if (current) {
       const { release_group, anime_title, episode_number } = await anitomyscript(current.name)
@@ -527,7 +501,7 @@
   }
   let fast = false
   async function checkSpeed() {
-    if (!fast && current instanceof File && duration) {
+    if (!fast && (current instanceof File || current instanceof URLFile) && duration) {
       const byterate = current.size / duration
       const currBps = speed()
       if (currBps > 5 * byterate) {
@@ -557,7 +531,7 @@
     thumbnail = thumbnailData.thumbnails[Math.floor(hoverTime / thumbnailData.interval)] || ' '
   }
   function createThumbnail(vid = video) {
-    if (vid?.readyState >= 2) {
+    if (vid?.readyState >= 2 && (current instanceof File || current instanceof URLFile)) {
       const index = Math.floor(vid.currentTime / thumbnailData.interval)
       if (!thumbnailData.thumbnails[index]) {
         thumbnailData.context.fillRect(0, 0, 200, thumbnailData.canvas.height)
@@ -764,7 +738,8 @@
         </div>
       </div>
     {/if}
-    {#if 'PresentationRequest' in window && canCast}
+    <!-- svelte-ignore missing-declaration -->
+    {#if 'PresentationRequest' in window && canCast && (!current || current instanceof File || current instanceof URLFile)}
       <span class="material-icons ctrl" title="Cast Video [C]" data-name="toggleCast" on:click={toggleCast}>
         {presentationConnection ? 'cast_connected' : 'cast'}
       </span>

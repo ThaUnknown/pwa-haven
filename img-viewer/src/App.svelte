@@ -1,5 +1,6 @@
 <script>
   import InstallPrompt from './modules/InstallPrompt.svelte'
+  import { filePopup, handleItems, getSearchFiles, getLaunchFiles } from '../../shared/inputHandler.js'
   let src = null
   let image = null
   let scale = 0
@@ -11,7 +12,6 @@
   const position = { x: 0, y: 0 }
   let disPos = initial
   const dimensions = { x: null, y: null }
-  const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser())
   const units = [' B', ' KB', ' MB', ' GB']
   let files = []
   let current = null
@@ -118,76 +118,32 @@
   }
 
   // loading files
-  function handleDrop({ dataTransfer }) {
-    if (dataTransfer.items) handleItems([...dataTransfer.items])
-  }
-
-  function handlePaste({ clipboardData }) {
-    if (clipboardData.items) handleItems([...clipboardData.items])
-  }
-  async function handleItems(items) {
-    // don't support multi-image x)
-    const promises = items.map(item => {
-      if (item?.type.indexOf('image') === 0) {
-        return item.getAsFile()
-      } else if (item?.type === 'text/plain') {
-        return new Promise(resolve => item.getAsString(resolve))
-      } else if (item?.type === 'text/html') {
-        return new Promise(resolve => {
-          item.getAsString(text => {
-            const elems = DOMPARSER(text, 'text/html').querySelectorAll('img')
-            if (elems?.length) resolve(elems.map(img => img?.src))
-            resolve()
-          })
-        })
-      } else if (item && !item.type) {
-        let folder = item.webkitGetAsEntry()
-        folder = folder.isDirectory && folder
-        if (folder) {
-          return new Promise(resolve => {
-            folder.createReader().readEntries(async entries => {
-              const filePromises = entries.filter(entry => entry.isFile).map(file => new Promise(resolve => file.file(resolve)))
-              resolve(await Promise.all(filePromises))
-            })
-          })
-        }
-        return
-      }
-      return
-    })
-    const newFiles = (await Promise.all(promises)).flat().filter(i => i)
-    for (const file of newFiles) {
-      if (file.constructor !== String) file.url = URL.createObjectURL(file)
+  async function handleInput({ dataTransfer, clipboardData }) {
+    const items = clipboardData?.items || dataTransfer?.items
+    if (items) {
+      handleFiles(await handleItems(items, ['image']))
     }
-    files = files.concat(newFiles)
-    if (!current && files?.length) current = files[0]
   }
 
   if ('launchQueue' in window) {
-    launchQueue.setConsumer(async launchParams => {
-      if (!launchParams.files.length) {
-        return
-      }
-      const promises = launchParams.files.map(file => file.getFile())
-      // for some fucking reason, the same file can get passed multiple times, why? I still want to future-proof multi-files
-      files = (await Promise.all(promises)).filter((file, index, all) => {
-        return (
-          all.findIndex(search => {
-            return search.name === file.name && search.size === file.size && search.lastModified === file.lastModified
-          }) === index
-        )
-      })
-      for (const file of files) {
-        file.url = URL.createObjectURL(file)
-      }
-      current = files[0]
-    })
+    getLaunchFiles().then(handleFiles)
   }
-  const search = new URLSearchParams(location.search)
-  for (const param of search) {
-    files.push(param[1])
-    if (!current) current = files[0]
+  async function handlePopup() {
+    if (!files.length) {
+      handleFiles(await filePopup(['image']))
+    }
   }
+  function handleFiles(newfiles) {
+    if (newfiles?.length) {
+      for (const file of newfiles) {
+        // this is both bad and good, makes 2nd load instant, but uses extra ram
+        if (file instanceof File) file.url = URL.createObjectURL(file)
+      }
+      files = files.concat(newfiles)
+      if (!current) current = files[0]
+    }
+  }
+  handleFiles(getSearchFiles(['image']))
 
   // UI
   function toggleBlur() {
@@ -239,7 +195,8 @@
   on:wheel|passive={handleZoom}
   on:touchend={dragEnd}
   on:touchstart={checkPinch}
-  on:touchmove={handlePinch}>
+  on:touchmove={handlePinch}
+  on:click={handlePopup}>
   <img {src} class:transition alt="view" class="w-full h-full position-absolute" bind:this={image} on:load={handleImage} />
 </div>
 
@@ -274,12 +231,12 @@
 </svelte:head>
 
 <svelte:window
-  on:drop|preventDefault={handleDrop}
+  on:drop|preventDefault={handleInput}
   on:dragenter|preventDefault
   on:dragover|preventDefault
   on:dragstart|preventDefault
   on:dragleave|preventDefault
-  on:paste|preventDefault={handlePaste} />
+  on:paste|preventDefault={handleInput} />
 
 <style>
   :global(body) {

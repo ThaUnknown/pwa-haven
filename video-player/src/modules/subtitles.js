@@ -1,7 +1,7 @@
 /* eslint-env browser */
 import { SubtitleParser, SubtitleStream } from 'matroska-subtitles'
 import SubtitlesOctopus from '../lib/subtitles-octopus.js'
-import { toTS, videoRx, subRx } from './util.js'
+import { toTS, videoRx, subRx } from '../../../shared/util.js'
 
 const defaultHeader = `[V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding

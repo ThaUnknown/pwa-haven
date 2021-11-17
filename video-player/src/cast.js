@@ -1,4 +1,4 @@
-import Peer from './lib/peer.js'
+import Peer from '../../shared/Peer.js'
 
 let peer = null
 const video = document.querySelector('video')

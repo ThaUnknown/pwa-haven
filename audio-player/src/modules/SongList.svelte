@@ -1,16 +1,14 @@
 <script>
-  import { toTS } from './util.js'
-  import { createEventDispatcher } from 'svelte'
+  import { toTS } from '../../../shared/util.js'
 
   export let current
   export let songs
-  const dispatch = createEventDispatcher()
   function select(song) {
     if (song !== current) current = song
   }
 </script>
 
-<div class="col-md-5 bg-dark overflow-y-scroll h-half h-md-full p-20" on:click={() => dispatch('popup')}>
+<div class="col-md-5 bg-dark overflow-y-scroll h-half h-md-full p-20">
   {#if songs.length}
     {#each songs as song}
       <div class="d-flex w-full pointer font-size-20 {song === current ? 'text-primary' : 'text-muted'}" on:click={select(song)}>

@@ -2,144 +2,84 @@
   import InstallPrompt from './modules/InstallPrompt.svelte'
   import Player from './modules/Player.svelte'
   import { parseBlob } from 'music-metadata-browser'
-  import { URLFile } from './modules/File.js'
+  import { handleItems, getSearchFiles, getLaunchFiles, filePopup } from '../../shared/inputHandler.js'
+  import { URLFile } from '../../shared/URLFile.js'
 
-  const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser())
   let name = ''
   let files = []
 
   navigator.serviceWorker.register('/sw.js')
 
   // loading files
-  function handleDrop({ dataTransfer }) {
-    handleItems([...dataTransfer.items])
-  }
-
-  function handlePaste({ clipboardData }) {
-    handleItems([...clipboardData.items])
-  }
-  const audioRx = /\.(3gp|3gpp|3g2|aac|adts|ac3|amr|eac3|flac|mp3|m4a|mp4|mp4a|mpga|mp2|mp2a|mp3|m2a|m3a|oga|ogg|mogg|spx|opus|raw|wav|weba)$/i
-  async function handleItems(items) {
-    const promises = items.map(item => {
-      if (item.type.indexOf('audio') === 0 || item.type.indexOf('image') === 0 || item.type.indexOf('video') === 0) {
-        return item.getAsFile()
-      }
-      if (item.type === 'text/plain') {
-        return new Promise(resolve =>
-          item.getAsString(url => {
-            if (audioRx.test(url)) {
-              const filename = url.substring(Math.max(url.lastIndexOf('\\'), url.lastIndexOf('/')) + 1)
-              const name = filename.substring(0, filename.lastIndexOf('.')) || filename
-              resolve(new URLFile({ name, url, type: 'audio/' }))
-            }
-            resolve()
-          })
-        )
-      }
-      if (item.type === 'text/html') {
-        return new Promise(resolve =>
-          item.getAsString(string => {
-            const elems = DOMPARSER(string, 'text/html').querySelectorAll('audio')
-            if (elems.length)
-              resolve(
-                elems.map(audio => {
-                  const filename = audio.src.substring(Math.max(audio.src.lastIndexOf('\\'), audio.src.lastIndexOf('/')) + 1)
-                  const name = filename.substring(0, filename.lastIndexOf('.')) || filename
-                  return new URLFile({ url: audio.src, name, type: 'audio/' })
-                })
-              )
-            resolve()
-          })
-        )
-      }
-      if (!item.type) {
-        let folder = item.webkitGetAsEntry()
-        folder = folder.isDirectory && folder
-        if (folder) {
-          return new Promise(resolve => {
-            folder.createReader().readEntries(async entries => {
-              const filePromises = entries.filter(entry => entry.isFile).map(file => new Promise(resolve => file.file(resolve)))
-              resolve(await Promise.all(filePromises))
-            })
-          })
-        }
-        return
-      }
-      return
-    })
-    files = (await Promise.all(promises)).flat().filter(i => i)
+  async function handleInput({ dataTransfer, clipboardData }) {
+    const items = clipboardData?.items || dataTransfer?.items
+    if (items) {
+      handleFiles(await handleItems(items, ['audio', 'image']))
+    }
   }
 
   if ('launchQueue' in window) {
-    launchQueue.setConsumer(async launchParams => {
-      if (!launchParams.files.length) {
-        return
-      }
-      const promises = launchParams.files.map(file => file.getFile())
-      // for some fucking reason, the same file can get passed multiple times, why? I still want to future-proof multi-files
-      files = (await Promise.all(promises)).filter((file, index, all) => {
-        return (
-          all.findIndex(search => {
-            return search.name === file.name && search.size === file.size && search.lastModified === file.lastModified
-          }) === index
-        )
-      })
-    })
+    getLaunchFiles().then(handleFiles)
   }
-  const search = new URLSearchParams(location.search)
-  for (const param of search) {
-    if (audioRx.test(param[1])) {
-      const filename = param[1].substring(Math.max(param[1].lastIndexOf('\\'), param[1].lastIndexOf('/')) + 1)
-      const name = filename.substring(0, filename.lastIndexOf('.')) || filename
-      files.push(new URLFile({ name, url: param[1], type: 'audio/' }))
-    }
-  }
-  function handlePopup() {
+  async function handlePopup() {
     if (!songs.length) {
-      let input = document.createElement('input')
-      input.type = 'file'
-      input.multiple = 'multiple'
-
-      input.onchange = ({ target }) => {
-        files = [...target.files]
-        input = null
-      }
-      input.click()
+      handleFiles(await filePopup(['audio', 'image']))
     }
   }
   let songs = []
-  $: processFiles(files)
-  async function processFiles(files) {
-    if (files.length) {
+  $: handleFiles(files)
+  async function handleFiles(files) {
+    if (files?.length) {
       const image = files.find(file => file.type.indexOf('image') === 0)
       const audio = files.filter(file => file.type.indexOf('audio') === 0)
-      const songDataPromises = audio.map(async file => {
-        const { common, format } = await parseBlob(file)
-        const name = common?.title || file.name.substring(0, file.name.lastIndexOf('.')) || file.name
-        const artist = common?.artist
-        const album = common?.album
-        const cover = (common?.picture?.length && new Blob([common.picture[0].data], { type: common.picture[0].format })) || image
-        const duration = format?.duration
-        const number = common?.track?.no
-        return { file, name, artist, album, cover, duration, number }
+      const songDataPromises = audio.map(async audio => {
+        let file = audio
+        if (!(file instanceof File)) {
+          const urlfile = new URLFile(file)
+          if (!((await urlfile.ready) instanceof Error)) {
+            file = urlfile
+          }
+        }
+        if (file instanceof File || file instanceof URLFile) {
+          const { common, format } = await parseBlob(file)
+          const name = common?.title || file.name.substring(0, file.name.lastIndexOf('.')) || file.name
+          const cover = (common?.picture?.length && new Blob([common.picture[0].data], { type: common.picture[0].format })) || image
+          return { file, name, artist: common?.artist, album: common?.album, cover, duration: format?.duration, number: common?.track?.no }
+        } else {
+          // if metadata can't be parsed, rely on good old regex and audio element x)
+          const filename = file.name.substring(0, file.name.lastIndexOf('.')) || file.name
+          const [match, number, artist, name] = filename.match(/(?:(^\d*)\.)?(?:(.*)-)?(.+)$/) || []
+          const duration = await new Promise(resolve => {
+            let audio = document.createElement('audio')
+            audio.preload = 'metadata'
+            audio.onloadedmetadata = () => {
+              resolve(audio.duration)
+              URL.revokeObjectURL(audio.src)
+              audio = null
+            }
+            audio.src = file.url
+          })
+          return { file, artist, name: name || filename, duration, number, cover: image }
+        }
       })
       songs = songs.concat(await Promise.all(songDataPromises)).sort((a, b) => (a.file.name > b.file.name ? 1 : b.file.name > a.file.name ? -1 : 0))
     }
   }
+  handleFiles(getSearchFiles(['audio', 'image']))
 </script>
 
 <div class="sticky-alerts d-flex flex-column-reverse">
   <InstallPrompt />
 </div>
-<div class="page-wrapper with-navbar-fixed-bottom">
-  <Player bind:name {songs} on:popup={handlePopup} />
+<div class="page-wrapper with-navbar-fixed-bottom" on:click={handlePopup}>
+  <Player bind:name {songs} />
 </div>
 
 <svelte:head>
   <title>{name || 'Audio Player'}</title>
 </svelte:head>
 
-<svelte:window on:drop|preventDefault={handleDrop} on:dragover|preventDefault on:paste|preventDefault={handlePaste} />
+<svelte:window on:drop|preventDefault={handleInput} on:dragover|preventDefault on:paste|preventDefault={handleInput} />
 
 <style>
   * {
