@@ -117,16 +117,18 @@ export function getSearchFiles (types) {
 }
 export async function getLaunchFiles () {
   /* global launchQueue */
-  launchQueue.setConsumer(async launchParams => {
-    if (!launchParams.files.length) {
-      return
-    }
-    const promises = launchParams.files.map(file => file.getFile())
-    // for some fucking reason, the same file can get passed multiple times, why? I still want to future-proof multi-files
-    return (await Promise.all(promises)).filter((file, index, all) => {
-      return all.findIndex(search => {
-        return search.name === file.name && search.size === file.size && search.lastModified === file.lastModified
-      }) === index
+  return new Promise(resolve => {
+    launchQueue.setConsumer(async launchParams => {
+      if (!launchParams.files.length) {
+        return
+      }
+      const promises = launchParams.files.map(file => file.getFile())
+      // for some fucking reason, the same file can get passed multiple times, why? I still want to future-proof multi-files
+      resolve((await Promise.all(promises)).filter((file, index, all) => {
+        return all.findIndex(search => {
+          return search.name === file.name && search.size === file.size && search.lastModified === file.lastModified
+        }) === index
+      }))
     })
   })
 }
