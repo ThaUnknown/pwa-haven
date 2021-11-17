@@ -275,7 +275,7 @@
       </span>
       <span class="material-icons font-size-20 ctrl pointer" type="button" on:click={playNext}> skip_next </span>
       <div class="text-muted center ml-10 text-nowrap">
-        {toTS(targetTime, true)} / {toTS(duration, true)}
+        {toTS(targetTime, 3)} / {toTS(duration, 3)}
       </div>
     </div>
     <div class="center px-20 mw-0">

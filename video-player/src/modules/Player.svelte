@@ -695,7 +695,7 @@
       </div>
     {/if}
     <div class="w-full d-flex align-items-center" data-name="progressWrapper">
-      <div class="ts">{toTS(targetTime)}</div>
+      <div class="ts">{toTS(targetTime, duration > 3600 ? 2 : 3)}</div>
       <div class="w-full h-full position-relative">
         <input
           class="ctrl w-full h-full"
@@ -717,14 +717,16 @@
           <div class="ts">{toTS(hoverTime)}</div>
         </div>
       </div>
-      <div class="ts">{toTS(duration)}</div>
+      <div class="ts">{toTS(duration, duration > 3600 ? 2 : 3)}</div>
     </div>
     {#if subHeaders?.length}
       <div class="subtitles dropdown dropup with-arrow">
         <span class="material-icons ctrl" title="Subtitles" id="bcap" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-name="captionsButton">
           subtitles
         </span>
-        <div class="dropdown-menu dropdown-menu-right ctrl custom-radio p-10 pb-5 text-capitalize" aria-labelledby="bcap" data-name="selectCaptions">
+        <div class="dropdown-menu dropdown-menu-right ctrl custom-radio p-10 pb-5 text-capitalize w-200" aria-labelledby="bcap" data-name="selectCaptions">
+          <input name="subtitle-radio-set" type="radio" id="subtitle-off-radio" value="off" checked={subs?.current === -1} />
+          <label for="subtitle-off-radio" on:click={() => subs.selectCaptions(-1)} class="text-truncate pb-5"> OFF </label>
           {#each subHeaders as track}
             {#if track}
               <input name="subtitle-radio-set" type="radio" id="subtitle-{track.number}-radio" value={track.numer} checked={track.number === subs.current} />

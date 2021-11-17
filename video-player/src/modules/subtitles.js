@@ -60,12 +60,14 @@ export default class Subtitles {
         const index = i + length
         this.subtitleFiles[index] = file
         const type = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase()
-        const name = file.name.replace(targetFile.name, '') === file.name
-          ? file.name.replace(targetFile.name.replace(type, ''), '').slice(0, -4).replace(/[,._-]/g, ' ').trim()
-          : file.name.replace(targetFile.name, '').slice(0, -4).replace(/[,._-]/g, ' ').trim()
+        const subname = file.name.slice(0, file.name.lastIndexOf('.'))
+        // sub name could contain video name with or without extension, possibly followed by lang, or not.
+        const name = subname.includes(targetFile.name)
+          ? subname.replace(targetFile.name, '')
+          : subname.replace(targetFile.name.slice(0, targetFile.name.lastIndexOf('.')), '')
         this.headers[index] = {
           header: defaultHeader,
-          language: name,
+          language: name.replace(/[,._-]/g, ' ').trim() || 'Track ' + index,
           number: index,
           type
         }
@@ -163,7 +165,7 @@ export default class Subtitles {
       if (!frames || isNaN(frames)) frames = 41.708
       for (const split of replaced.split('\n')) {
         const match = split.match(subRx)
-        if (match) subtitles.push('Dialogue: 0,' + toTS((match[1] * frames) / 1000, true) + ',' + toTS((match[2] * frames) / 1000, true) + ',Default,,0,0,0,,' + match[3].replace('|', '\n'))
+        if (match) subtitles.push('Dialogue: 0,' + toTS((match[1] * frames) / 1000, 1) + ',' + toTS((match[2] * frames) / 1000, 1) + ',Default,,0,0,0,,' + match[3].replace('|', '\n'))
       }
       callback(subtitles)
     }
@@ -200,8 +202,8 @@ export default class Subtitles {
     }
     return 'Dialogue: ' +
       (subtitle.layer || 0) + ',' +
-      toTS(subtitle.time / 1000, true) + ',' +
-      toTS((subtitle.time + subtitle.duration) / 1000, true) + ',' +
+      toTS(subtitle.time / 1000, 1) + ',' +
+      toTS((subtitle.time + subtitle.duration) / 1000, 1) + ',' +
       (subtitle.style || 'Default') + ',' +
       (subtitle.name || '') + ',' +
       (subtitle.marginL || '0') + ',' +
