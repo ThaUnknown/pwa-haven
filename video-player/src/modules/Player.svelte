@@ -484,6 +484,7 @@
       stats = {
         fps: await video.fps,
         presented: metadata.presentedFrames,
+        dropped: video.getVideoPlaybackQuality()?.droppedVideoFrames,
         processing: metadata.processingDuration + ' ms',
         viewport: video.clientWidth + 'x' + video.clientHeight,
         resolution: videoWidth + 'x' + videoHeight,
@@ -619,7 +620,7 @@
   on:touchmove={resetImmerse}
   on:keypress={resetImmerse}
   on:mouseleave={immersePlayer}
-  on:contextmenu|preventDefault={toggleStats}>
+  on:contextmenu={toggleStats}>
   <video
     class="position-absolute h-full w-full"
     style={`margin-top: ${menubarOffset}px`}
@@ -649,6 +650,7 @@
     <div class="position-absolute top-0 nerd p-10 m-15 text-monospace rounded">
       FPS: {stats.fps}<br />
       Presented frames: {stats.presented}<br />
+      Dropped frames: {stats.dropped}<br />
       Frame time: {stats.processing}<br />
       Viewport: {stats.viewport}<br />
       Resolution: {stats.resolution}<br />
@@ -657,7 +659,7 @@
   {/if}
   <div class="top z-50" />
   <div class="middle d-flex align-items-center justify-content-center flex-grow-1 z-50">
-    <div class="position-abolute w-full h-full" on:click={playPause} on:dblclick={toggleFullscreen} />
+    <div class="position-absolute w-full h-full" on:click={playPause} on:dblclick={toggleFullscreen} />
     {#if videos?.length > 1}
       <span class="material-icons ctrl" data-name="playLast" on:click={playLast}> skip_previous </span>
     {/if}
