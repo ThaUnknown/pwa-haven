@@ -7,6 +7,7 @@
   import { toTS, videoRx, requestTimeout, cancelTimeout } from '../../../shared/util.js'
   import anitomyscript from 'anitomyscript'
   import { URLFile } from '../../../shared/URLFile.js'
+  import Keyboard from './Keyboard.svelte'
 
   $: updateFiles(files)
   export let files = []
@@ -146,6 +147,13 @@
       subs = new Subtitles(video, files, current, handleHeaders)
     }
   }
+  function cycleSubtitles() {
+    if (current && subs?.headers) {
+      const tracks = subs.headers.filter(header => header)
+      const index = tracks.indexOf(subs.headers[subs.current]) + 1
+      subs.selectCaptions(index >= tracks.length ? -1 : subs.headers.indexOf(tracks[index]))
+    }
+  }
 
   let subDelay = 0
   $: updateDelay(subDelay)
@@ -255,8 +263,24 @@
       }
     }
   }
-  function handleKeydown({ key }) {
+  let showKeybinds = false
+  async function handleKeydown({ key }) {
     switch (key) {
+      case 'r':
+        seek(-90)
+        break
+      case ',':
+        seek(1 / (await video.fps) || 0)
+        break
+      case '.':
+        seek(1 / (await video.fps) || 0)
+        break
+      case 'i':
+        toggleStats()
+        break
+      case '`':
+        showKeybinds = !showKeybinds
+        break
       case ' ':
         playPause()
         break
@@ -275,8 +299,11 @@
       case 's':
         seek(85)
         break
-      case 'c':
+      case 'd':
         toggleCast()
+        break
+      case 'c':
+        cycleSubtitles()
         break
       case 'ArrowLeft':
         rewind()
@@ -608,7 +635,12 @@
 </script>
 
 <svelte:window on:keydown={handleKeydown} bind:innerWidth bind:outerHeight bind:innerHeight />
-
+{#if showKeybinds}
+  <div class="position-absolute bg-tp w-full h-full z-50 p-20 d-flex align-items-center justify-content-center" on:click|self={() => (showKeybinds = false)}>
+    <button class="close" type="button" on:click={() => (showKeybinds = false)}><span>×</span></button>
+    <Keyboard />
+  </div>
+{/if}
 <!-- svelte-ignore a11y-media-has-caption -->
 <div
   class="player w-full h-full d-flex flex-column"
@@ -619,8 +651,7 @@
   on:mousemove={resetImmerse}
   on:touchmove={resetImmerse}
   on:keypress={resetImmerse}
-  on:mouseleave={immersePlayer}
-  on:contextmenu={toggleStats}>
+  on:mouseleave={immersePlayer}>
   <video
     class="position-absolute h-full w-full"
     style={`margin-top: ${menubarOffset}px`}
@@ -645,9 +676,9 @@
     on:playing={hideBuffering}
     on:loadedmetadata={hideBuffering}
     on:leavepictureinpicture={() => (pip = false)} />
-  <!-- svelte-ignore a11y-missing-content -->
   {#if stats}
-    <div class="position-absolute top-0 nerd p-10 m-15 text-monospace rounded">
+    <div class="position-absolute top-0 bg-tp p-10 m-15 text-monospace rounded z-50">
+      <button class="close" type="button" on:click={toggleStats}><span>×</span></button>
       FPS: {stats.fps}<br />
       Presented frames: {stats.presented}<br />
       Dropped frames: {stats.dropped}<br />
@@ -657,8 +688,10 @@
       Buffer health: {stats.buffer || 0}
     </div>
   {/if}
-  <div class="top z-50" />
-  <div class="middle d-flex align-items-center justify-content-center flex-grow-1 z-50">
+  <div class="top z-40 d-flex flex-row-reverse">
+    <span class="material-icons ctrl font-size-12 p-10" title="Popout Window [P]" data-name="togglePopout" on:click={() => (showKeybinds = true)}> help_outline </span>
+  </div>
+  <div class="middle d-flex align-items-center justify-content-center flex-grow-1 z-40 position-relative">
     <div class="position-absolute w-full h-full" on:click={playPause} on:dblclick={toggleFullscreen} />
     {#if videos?.length > 1}
       <span class="material-icons ctrl" data-name="playLast" on:click={playLast}> skip_previous </span>
@@ -671,7 +704,7 @@
     {/if}
     <div data-name="bufferingDisplay" class="position-absolute" />
   </div>
-  <div class="bottom d-flex z-50">
+  <div class="bottom d-flex z-40">
     <span class="material-icons ctrl" title="Play/Pause [Space]" data-name="playPause" on:click={playPause}> {ended ? 'replay' : paused ? 'play_arrow' : 'pause'} </span>
     {#if videos?.length > 1}
       <span class="material-icons ctrl" title="Next [N]" data-name="playNext" on:click={playNext}> skip_next </span>
@@ -727,7 +760,7 @@
           subtitles
         </span>
         <div class="dropdown-menu dropdown-menu-right ctrl custom-radio p-10 pb-5 text-capitalize w-200" aria-labelledby="bcap" data-name="selectCaptions">
-          <input name="subtitle-radio-set" type="radio" id="subtitle-off-radio" value="off" checked={subs?.current === -1} />
+          <input name="subtitle-radio-set" type="radio" id="subtitle-off-radio" value="off" checked={subHeaders && subs?.current === -1} />
           <label for="subtitle-off-radio" on:click={() => subs.selectCaptions(-1)} class="text-truncate pb-5"> OFF </label>
           {#each subHeaders as track}
             {#if track}
@@ -760,9 +793,23 @@
 </div>
 
 <style>
-  .nerd {
+  .bg-tp {
     background: #000000bb;
+    backdrop-filter: blur(10px);
   }
+  .bg-tp .close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+    color: inherit;
+    padding: var(--alert-close-padding);
+    line-height: var(--alert-close-line-height);
+    font-size: var(--alert-close-font-size);
+    background-color: transparent;
+    border-color: transparent;
+  }
+
   video {
     transition: margin-top 0.2s ease;
   }
@@ -790,6 +837,7 @@
   }
 
   .immersed .middle .ctrl,
+  .immersed .top,
   .immersed .bottom {
     opacity: 0;
   }
@@ -854,12 +902,13 @@
     filter: drop-shadow(0 0 8px #000);
   }
 
-  .bottom {
+  .bottom,
+  .top {
     background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4) 25%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.1) 75%, transparent);
     transition: 0.5s opacity ease;
   }
 
-  .bottom .ctrl {
+  .ctrl {
     cursor: pointer;
   }
 

@@ -94,7 +94,7 @@ export default class Subtitles {
     if (!this.renderer) {
       const options = {
         video: this.video,
-        targetFps: await this.video.fps,
+        targetFps: await this.video?.fps || 23.976,
         subContent: this.headers[this.current].header.slice(0, -1),
         renderMode: 'offscreen',
         fonts: this.fonts,
@@ -303,13 +303,12 @@ export default class Subtitles {
 
   selectCaptions (trackNumber) {
     if (trackNumber !== undefined) {
-      trackNumber = Number(trackNumber)
-      this.current = trackNumber
+      this.current = Number(trackNumber)
       this.onHeader()
       if (!this.timeout) {
         this.timeout = setTimeout(() => {
           this.timeout = undefined
-          if (this.renderer && this.headers) this.renderer.setTrack(trackNumber !== -1 ? this.headers[trackNumber].header.slice(0, -1) + Array.from(this.tracks[trackNumber]).join('\n') : defaultHeader)
+          if (this.renderer && this.headers) this.renderer.setTrack(this.current !== -1 ? this.headers[this.current].header.slice(0, -1) + Array.from(this.tracks[this.current]).join('\n') : defaultHeader)
         }, 1000)
       }
     }
