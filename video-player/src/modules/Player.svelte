@@ -689,7 +689,7 @@
     </div>
   {/if}
   <div class="top z-40 d-flex flex-row-reverse">
-    <span class="material-icons ctrl font-size-12 p-10" title="Popout Window [P]" data-name="togglePopout" on:click={() => (showKeybinds = true)}> help_outline </span>
+    <span class="material-icons ctrl font-size-12 p-10" title="Keybinds [`]" data-name="togglePopout" on:click={() => (showKeybinds = true)}> help_outline </span>
   </div>
   <div class="middle d-flex align-items-center justify-content-center flex-grow-1 z-40 position-relative">
     <div class="position-absolute w-full h-full" on:click={playPause} on:dblclick={toggleFullscreen} />
@@ -716,7 +716,7 @@
     <!-- svelte-ignore missing-declaration -->
     {#if 'audioTracks' in HTMLVideoElement.prototype && video?.audioTracks?.length > 1}
       <div class="audio-tracks dropdown dropup with-arrow">
-        <span class="material-icons ctrl" title="Audio Tracks [T]" id="baudio" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-name="audioButton">
+        <span class="material-icons ctrl" title="Audio Tracks" id="baudio" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-name="audioButton">
           queue_music
         </span>
         <div class="dropdown-menu dropdown-menu-left ctrl custom-radio p-10 pb-5 text-capitalize" aria-labelledby="baudio" data-name="selectAudio">
@@ -756,7 +756,7 @@
     </div>
     {#if subHeaders?.length}
       <div class="subtitles dropdown dropup with-arrow">
-        <span class="material-icons ctrl" title="Subtitles" id="bcap" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-name="captionsButton">
+        <span class="material-icons ctrl" title="Subtitles [C]" id="bcap" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-name="captionsButton">
           subtitles
         </span>
         <div class="dropdown-menu dropdown-menu-right ctrl custom-radio p-10 pb-5 text-capitalize w-200" aria-labelledby="bcap" data-name="selectCaptions">
@@ -777,7 +777,7 @@
     {/if}
     <!-- svelte-ignore missing-declaration -->
     {#if 'PresentationRequest' in window && canCast && (!current || current instanceof File || current instanceof URLFile)}
-      <span class="material-icons ctrl" title="Cast Video [C]" data-name="toggleCast" on:click={toggleCast}>
+      <span class="material-icons ctrl" title="Cast Video [D]" data-name="toggleCast" on:click={toggleCast}>
         {presentationConnection ? 'cast_connected' : 'cast'}
       </span>
     {/if}
@@ -902,9 +902,12 @@
     filter: drop-shadow(0 0 8px #000);
   }
 
-  .bottom,
-  .top {
+  .bottom {
     background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4) 25%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.1) 75%, transparent);
+    transition: 0.5s opacity ease;
+  }
+  .top {
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4) 25%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.1) 75%, transparent);
     transition: 0.5s opacity ease;
   }
 
