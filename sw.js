@@ -52,7 +52,7 @@ const cacheList = {
     ]
   },
   'torrent-client': {
-    version: '1.1.2',
+    version: '1.1.3',
     resources: [
       '../torrent-client/public/build/bundle.js',
       '../torrent-client/public/build/bundle.css',

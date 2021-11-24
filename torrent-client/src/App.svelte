@@ -7,6 +7,10 @@
   import Settings from './components/Settings.svelte'
   import { current } from './modules/client.js'
 
+  let selected = null
+  let handleTorrent
+  let prompt = null
+
   navigator.serviceWorker.register('/sw.js')
   // loading files
   function handleDrop({ dataTransfer }) {
@@ -54,11 +58,8 @@
       return
     })
     handleTorrent((await Promise.all(promises)).flat().filter(i => i))
-    prompt.classList.add('show')
+    prompt?.classList.add('show')
   }
-  let selected = null
-  let handleTorrent
-  let prompt
 </script>
 
 <div class="sticky-alerts d-flex flex-column-reverse">
