@@ -28,6 +28,9 @@ RAM usage <30MB per instance
 - Anti-aliasing toggle for pixelart
 - Quickly switch between multiple images
 - Persistent transforms `[allows to compare images of different resolutions and proportions, staying at the same relative position]`
+<div align="center">
+<img src="img-viewer.gif" width="500">
+</div>
 
 # **Audio Player**
 Filesize <350KB
@@ -43,6 +46,9 @@ RAM usage <40MB per instance
 - Cast support
   - Metadata tag support `[displays custom image and author]`
   - Real-time transcoding `[very high quality, hardware accelerated]`
+<div align="center">
+<img src="audio-player.gif" width="500">
+</div>
 
 *Only on new Edge.
 
@@ -67,6 +73,9 @@ RAM usage <70MB per instance `[note: this can sometimes exceed 0.5GB based on th
 - Stats for nerds
   
 *Only on new Edge.
+<div align="center">
+<img src="video-player.gif" width="500">
+</div>
 
 # **Screen Recorder**
 Filesize <45KB
