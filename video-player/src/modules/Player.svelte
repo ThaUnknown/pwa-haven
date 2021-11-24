@@ -614,6 +614,7 @@
   window.matchMedia('(display-mode: standalone)').addEventListener('change', ({ matches }) => {
     isStandalone = matches
   })
+  const isWindows = navigator.appVersion.includes('Windows')
   let innerWidth, outerHeight, innerHeight, videoWidth, videoHeight
   let menubarOffset = 0
   $: calcMenubarOffset(innerWidth, outerHeight, innerHeight, videoWidth, videoHeight, isStandalone)
@@ -626,7 +627,7 @@
       if ((innerHeight - videoHeight) * ratio > innerWidth - videoWidth + menubar * 2) {
         // so windows is very dumb, and calculates windowed mode as if it was window XP, with the old bars, but not when maximised
         const isMaximised = screen.availWidth === window.outerWidth && screen.availHeight === outerHeight
-        menubarOffset = (menubar / 2 + (navigator.appVersion.includes('Windows') && !isMaximised ? 8 : 0)) * -1
+        menubarOffset = (isWindows && !isMaximised ? menubar / 2 - 4 : menubar / 2) * -1
       } else {
         menubarOffset = 0
       }
