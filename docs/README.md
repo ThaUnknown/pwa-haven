@@ -1,13 +1,12 @@
 # PWA Haven
 
-## What is this?
+<div align="center">
+<img src="haven.png" width="1920">
+</div>
+
 Collection of small, fast, simple PWA's to replace native OS apps.
 
 Make sure to enable `chrome://flags#file-handling-api` if you want to be able to set the apps as defaults for extensions.
-
-<div align="center">
-<img src="haven.png" width="500">
-</div>
 
 ## What's the point of this?
 The main goal is to replace oversized native apps, with simple, lightweight browser based apps, which don't create copies of processes, but instead share one environment, which likely was already in-use by the user, for for example browsing the web or reading articles, eliminating those duplicate processes. Additionally they don't create any new background processes or services when not in use.

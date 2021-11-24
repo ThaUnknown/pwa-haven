@@ -29,7 +29,7 @@ RAM usage <30MB per instance
 - Quickly switch between multiple images
 - Persistent transforms `[allows to compare images of different resolutions and proportions, staying at the same relative position]`
 <div align="center">
-<img src="img-viewer.gif" width="500">
+<img src="img-viewer.gif" width="600">
 </div>
 
 # **Audio Player**
@@ -46,11 +46,11 @@ RAM usage <40MB per instance
 - Cast support
   - Metadata tag support `[displays custom image and author]`
   - Real-time transcoding `[very high quality, hardware accelerated]`
-<div align="center">
-<img src="audio-player.gif" width="500">
-</div>
 
 *Only on new Edge.
+<div align="center">
+<img src="audio-player.gif" width="600">
+</div>
 
 # **Video Player**
 Filesize <3.2MB
@@ -74,7 +74,7 @@ RAM usage <70MB per instance `[note: this can sometimes exceed 0.5GB based on th
   
 *Only on new Edge.
 <div align="center">
-<img src="video-player.gif" width="500">
+<img src="video-player.gif" width="600">
 </div>
 
 # **Screen Recorder**
