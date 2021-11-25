@@ -615,19 +615,22 @@
     isStandalone = matches
   })
   const isWindows = navigator.appVersion.includes('Windows')
-  let innerWidth, outerHeight, innerHeight, videoWidth, videoHeight
+  let innerWidth, innerHeight, videoWidth, videoHeight
   let menubarOffset = 0
-  $: calcMenubarOffset(innerWidth, outerHeight, innerHeight, videoWidth, videoHeight, isStandalone)
-  function calcMenubarOffset(innerWidth, outerHeight, innerHeight, videoWidth, videoHeight, isStandalone) {
-    // this can potentially be bad logic? could have some edge case animation transitions with css. idk tired.
+  $: calcMenubarOffset(innerWidth, innerHeight, videoWidth, videoHeight, isStandalone)
+  function calcMenubarOffset(innerWidth, innerHeight, videoWidth, videoHeight, isStandalone) {
+    // outerheight resize and innerheight resize is mutual, additionally update on metadata and app state change
     if (isStandalone && videoWidth && videoHeight) {
-      const menubar = outerHeight - innerHeight
-      const ratio = videoWidth / videoHeight
-      // needs x2 menubar size [window/player bottom and screen top]
-      if ((innerHeight - videoHeight) * ratio > innerWidth - videoWidth + menubar * 2) {
-        // so windows is very dumb, and calculates windowed mode as if it was window XP, with the old bars, but not when maximised
-        const isMaximised = screen.availWidth === window.outerWidth && screen.availHeight === outerHeight
-        menubarOffset = (isWindows && !isMaximised ? menubar / 2 - 4 : menubar / 2) * -1
+      // so windows is very dumb, and calculates windowed mode as if it was window XP, with the old bars, but not when maximised
+      const isMaximised = screen.availWidth === window.outerWidth && screen.availHeight === window.outerHeight
+      const menubar = isWindows && !isMaximised ? window.outerHeight - innerHeight - 8 : window.outerHeight - innerHeight
+      // element ratio calc
+      const videoRatio = videoWidth / videoHeight
+      const { offsetWidth, offsetHeight } = video
+      const elementRatio = offsetWidth / offsetHeight
+      // video is shorter than element && has space for menubar offset
+      if (elementRatio <= videoRatio && offsetHeight - offsetWidth / videoRatio > menubar) {
+        menubarOffset = menubar / 2 * -1
       } else {
         menubarOffset = 0
       }
@@ -635,7 +638,7 @@
   }
 </script>
 
-<svelte:window on:keydown={handleKeydown} bind:innerWidth bind:outerHeight bind:innerHeight />
+<svelte:window on:keydown={handleKeydown} bind:innerWidth bind:innerHeight />
 {#if showKeybinds}
   <div class="position-absolute bg-tp w-full h-full z-50 p-20 d-flex align-items-center justify-content-center" on:click|self={() => (showKeybinds = false)}>
     <button class="close" type="button" on:click={() => (showKeybinds = false)}><span>×</span></button>
