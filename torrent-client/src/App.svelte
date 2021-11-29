@@ -6,6 +6,7 @@
   import AddTorrent from './components/AddTorrent.svelte'
   import Settings from './components/Settings.svelte'
   import { current } from './modules/client.js'
+  import { onMount } from 'svelte'
 
   let selected = null
   let handleTorrent
@@ -59,6 +60,25 @@
     handleTorrent((await Promise.all(promises)).flat().filter(i => i))
     prompt?.classList.add('show')
   }
+  onMount(() => {
+    const search = new URLSearchParams(location.search)
+    const files = []
+    for (const param of search) files.push(param[1])
+    if (files.length) {
+      handleTorrent(files)
+      prompt.classList.add('show')
+    }
+
+    if ('launchQueue' in window) {
+      launchQueue.setConsumer(async launchParams => {
+        if (!launchParams.files.length) {
+          return
+        }
+        handleTorrent([await launchParams.files[0].getFile()])
+        prompt.classList.add('show')
+      })
+    }
+  })
 </script>
 
 <div class="sticky-alerts d-flex flex-column-reverse">
