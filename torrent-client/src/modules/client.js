@@ -33,7 +33,7 @@ async function loadWorker (controller, cb = () => { }) {
   navigator.serviceWorker.addEventListener('message', async event => {
     const { data } = event
     if (!data.type || data.type !== 'server' || !data.url) return null
-    let [infoHash, ...filePath] = data.url.slice(data.url.indexOf(data.scope + 'server/') + 11 + data.scope.length).split('/')
+    let [infoHash, ...filePath] = data.url.slice(data.url.indexOf(data.scope + 'server/') + 7 + data.scope.length).split('/')
     filePath = decodeURI(filePath.join('/'))
     if (!infoHash || !filePath) return null
 

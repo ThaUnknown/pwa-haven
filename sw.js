@@ -135,7 +135,7 @@ const portTimeoutDuration = 5000
 function proxyResponse (event) {
   const { request } = event
   const { url, method, headers, destination } = request
-  if (!(url.includes(self.registration.scope) && url.includes('/server/'))) return null
+  if (!(url.includes(self.registration.scope) && url.includes('/server/')) || url.includes('?')) return null
   if (url.includes(self.registration.scope) && url.includes('/server/keepalive/')) return new Response()
 
   return clients.matchAll({ type: 'window', includeUncontrolled: true })

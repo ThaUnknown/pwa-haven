@@ -17,9 +17,18 @@
   onDestroy(() => {
     clearInterval(interval)
   })
+  const map = {
+    video: 'video-player',
+    audio: 'audio-player',
+    image: 'img-viewer'
+  }
   function viewFile(file) {
-    const url = `server/${file._torrent.infoHash}/${encodeURI(file.path)}`
-    window.open('https://haven.pages.dev/video-player/public/?file=' + url)
+    const mime = file._getMimeType()
+    const type = mime.substring(0, mime.indexOf('/'))
+    if (map[type]) {
+      const url = `/server/${file._torrent.infoHash}/${encodeURI(file.path)}`
+      window.open(`/${map[type]}/public/?file=${url}`)
+    }
   }
 </script>
 
@@ -90,7 +99,9 @@
                         <td>{fastPrettyBytes(file.length)}</td>
                         <td>{fastPrettyBytes(file.downloaded)}</td>
                         <td>{parseInt(file.progress * 100)}%</td>
-                        <td on:click={() => viewFile(file)}>View File</td>
+                        {#if file._getMimeType()}
+                          <td class="pointer" on:click={() => viewFile(file)}>View File</td>
+                        {/if}
                       </tr>
                     {/each}
                   {/if}
