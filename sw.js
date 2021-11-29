@@ -152,6 +152,7 @@ function proxyResponse (event) {
             url,
             method,
             headers: Object.fromEntries(headers.entries()),
+            scope: self.registration.scope,
             destination,
             type: 'server'
           }, [port2])

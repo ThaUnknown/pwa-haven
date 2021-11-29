@@ -22,10 +22,65 @@ const client = new Promise(resolve => {
     }
   })
 })
+let workerKeepAliveInterval = null
+let workerPortCount = 0
+async function loadWorker (controller, cb = () => { }) {
+  if (!(controller instanceof ServiceWorker)) throw new Error('Invalid worker registration')
+  if (controller.state !== 'activated') throw new Error('Worker isn\'t activated')
+  const keepAliveTime = 20000;
+  (await client).serviceWorker = controller
+
+  navigator.serviceWorker.addEventListener('message', async event => {
+    const { data } = event
+    if (!data.type || data.type !== 'server' || !data.url) return null
+    let [infoHash, ...filePath] = data.url.slice(data.url.indexOf(data.scope + 'server/') + 11 + data.scope.length).split('/')
+    filePath = decodeURI(filePath.join('/'))
+    if (!infoHash || !filePath) return null
+
+    const [port] = event.ports
+
+    const file = (await client).get(infoHash) && (await client).get(infoHash).files.find(file => file.path === filePath)
+    if (!file) return null
+
+    const [response, stream, raw] = file._serve(data)
+    const asyncIterator = stream && stream[Symbol.asyncIterator]()
+
+    const cleanup = () => {
+      port.onmessage = null
+      if (stream) stream.destroy()
+      if (raw) raw.destroy()
+      workerPortCount--
+      if (!workerPortCount) {
+        clearInterval(workerKeepAliveInterval)
+        workerKeepAliveInterval = null
+      }
+    }
+
+    port.onmessage = async msg => {
+      if (msg.data) {
+        let chunk
+        try {
+          chunk = (await asyncIterator.next()).value
+        } catch (e) {
+          // chunk is yet to be downloaded or it somehow failed, should this be logged?
+        }
+        port.postMessage(chunk)
+        if (!chunk) cleanup()
+        if (!workerKeepAliveInterval) workerKeepAliveInterval = setInterval(() => fetch(`${controller.scriptURL.substr(0, controller.scriptURL.lastIndexOf('/') + 1).slice(window.location.origin.length)}server/keepalive/`), keepAliveTime)
+      } else {
+        cleanup()
+      }
+    }
+    workerPortCount++
+    port.postMessage(response)
+  })
+  cb(controller)
+}
+
 const worker = navigator.serviceWorker?.controller
 const handleWorker = worker => {
   const checkState = async worker => {
-    return worker.state === 'activated' && (await client).loadWorker(worker)
+    return worker.state === 'activated' && loadWorker(worker)
   }
   if (!checkState(worker)) {
     worker.addEventListener('statechange', ({ target }) => checkState(target))
