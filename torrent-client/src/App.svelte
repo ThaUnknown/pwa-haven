@@ -11,7 +11,6 @@
   let handleTorrent
   let prompt = null
 
-  navigator.serviceWorker.register('/sw.js')
   // loading files
   function handleDrop({ dataTransfer }) {
     handleItems([...dataTransfer.items])

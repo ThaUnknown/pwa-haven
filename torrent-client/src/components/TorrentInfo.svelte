@@ -17,6 +17,10 @@
   onDestroy(() => {
     clearInterval(interval)
   })
+  function viewFile(file) {
+    const url = `server/${file._torrent.infoHash}/${encodeURI(file.path)}`
+    window.open('https://haven.pages.dev/video-player/public/?file=' + url)
+  }
 </script>
 
 {#if selected}
@@ -75,6 +79,7 @@
                     <th>Filesize</th>
                     <th>Downloaded</th>
                     <th>Progress</th>
+                    <th>Controls</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -85,6 +90,7 @@
                         <td>{fastPrettyBytes(file.length)}</td>
                         <td>{fastPrettyBytes(file.downloaded)}</td>
                         <td>{parseInt(file.progress * 100)}%</td>
+                        <td on:click={() => viewFile(file)}>View File</td>
                       </tr>
                     {/each}
                   {/if}

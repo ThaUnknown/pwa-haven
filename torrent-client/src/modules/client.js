@@ -22,6 +22,28 @@ const client = new Promise(resolve => {
     }
   })
 })
+const worker = navigator.serviceWorker?.controller
+const handleWorker = worker => {
+  const checkState = async worker => {
+    return worker.state === 'activated' && (await client).loadWorker(worker)
+  }
+  if (!checkState(worker)) {
+    worker.addEventListener('statechange', ({ target }) => checkState(target))
+  }
+}
+if (worker) {
+  handleWorker(worker)
+} else {
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    handleWorker(reg.active || reg.waiting || reg.installing)
+  }).catch(e => {
+    if (String(e) === 'InvalidStateError: Failed to register a ServiceWorker: The document is in an invalid state.') {
+      location.reload() // weird workaround for a weird bug
+    } else {
+      throw e
+    }
+  })
+}
 
 export async function addTorrent (torrent, createTorrent) {
   if ((await client).get(torrent)) return null
