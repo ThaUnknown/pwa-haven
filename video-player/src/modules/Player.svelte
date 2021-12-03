@@ -623,13 +623,13 @@
     if (isStandalone && videoWidth && videoHeight) {
       // so windows is very dumb, and calculates windowed mode as if it was window XP, with the old bars, but not when maximised
       const isMaximised = screen.availWidth === window.outerWidth && screen.availHeight === window.outerHeight
-      const menubar = isWindows && !isMaximised ? window.outerHeight - innerHeight - 8 : window.outerHeight - innerHeight
+      const menubar = Math.max(0, isWindows && !isMaximised ? window.outerHeight - innerHeight - 8 : window.outerHeight - innerHeight)
       // element ratio calc
       const videoRatio = videoWidth / videoHeight
       const { offsetWidth, offsetHeight } = video
       const elementRatio = offsetWidth / offsetHeight
       // video is shorter than element && has space for menubar offset
-      if (elementRatio <= videoRatio && offsetHeight - offsetWidth / videoRatio > menubar) {
+      if (!document.fullscreenElement && menubar && elementRatio <= videoRatio && offsetHeight - offsetWidth / videoRatio > menubar) {
         menubarOffset = menubar / 2 * -1
       } else {
         menubarOffset = 0
@@ -992,6 +992,7 @@
   }
 
   .bottom [data-name='setProgress'] ~ .hover {
+    pointer-events: none;
     opacity: 0;
     top: 1.2rem;
     transform: translate(-50%, -100%);
