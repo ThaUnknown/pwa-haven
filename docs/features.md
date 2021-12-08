@@ -57,7 +57,7 @@ Filesize <3.2MB
 
 RAM usage <70MB per instance `[note: this can sometimes exceed 0.5GB based on the video which is being played because of video caching]`
 - Support for a lot of video formats `[3gpp, 3g2, m4v, mp4, qt, ogg, webm, m2ts*, mkv and others]`
-- Support for the most popular video codecs `[av1, h.264, h.265*, theora, vp9, vp9 and others]`
+- Support for the most popular video codecs `[av1, h.264, h.265*, theora, vp8, vp9 and others]`
 - Subtitle support `[srt, vtt, ass, ssa, sub, txt]`
   - External subtitles `[external files]`
   - Softcoded/embedded subtitles, fonts and glyphs `[for URLs/remote playback, the media must be CORS enabled]`
