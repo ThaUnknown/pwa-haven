@@ -1,5 +1,5 @@
 /* eslint-env browser */
-import { audioRx, videoRx, imageRx, subRx, audioExtensions, videoExtensions, imageExtensions, subtitleExtensions, DOMPARSER } from './util'
+import { audioRx, videoRx, imageRx, subRx, bookRx, audioExtensions, videoExtensions, imageExtensions, subtitleExtensions, bookExtensions, DOMPARSER } from './util'
 
 // types: image, audio, video, subtitle
 export async function handleItems (transferList = [], types = []) {
@@ -10,13 +10,15 @@ const rxMap = {
   audio: audioRx,
   video: videoRx,
   image: imageRx,
-  subtitle: subRx
+  subtitle: subRx,
+  book: bookRx
 }
 const exMap = {
   audio: audioExtensions,
   video: videoExtensions,
   image: imageExtensions,
-  subtitle: subtitleExtensions
+  subtitle: subtitleExtensions,
+  book: bookExtensions
 }
 const selectorMap = {
   image: 'img',

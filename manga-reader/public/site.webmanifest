@@ -1,0 +1,50 @@
+{
+  "name": "Manga Reader",
+  "short_name": "Manga",
+  "start_url": ".",
+  "display": "fullscreen",
+  "lang": "en-US",
+  "orientation": "landscape",
+  "background_color": "#191c20",
+  "theme_color": "#191c20",
+  "scope": "/manga-reader/public/",
+  "description": "Simple and Fast Manga Reader",
+  "icons": [
+    {
+      "src": "./128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "./512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "intent_filters": {
+    "scope_url_scheme": "https",
+    "scope_url_host": "haven.pages.dev/manga-reader/public/",
+    "scope_url_path": "/"
+  },
+  "capture_links": "new-client",
+  "url_handlers": [
+    {
+      "origin": "https://haven.pages.dev/manga-reader/public/"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/manga-reader/public/",
+      "accept": {
+        "application/x-cbr": [
+          ".cbr",
+          ".cba",
+          ".cbt",
+          ".cbz",
+          ".cb7"
+        ],
+        "application/zip": ".zip"
+      }
+    }
+  ]
+}

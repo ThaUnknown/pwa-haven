@@ -11,6 +11,9 @@ export const audioRx = new RegExp(`.(${audioExtensions.join('|')})$`, 'i')
 export const imageExtensions = ['apng', 'avif', 'bmp', 'gif', 'ico', 'jpg', 'jpeg', 'jfif', 'pjpeg', 'pjp', 'png', 'svg', 'tif', 'tiff', 'webp']
 export const imageRx = new RegExp(`.(${imageExtensions.join('|')})$`, 'i')
 
+export const bookExtensions = ['epub', 'cbr', 'cba', 'cbt', 'cbz', 'cb7', 'zip']
+export const bookRx = new RegExp(`.(${bookExtensions.join('|')})$`, 'i')
+
 export function toTS (sec, full) {
   if (isNaN(sec) || sec < 0) {
     switch (full) {
