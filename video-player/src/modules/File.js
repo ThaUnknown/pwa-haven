@@ -60,7 +60,8 @@ URLFile.prototype.serve = File.prototype.serve = function (req) {
   }
   return [res, pipe || stream, pipe && stream]
 }
-File.prototype.createReadStream = function (opts) {
+File.prototype.createReadStream = function (opts = {}) {
+  opts.chunkSize = 1024 * 1024 * 2
   return new FileReadStream(opts ? this.slice(opts.start) : this)
   // streamX is a viable alternative, but seems to have issues
 }
