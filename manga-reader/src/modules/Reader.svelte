@@ -28,28 +28,20 @@
   }
 </script>
 
-<div class="carousel">
+<div class="h-full d-flex flex-row-reverse overflow-hidden">
   {#if length}
     {#each currentItems as item (items.indexOf(item))}
-      <div class="item" class:motion={prev || next} class:prev class:next>
-        <slot {item} />
+      <div class="item w-full h-full" class:motion={prev || next} class:prev class:next>
+        <slot {item} index={items.indexOf(item)} />
       </div>
     {/each}
   {/if}
 </div>
 
 <style>
-  .carousel {
-    display: flex;
-    flex-direction: row-reverse;
-    height: 100%;
-    overflow: hidden;
-  }
   .item {
     flex: none;
     transform: translateX(100%);
-    width: 100%;
-    height: 100%;
   }
 
   .motion {

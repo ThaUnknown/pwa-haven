@@ -1933,7 +1933,7 @@ var app = (function () {
     const { console: console_1 } = globals;
     const file_1 = "src\\modules\\Page.svelte";
 
-    // (139:2) {:else}
+    // (147:2) {:else}
     function create_else_block(ctx) {
     	let div;
 
@@ -1942,7 +1942,7 @@ var app = (function () {
     			div = element("div");
     			div.textContent = "There's no next page.";
     			attr_dev(div, "class", "d-flex align-items-center justify-content-center font-size-24 font-weight-bold");
-    			add_location(div, file_1, 139, 4, 3689);
+    			add_location(div, file_1, 147, 4, 3916);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -1957,14 +1957,14 @@ var app = (function () {
     		block,
     		id: create_else_block.name,
     		type: "else",
-    		source: "(139:2) {:else}",
+    		source: "(147:2) {:else}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (129:2) {#if src}
+    // (137:2) {#if src}
     function create_if_block$1(ctx) {
     	let img;
     	let img_src_value;
@@ -1980,14 +1980,14 @@ var app = (function () {
     			toggle_class(img, "transition", /*transition*/ ctx[3]);
     			toggle_class(img, "position-absolute", /*options*/ ctx[0].mode !== 'vertical');
     			toggle_class(img, "h-full", /*options*/ ctx[0].mode === 'fit');
-    			add_location(img, file_1, 129, 4, 3428);
+    			add_location(img, file_1, 137, 4, 3655);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, img, anchor);
-    			/*img_binding*/ ctx[13](img);
+    			/*img_binding*/ ctx[16](img);
 
     			if (!mounted) {
-    				dispose = listen_dev(img, "load", /*handleImage*/ ctx[9], false, false, false);
+    				dispose = listen_dev(img, "load", /*handleImage*/ ctx[10], false, false, false);
     				mounted = true;
     			}
     		},
@@ -2010,7 +2010,7 @@ var app = (function () {
     		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(img);
-    			/*img_binding*/ ctx[13](null);
+    			/*img_binding*/ ctx[16](null);
     			mounted = false;
     			dispose();
     		}
@@ -2020,7 +2020,7 @@ var app = (function () {
     		block,
     		id: create_if_block$1.name,
     		type: "if",
-    		source: "(129:2) {#if src}",
+    		source: "(137:2) {#if src}",
     		ctx
     	});
 
@@ -2046,7 +2046,7 @@ var app = (function () {
     			if_block.c();
     			attr_dev(div, "class", "w-full h-full overflow-hidden position-relative dragarea d-flex justify-content-center flex-column transition svelte-1gehjbd");
     			toggle_class(div, "overflow-y-auto", /*options*/ ctx[0].mode === 'cover');
-    			add_location(div, file_1, 119, 0, 3057);
+    			add_location(div, file_1, 126, 0, 3261);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -2054,15 +2054,16 @@ var app = (function () {
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
     			if_block.m(div, null);
+    			/*div_binding*/ ctx[17](div);
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(div, "pointerdown", /*dragStart*/ ctx[4], false, false, false),
-    					listen_dev(div, "pointerup", /*dragEnd*/ ctx[5], false, false, false),
-    					listen_dev(div, "wheel", /*handleZoom*/ ctx[8], { passive: true }, false, false),
-    					listen_dev(div, "touchend", /*dragEnd*/ ctx[5], false, false, false),
-    					listen_dev(div, "touchstart", /*checkPinch*/ ctx[6], false, false, false),
-    					listen_dev(div, "touchmove", /*handlePinch*/ ctx[7], false, false, false)
+    					listen_dev(div, "pointerdown", /*dragStart*/ ctx[5], false, false, false),
+    					listen_dev(div, "pointerup", /*dragEnd*/ ctx[6], false, false, false),
+    					listen_dev(div, "wheel", /*handleZoom*/ ctx[9], { passive: true }, false, false),
+    					listen_dev(div, "touchend", /*dragEnd*/ ctx[6], false, false, false),
+    					listen_dev(div, "touchstart", /*checkPinch*/ ctx[7], false, false, false),
+    					listen_dev(div, "touchmove", /*handlePinch*/ ctx[8], false, false, false)
     				];
 
     				mounted = true;
@@ -2090,6 +2091,7 @@ var app = (function () {
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(div);
     			if_block.d();
+    			/*div_binding*/ ctx[17](null);
     			mounted = false;
     			run_all(dispose);
     		}
@@ -2165,7 +2167,7 @@ var app = (function () {
     		if (!pinching) {
     			position.x = old.x + e.clientX - initial.x;
     			position.y = old.y + e.clientY - initial.y;
-    			$$invalidate(11, disPos = position);
+    			$$invalidate(14, disPos = position);
     		}
     	}
 
@@ -2213,8 +2215,8 @@ var app = (function () {
     				old.y *= 1.5;
     			}
 
-    			$$invalidate(12, zoom = 2 ** scale);
-    			$$invalidate(11, disPos = old);
+    			$$invalidate(15, zoom = 2 ** scale);
+    			$$invalidate(14, disPos = old);
     		}
     	}
 
@@ -2222,8 +2224,8 @@ var app = (function () {
     		old.x = 0;
     		old.y = 0;
     		scale = 0;
-    		$$invalidate(12, zoom = 1);
-    		$$invalidate(11, disPos = old);
+    		$$invalidate(15, zoom = 1);
+    		$$invalidate(14, disPos = old);
     	}
 
     	function handleStyle({ disPos, zoom }) {
@@ -2237,7 +2239,15 @@ var app = (function () {
     		dimensions.y = image.naturalHeight;
     	}
 
-    	const writable_props = ['file', 'options'];
+    	let wrapper = null;
+    	let { index = 0 } = $$props;
+    	let { currentIndex = 0 } = $$props;
+
+    	function updateFocus(currentIndex) {
+    		if (currentIndex === index) wrapper?.focus();
+    	}
+
+    	const writable_props = ['file', 'options', 'index', 'currentIndex'];
 
     	Object.keys($$props).forEach(key => {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console_1.warn(`<Page> was created with unknown prop '${key}'`);
@@ -2250,9 +2260,18 @@ var app = (function () {
     		});
     	}
 
+    	function div_binding($$value) {
+    		binding_callbacks[$$value ? 'unshift' : 'push'](() => {
+    			wrapper = $$value;
+    			$$invalidate(4, wrapper);
+    		});
+    	}
+
     	$$self.$$set = $$props => {
-    		if ('file' in $$props) $$invalidate(10, file = $$props.file);
+    		if ('file' in $$props) $$invalidate(11, file = $$props.file);
     		if ('options' in $$props) $$invalidate(0, options = $$props.options);
+    		if ('index' in $$props) $$invalidate(12, index = $$props.index);
+    		if ('currentIndex' in $$props) $$invalidate(13, currentIndex = $$props.currentIndex);
     	};
 
     	$$self.$capture_state = () => ({
@@ -2281,21 +2300,28 @@ var app = (function () {
     		handleZoom,
     		resetPos,
     		handleStyle,
-    		handleImage
+    		handleImage,
+    		wrapper,
+    		index,
+    		currentIndex,
+    		updateFocus
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ('file' in $$props) $$invalidate(10, file = $$props.file);
+    		if ('file' in $$props) $$invalidate(11, file = $$props.file);
     		if ('options' in $$props) $$invalidate(0, options = $$props.options);
     		if ('image' in $$props) $$invalidate(1, image = $$props.image);
     		if ('src' in $$props) $$invalidate(2, src = $$props.src);
     		if ('scale' in $$props) scale = $$props.scale;
     		if ('transition' in $$props) $$invalidate(3, transition = $$props.transition);
-    		if ('disPos' in $$props) $$invalidate(11, disPos = $$props.disPos);
+    		if ('disPos' in $$props) $$invalidate(14, disPos = $$props.disPos);
     		if ('pinching' in $$props) pinching = $$props.pinching;
     		if ('lasthypot' in $$props) lasthypot = $$props.lasthypot;
     		if ('hypotdelta' in $$props) hypotdelta = $$props.hypotdelta;
-    		if ('zoom' in $$props) $$invalidate(12, zoom = $$props.zoom);
+    		if ('zoom' in $$props) $$invalidate(15, zoom = $$props.zoom);
+    		if ('wrapper' in $$props) $$invalidate(4, wrapper = $$props.wrapper);
+    		if ('index' in $$props) $$invalidate(12, index = $$props.index);
+    		if ('currentIndex' in $$props) $$invalidate(13, currentIndex = $$props.currentIndex);
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -2303,7 +2329,7 @@ var app = (function () {
     	}
 
     	$$self.$$.update = () => {
-    		if ($$self.$$.dirty & /*file*/ 1024) {
+    		if ($$self.$$.dirty & /*file*/ 2048) {
     			updateFile(file);
     		}
 
@@ -2311,8 +2337,12 @@ var app = (function () {
     			resetPos();
     		}
 
-    		if ($$self.$$.dirty & /*disPos, zoom*/ 6144) {
+    		if ($$self.$$.dirty & /*disPos, zoom*/ 49152) {
     			handleStyle({ disPos, zoom });
+    		}
+
+    		if ($$self.$$.dirty & /*currentIndex*/ 8192) {
+    			updateFocus(currentIndex);
     		}
     	};
 
@@ -2321,6 +2351,7 @@ var app = (function () {
     		image,
     		src,
     		transition,
+    		wrapper,
     		dragStart,
     		dragEnd,
     		checkPinch,
@@ -2328,16 +2359,25 @@ var app = (function () {
     		handleZoom,
     		handleImage,
     		file,
+    		index,
+    		currentIndex,
     		disPos,
     		zoom,
-    		img_binding
+    		img_binding,
+    		div_binding
     	];
     }
 
     class Page extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$2, create_fragment$2, safe_not_equal, { file: 10, options: 0 });
+
+    		init(this, options, instance$2, create_fragment$2, safe_not_equal, {
+    			file: 11,
+    			options: 0,
+    			index: 12,
+    			currentIndex: 13
+    		});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
@@ -2362,6 +2402,22 @@ var app = (function () {
     	set options(value) {
     		throw new Error("<Page>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
+
+    	get index() {
+    		throw new Error("<Page>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set index(value) {
+    		throw new Error("<Page>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get currentIndex() {
+    		throw new Error("<Page>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set currentIndex(value) {
+    		throw new Error("<Page>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
     }
 
     /* src\modules\Reader.svelte generated by Svelte v3.42.5 */
@@ -2374,8 +2430,15 @@ var app = (function () {
     	return child_ctx;
     }
 
-    const get_default_slot_changes = dirty => ({ item: dirty & /*currentItems*/ 16 });
-    const get_default_slot_context = ctx => ({ item: /*item*/ ctx[10] });
+    const get_default_slot_changes = dirty => ({
+    	item: dirty & /*currentItems*/ 16,
+    	index: dirty & /*items, currentItems*/ 17
+    });
+
+    const get_default_slot_context = ctx => ({
+    	item: /*item*/ ctx[10],
+    	index: /*items*/ ctx[0].indexOf(/*item*/ ctx[10])
+    });
 
     // (32:2) {#if length}
     function create_if_block(ctx) {
@@ -2471,11 +2534,11 @@ var app = (function () {
     			div = element("div");
     			if (default_slot) default_slot.c();
     			t = space();
-    			attr_dev(div, "class", "item svelte-14x2cf");
+    			attr_dev(div, "class", "item w-full h-full svelte-166jms4");
     			toggle_class(div, "motion", /*prev*/ ctx[2] || /*next*/ ctx[3]);
     			toggle_class(div, "prev", /*prev*/ ctx[2]);
     			toggle_class(div, "next", /*next*/ ctx[3]);
-    			add_location(div, file$1, 33, 6, 828);
+    			add_location(div, file$1, 33, 6, 866);
     			this.first = div;
     		},
     		m: function mount(target, anchor) {
@@ -2492,7 +2555,7 @@ var app = (function () {
     			ctx = new_ctx;
 
     			if (default_slot) {
-    				if (default_slot.p && (!current || dirty & /*$$scope, currentItems*/ 272)) {
+    				if (default_slot.p && (!current || dirty & /*$$scope, currentItems, items*/ 273)) {
     					update_slot_base(
     						default_slot,
     						default_slot_template,
@@ -2553,7 +2616,7 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			if (if_block) if_block.c();
-    			attr_dev(div, "class", "carousel svelte-14x2cf");
+    			attr_dev(div, "class", "h-full d-flex flex-row-reverse overflow-hidden");
     			add_location(div, file$1, 30, 0, 726);
     		},
     		l: function claim(nodes) {
@@ -2771,17 +2834,21 @@ var app = (function () {
     const { Object: Object_1, window: window_1 } = globals;
     const file = "src\\App.svelte";
 
-    // (80:0) <Reader bind:items={pages} let:item bind:gotoNext bind:gotoPrev>
+    // (81:0) <Reader bind:items={pages} let:item let:index bind:gotoNext bind:gotoPrev bind:currentIndex>
     function create_default_slot(ctx) {
     	let page_1;
     	let updating_options;
     	let current;
 
     	function page_1_options_binding(value) {
-    		/*page_1_options_binding*/ ctx[14](value);
+    		/*page_1_options_binding*/ ctx[15](value);
     	}
 
-    	let page_1_props = { file: /*item*/ ctx[25] };
+    	let page_1_props = {
+    		file: /*item*/ ctx[27],
+    		currentIndex: /*currentIndex*/ ctx[6],
+    		index: /*index*/ ctx[28]
+    	};
 
     	if (/*options*/ ctx[2] !== void 0) {
     		page_1_props.options = /*options*/ ctx[2];
@@ -2800,7 +2867,9 @@ var app = (function () {
     		},
     		p: function update(ctx, dirty) {
     			const page_1_changes = {};
-    			if (dirty & /*item*/ 33554432) page_1_changes.file = /*item*/ ctx[25];
+    			if (dirty & /*item*/ 134217728) page_1_changes.file = /*item*/ ctx[27];
+    			if (dirty & /*currentIndex*/ 64) page_1_changes.currentIndex = /*currentIndex*/ ctx[6];
+    			if (dirty & /*index*/ 268435456) page_1_changes.index = /*index*/ ctx[28];
 
     			if (!updating_options && dirty & /*options*/ 4) {
     				updating_options = true;
@@ -2828,7 +2897,7 @@ var app = (function () {
     		block,
     		id: create_default_slot.name,
     		type: "slot",
-    		source: "(80:0) <Reader bind:items={pages} let:item bind:gotoNext bind:gotoPrev>",
+    		source: "(81:0) <Reader bind:items={pages} let:item let:index bind:gotoNext bind:gotoPrev bind:currentIndex>",
     		ctx
     	});
 
@@ -2843,6 +2912,7 @@ var app = (function () {
     	let updating_items;
     	let updating_gotoNext;
     	let updating_gotoPrev;
+    	let updating_currentIndex;
     	let t1;
     	let div4;
     	let div1;
@@ -2869,23 +2939,27 @@ var app = (function () {
     	installprompt = new InstallPrompt({ $$inline: true });
 
     	function reader_items_binding(value) {
-    		/*reader_items_binding*/ ctx[15](value);
+    		/*reader_items_binding*/ ctx[16](value);
     	}
 
     	function reader_gotoNext_binding(value) {
-    		/*reader_gotoNext_binding*/ ctx[16](value);
+    		/*reader_gotoNext_binding*/ ctx[17](value);
     	}
 
     	function reader_gotoPrev_binding(value) {
-    		/*reader_gotoPrev_binding*/ ctx[17](value);
+    		/*reader_gotoPrev_binding*/ ctx[18](value);
+    	}
+
+    	function reader_currentIndex_binding(value) {
+    		/*reader_currentIndex_binding*/ ctx[19](value);
     	}
 
     	let reader_props = {
     		$$slots: {
     			default: [
     				create_default_slot,
-    				({ item }) => ({ 25: item }),
-    				({ item }) => item ? 33554432 : 0
+    				({ item, index }) => ({ 27: item, 28: index }),
+    				({ item, index }) => (item ? 134217728 : 0) | (index ? 268435456 : 0)
     			]
     		},
     		$$scope: { ctx }
@@ -2903,10 +2977,15 @@ var app = (function () {
     		reader_props.gotoPrev = /*gotoPrev*/ ctx[5];
     	}
 
+    	if (/*currentIndex*/ ctx[6] !== void 0) {
+    		reader_props.currentIndex = /*currentIndex*/ ctx[6];
+    	}
+
     	reader = new Reader({ props: reader_props, $$inline: true });
     	binding_callbacks.push(() => bind(reader, 'items', reader_items_binding));
     	binding_callbacks.push(() => bind(reader, 'gotoNext', reader_gotoNext_binding));
     	binding_callbacks.push(() => bind(reader, 'gotoPrev', reader_gotoPrev_binding));
+    	binding_callbacks.push(() => bind(reader, 'currentIndex', reader_currentIndex_binding));
     	document.title = title_value = /*name*/ ctx[0];
 
     	const block = {
@@ -2938,35 +3017,35 @@ var app = (function () {
     			button5 = element("button");
     			t12 = text(t12_value);
     			t13 = space();
-    			attr_dev(div0, "class", "sticky-alerts d-flex flex-column-reverse svelte-x6gz4f");
-    			add_location(div0, file, 70, 0, 1720);
+    			attr_dev(div0, "class", "sticky-alerts d-flex flex-column-reverse svelte-1x2rqc2");
+    			add_location(div0, file, 71, 0, 1743);
     			attr_dev(button0, "class", "btn btn-lg btn-square material-icons");
     			attr_dev(button0, "type", "button");
-    			add_location(button0, file, 85, 4, 2331);
+    			add_location(button0, file, 86, 4, 2405);
     			attr_dev(button1, "class", "btn btn-lg btn-square material-icons");
     			attr_dev(button1, "type", "button");
-    			add_location(button1, file, 86, 4, 2442);
+    			add_location(button1, file, 87, 4, 2516);
     			attr_dev(div1, "class", "btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto");
-    			add_location(div1, file, 84, 2, 2259);
+    			add_location(div1, file, 85, 2, 2333);
     			attr_dev(button2, "class", "btn btn-lg btn-square material-icons");
     			attr_dev(button2, "type", "button");
-    			add_location(button2, file, 90, 4, 2636);
+    			add_location(button2, file, 91, 4, 2710);
     			attr_dev(button3, "class", "btn btn-lg btn-square material-icons");
     			attr_dev(button3, "type", "button");
-    			add_location(button3, file, 91, 4, 2769);
+    			add_location(button3, file, 92, 4, 2843);
     			attr_dev(button4, "class", "btn btn-lg btn-square material-icons");
     			attr_dev(button4, "type", "button");
-    			add_location(button4, file, 92, 4, 2898);
+    			add_location(button4, file, 93, 4, 2972);
     			attr_dev(div2, "class", "btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto");
-    			add_location(div2, file, 89, 2, 2564);
+    			add_location(div2, file, 90, 2, 2638);
     			attr_dev(button5, "class", "btn btn-lg btn-square material-icons");
     			attr_dev(button5, "type", "button");
-    			add_location(button5, file, 95, 4, 3109);
+    			add_location(button5, file, 96, 4, 3183);
     			attr_dev(div3, "class", "btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto");
-    			add_location(div3, file, 94, 2, 3037);
-    			attr_dev(div4, "class", "position-absolute buttons row w-full justify-content-center controls svelte-x6gz4f");
+    			add_location(div3, file, 95, 2, 3111);
+    			attr_dev(div4, "class", "position-absolute buttons row w-full justify-content-center controls svelte-1x2rqc2");
     			toggle_class(div4, "immersed", /*immersed*/ ctx[3]);
-    			add_location(div4, file, 83, 0, 2159);
+    			add_location(div4, file, 84, 0, 2233);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -2998,16 +3077,16 @@ var app = (function () {
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(window_1, "drop", prevent_default(/*handleInput*/ ctx[6]), false, true, false),
-    					listen_dev(window_1, "dragenter", prevent_default(/*dragenter_handler*/ ctx[10]), false, true, false),
-    					listen_dev(window_1, "dragover", prevent_default(/*dragover_handler*/ ctx[11]), false, true, false),
-    					listen_dev(window_1, "dragstart", prevent_default(/*dragstart_handler*/ ctx[12]), false, true, false),
-    					listen_dev(window_1, "dragleave", prevent_default(/*dragleave_handler*/ ctx[13]), false, true, false),
-    					listen_dev(window_1, "paste", prevent_default(/*handleInput*/ ctx[6]), false, true, false),
-    					listen_dev(window_1, "keydown", /*handleKeydown*/ ctx[9], false, false, false),
-    					listen_dev(window_1, "mousemove", /*resetImmerse*/ ctx[8], false, false, false),
-    					listen_dev(window_1, "touchmove", /*resetImmerse*/ ctx[8], false, false, false),
-    					listen_dev(window_1, "mouseleave", /*immerseReader*/ ctx[7], false, false, false),
+    					listen_dev(window_1, "drop", prevent_default(/*handleInput*/ ctx[7]), false, true, false),
+    					listen_dev(window_1, "dragenter", prevent_default(/*dragenter_handler*/ ctx[11]), false, true, false),
+    					listen_dev(window_1, "dragover", prevent_default(/*dragover_handler*/ ctx[12]), false, true, false),
+    					listen_dev(window_1, "dragstart", prevent_default(/*dragstart_handler*/ ctx[13]), false, true, false),
+    					listen_dev(window_1, "dragleave", prevent_default(/*dragleave_handler*/ ctx[14]), false, true, false),
+    					listen_dev(window_1, "paste", prevent_default(/*handleInput*/ ctx[7]), false, true, false),
+    					listen_dev(window_1, "keydown", /*handleKeydown*/ ctx[10], false, false, false),
+    					listen_dev(window_1, "mousemove", /*resetImmerse*/ ctx[9], false, false, false),
+    					listen_dev(window_1, "touchmove", /*resetImmerse*/ ctx[9], false, false, false),
+    					listen_dev(window_1, "mouseleave", /*immerseReader*/ ctx[8], false, false, false),
     					listen_dev(
     						button0,
     						"click",
@@ -3028,10 +3107,10 @@ var app = (function () {
     						false,
     						false
     					),
-    					listen_dev(button2, "click", /*click_handler*/ ctx[18], false, false, false),
-    					listen_dev(button3, "click", /*click_handler_1*/ ctx[19], false, false, false),
-    					listen_dev(button4, "click", /*click_handler_2*/ ctx[20], false, false, false),
-    					listen_dev(button5, "click", /*click_handler_3*/ ctx[21], false, false, false)
+    					listen_dev(button2, "click", /*click_handler*/ ctx[20], false, false, false),
+    					listen_dev(button3, "click", /*click_handler_1*/ ctx[21], false, false, false),
+    					listen_dev(button4, "click", /*click_handler_2*/ ctx[22], false, false, false),
+    					listen_dev(button5, "click", /*click_handler_3*/ ctx[23], false, false, false)
     				];
 
     				mounted = true;
@@ -3041,7 +3120,7 @@ var app = (function () {
     			ctx = new_ctx;
     			const reader_changes = {};
 
-    			if (dirty & /*$$scope, item, options*/ 100663300) {
+    			if (dirty & /*$$scope, item, currentIndex, index, options*/ 939524164) {
     				reader_changes.$$scope = { dirty, ctx };
     			}
 
@@ -3061,6 +3140,12 @@ var app = (function () {
     				updating_gotoPrev = true;
     				reader_changes.gotoPrev = /*gotoPrev*/ ctx[5];
     				add_flush_callback(() => updating_gotoPrev = false);
+    			}
+
+    			if (!updating_currentIndex && dirty & /*currentIndex*/ 64) {
+    				updating_currentIndex = true;
+    				reader_changes.currentIndex = /*currentIndex*/ ctx[6];
+    				add_flush_callback(() => updating_currentIndex = false);
     			}
 
     			reader.$set(reader_changes);
@@ -3175,6 +3260,7 @@ var app = (function () {
     	}
 
     	let gotoNext, gotoPrev;
+    	let currentIndex = 0;
     	const writable_props = [];
 
     	Object_1.keys($$props).forEach(key => {
@@ -3217,6 +3303,11 @@ var app = (function () {
     		$$invalidate(5, gotoPrev);
     	}
 
+    	function reader_currentIndex_binding(value) {
+    		currentIndex = value;
+    		$$invalidate(6, currentIndex);
+    	}
+
     	const click_handler = () => $$invalidate(2, options.mode = 'fit', options);
     	const click_handler_1 = () => $$invalidate(2, options.mode = 'cover', options);
     	const click_handler_2 = () => $$invalidate(2, options.mode = 'vertical', options);
@@ -3243,7 +3334,8 @@ var app = (function () {
     		resetImmerse,
     		handleKeydown,
     		gotoNext,
-    		gotoPrev
+    		gotoPrev,
+    		currentIndex
     	});
 
     	$$self.$inject_state = $$props => {
@@ -3254,6 +3346,7 @@ var app = (function () {
     		if ('immerseTimeout' in $$props) immerseTimeout = $$props.immerseTimeout;
     		if ('gotoNext' in $$props) $$invalidate(4, gotoNext = $$props.gotoNext);
     		if ('gotoPrev' in $$props) $$invalidate(5, gotoPrev = $$props.gotoPrev);
+    		if ('currentIndex' in $$props) $$invalidate(6, currentIndex = $$props.currentIndex);
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -3267,6 +3360,7 @@ var app = (function () {
     		immersed,
     		gotoNext,
     		gotoPrev,
+    		currentIndex,
     		handleInput,
     		immerseReader,
     		resetImmerse,
@@ -3279,6 +3373,7 @@ var app = (function () {
     		reader_items_binding,
     		reader_gotoNext_binding,
     		reader_gotoPrev_binding,
+    		reader_currentIndex_binding,
     		click_handler,
     		click_handler_1,
     		click_handler_2,

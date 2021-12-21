@@ -115,11 +115,19 @@
     dimensions.x = image.naturalWidth
     dimensions.y = image.naturalHeight
   }
+  let wrapper = null
+  export let index = 0
+  export let currentIndex = 0
+  $: updateFocus(currentIndex)
+  function updateFocus(currentIndex) {
+    if (currentIndex === index) wrapper?.focus()
+  }
 </script>
 
 <div
   class="w-full h-full overflow-hidden position-relative dragarea d-flex justify-content-center flex-column transition"
   class:overflow-y-auto={options.mode === 'cover'}
+  bind:this={wrapper}
   on:pointerdown={dragStart}
   on:pointerup={dragEnd}
   on:wheel|passive={handleZoom}

@@ -66,6 +66,7 @@
     }
   }
   let gotoNext, gotoPrev
+  let currentIndex = 0
 </script>
 
 <div class="sticky-alerts d-flex flex-column-reverse">
@@ -77,8 +78,8 @@
   class:single={options.mode !== 'vertical'}
   style={options.mode !== 'vertical' ? `transform: translateX(${100 * page}vw)` : ''}>
 </div> -->
-<Reader bind:items={pages} let:item bind:gotoNext bind:gotoPrev>
-  <Page file={item} bind:options />
+<Reader bind:items={pages} let:item let:index bind:gotoNext bind:gotoPrev bind:currentIndex>
+  <Page file={item} bind:options {currentIndex} {index} />
 </Reader>
 
 <div class="position-absolute buttons row w-full justify-content-center controls" class:immersed>
@@ -124,14 +125,6 @@
   }
   .immersed {
     opacity: 0;
-  }
-  .pages-wrapper {
-    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-    display: flex;
-    flex-direction: column;
-  }
-  .single {
-    flex-direction: row-reverse;
   }
   .buttons {
     bottom: 8rem;
