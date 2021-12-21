@@ -4,7 +4,7 @@
   export let file = null
   $: updateFile(file)
   async function updateFile(file) {
-    if (!src) {
+    if (!src && file) {
       console.log(file)
       const blob = await file.blob()
       src = URL.createObjectURL(blob)
@@ -118,7 +118,7 @@
 </script>
 
 <div
-  class="w-full overflow-hidden position-relative dragarea d-flex justify-content-center flex-column transition"
+  class="w-full h-full overflow-hidden position-relative dragarea d-flex justify-content-center flex-column transition"
   class:overflow-y-auto={options.mode === 'cover'}
   on:pointerdown={dragStart}
   on:pointerup={dragEnd}
@@ -126,15 +126,19 @@
   on:touchend={dragEnd}
   on:touchstart={checkPinch}
   on:touchmove={handlePinch}>
-  <img
-    {src}
-    class:transition
-    alt="view"
-    class="w-full"
-    class:position-absolute={options.mode !== 'vertical'}
-    class:h-full={options.mode === 'fit'}
-    bind:this={image}
-    on:load={handleImage} />
+  {#if src}
+    <img
+      {src}
+      class:transition
+      alt="view"
+      class="w-full"
+      class:position-absolute={options.mode !== 'vertical'}
+      class:h-full={options.mode === 'fit'}
+      bind:this={image}
+      on:load={handleImage} />
+  {:else}
+    <div class="d-flex align-items-center justify-content-center font-size-24 font-weight-bold">There's no next page.</div>
+  {/if}
 </div>
 
 <style>

@@ -3,12 +3,12 @@
   export let items = []
 
   $: length = items.length
-  $: currentItems = [0, 1, 2].map(i => items[currentIndex + i])
+  $: currentItems = [-1, 0, 1].map(i => (currentIndex + i <= length ? items[currentIndex + i] : false)).filter(i => i !== false)
   let prev = false
   let next = false
 
-  function gotoNext() {
-    if (!next && !prev && currentIndex < length - 1) {
+  export function gotoNext() {
+    if (!next && !prev && currentIndex < length) {
       next = true
       setTimeout(() => {
         currentIndex = currentIndex + 1
@@ -17,7 +17,7 @@
     }
   }
 
-  function gotoPrev() {
+  export function gotoPrev() {
     if (!next && !prev && currentIndex > 0) {
       prev = true
       setTimeout(() => {
@@ -37,27 +37,19 @@
     {/each}
   {/if}
 </div>
-<div class="controls">
-  <button on:click={gotoPrev}>Prev</button>
-  <button on:click={gotoNext}>Next</button>
-</div>
 
 <style>
   .carousel {
-    display: grid;
-    grid-template-rows: 1fr;
-    grid-template-columns: 100% 100% 100%;
-    background: red;
-    width: 400px;
-    aspect-ratio: 1;
+    display: flex;
+    flex-direction: row-reverse;
+    height: 100%;
     overflow: hidden;
   }
   .item {
-    transform: translateX(-100%);
+    flex: none;
+    transform: translateX(100%);
     width: 100%;
     height: 100%;
-    grid-row: 1 / -1;
-    grid-column: span 1;
   }
 
   .motion {
@@ -65,7 +57,7 @@
   }
 
   .next {
-    transform: translateX(-200%);
+    transform: translateX(200%);
   }
 
   .prev {

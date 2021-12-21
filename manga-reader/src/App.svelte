@@ -4,20 +4,12 @@
   import { unzip } from 'unzipit'
   import Page from './modules/Page.svelte'
   import Reader from './modules/Reader.svelte'
-  import Carousel from './modules/Carousel.svelte'
   let name = 'Manga Reader'
   let pages = []
   let options = {
     mode: 'cover',
     crop: true,
     pad: false
-  }
-  let page = 0
-  function next() {
-    page = Math.min(pages.length - 1, page + 1)
-  }
-  function last() {
-    page = Math.max(page - 1, 0)
   }
 
   navigator.serviceWorker.register('/sw.js')
@@ -66,34 +58,16 @@
   async function handleKeydown({ key }) {
     switch (key) {
       case 'ArrowLeft':
-        next()
+        gotoNext()
         break
       case 'ArrowRight':
-        last()
+        gotoPrev()
         break
     }
   }
-
-  const items = [
-  {id: 1},
-  {id: 2},
-  {id: 3},
-  {id: 4},
-  {id: 5},
-  {id: 6},
-  {id: 7},
-  {id: 8},
-  {id: 9},
-  {id: 10},
-]
+  let gotoNext, gotoPrev
 </script>
 
-<!-- <Carousel {items} let:item >
-  <p>{item.id}</p>
-</Carousel> -->
-<Reader bind:items={pages} let:item >
-  <Page file={item} bind:options />
-</Reader>
 <div class="sticky-alerts d-flex flex-column-reverse">
   <InstallPrompt />
 </div>
@@ -101,19 +75,16 @@
   class="h-full w-full pages-wrapper"
   class:overflow-y-auto={options.mode === 'vertical'}
   class:single={options.mode !== 'vertical'}
-  style={options.mode !== 'vertical' ? `transform: translateX(${100 * page}vw)` : ''}
-  on:mousemove={resetImmerse}
-  on:touchmove={resetImmerse}
-  on:mouseleave={immerseReader}>
-  {#each pages as file}
-    <Page {file} bind:options />
-  {/each}
+  style={options.mode !== 'vertical' ? `transform: translateX(${100 * page}vw)` : ''}>
 </div> -->
+<Reader bind:items={pages} let:item bind:gotoNext bind:gotoPrev>
+  <Page file={item} bind:options />
+</Reader>
 
 <div class="position-absolute buttons row w-full justify-content-center controls" class:immersed>
   <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={next}>arrow_back</button>
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={last}>arrow_forward</button>
+    <button class="btn btn-lg btn-square material-icons" type="button" on:click={gotoNext}>arrow_back</button>
+    <button class="btn btn-lg btn-square material-icons" type="button" on:click={gotoPrev}>arrow_forward</button>
   </div>
 
   <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
@@ -137,16 +108,12 @@
   on:dragstart|preventDefault
   on:dragleave|preventDefault
   on:paste|preventDefault={handleInput}
-  on:keydown={handleKeydown} />
+  on:keydown={handleKeydown}
+  on:mousemove={resetImmerse}
+  on:touchmove={resetImmerse}
+  on:mouseleave={immerseReader} />
 
 <style>
-  p {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  place-items: center;
-  font-size: 3rem;
-}
   :global(body) {
     position: unset !important;
   }
