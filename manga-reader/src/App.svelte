@@ -3,6 +3,8 @@
   import { filePopup, handleItems, getSearchFiles, getLaunchFiles } from '../../shared/inputHandler.js'
   import { unzip } from 'unzipit'
   import Page from './modules/Page.svelte'
+  import Reader from './modules/Reader.svelte'
+  import Carousel from './modules/Carousel.svelte'
   let name = 'Manga Reader'
   let pages = []
   let options = {
@@ -44,33 +46,76 @@
     }
   }
   handleFiles(getSearchFiles(['book']))
+  let immersed = false
+  let immerseTimeout = null
+
+  function immerseReader() {
+    immersed = true
+    immerseTimeout = undefined
+  }
+
+  function resetImmerse() {
+    if (immerseTimeout) {
+      clearTimeout(immerseTimeout)
+    } else {
+      immersed = false
+    }
+    immerseTimeout = setTimeout(immerseReader, 2 * 1000)
+  }
+
+  async function handleKeydown({ key }) {
+    switch (key) {
+      case 'ArrowLeft':
+        next()
+        break
+      case 'ArrowRight':
+        last()
+        break
+    }
+  }
+
+  const items = [
+  {id: 1},
+  {id: 2},
+  {id: 3},
+  {id: 4},
+  {id: 5},
+  {id: 6},
+  {id: 7},
+  {id: 8},
+  {id: 9},
+  {id: 10},
+]
 </script>
 
+<!-- <Carousel {items} let:item >
+  <p>{item.id}</p>
+</Carousel> -->
+<Reader bind:items={pages} let:item >
+  <Page file={item} bind:options />
+</Reader>
 <div class="sticky-alerts d-flex flex-column-reverse">
   <InstallPrompt />
 </div>
-<div
+<!-- <div
   class="h-full w-full pages-wrapper"
   class:overflow-y-auto={options.mode === 'vertical'}
   class:single={options.mode !== 'vertical'}
-  style={options.mode !== 'vertical' ? `transform: translateX(${100 * page}vw)` : ''}>
+  style={options.mode !== 'vertical' ? `transform: translateX(${100 * page}vw)` : ''}
+  on:mousemove={resetImmerse}
+  on:touchmove={resetImmerse}
+  on:mouseleave={immerseReader}>
   {#each pages as file}
     <Page {file} bind:options />
   {/each}
-</div>
+</div> -->
 
-<div class="position-absolute buttons row w-full justify-content-center">
+<div class="position-absolute buttons row w-full justify-content-center controls" class:immersed>
   <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
     <button class="btn btn-lg btn-square material-icons" type="button" on:click={next}>arrow_back</button>
     <button class="btn btn-lg btn-square material-icons" type="button" on:click={last}>arrow_forward</button>
   </div>
 
-  <!-- <div class="btn-group input-group bg-dark-dm bg-light-lm rounded m-5 w-200 col-auto">
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={resetPos}>zoom_out_map</button>
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => handleZoom({ deltaY: 100 })}>remove</button>
-    <input type="number" step="0.1" min="0.1" class="form-control form-control-lg text-right" placeholder="Scale" readonly value={zoom.toFixed(1)} />
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => handleZoom({ deltaY: -100 })}>add</button>
-  </div> -->
   <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
     <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => (options.mode = 'fit')}>zoom_out_map</button>
     <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => (options.mode = 'cover')}>expand</button>
@@ -78,7 +123,6 @@
   </div>
   <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
     <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => (options.crop = !options.crop)}>{options.crop ? 'crop' : 'crop_free'}</button>
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => (options.pad = !options.pad)}>{options.pad ? 'crop_5_4' : 'crop_portrait'}</button>
   </div>
 </div>
 
@@ -92,11 +136,27 @@
   on:dragover|preventDefault
   on:dragstart|preventDefault
   on:dragleave|preventDefault
-  on:paste|preventDefault={handleInput} />
+  on:paste|preventDefault={handleInput}
+  on:keydown={handleKeydown} />
 
 <style>
+  p {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 3rem;
+}
   :global(body) {
     position: unset !important;
+  }
+
+  .controls {
+    transition: 0.5s opacity ease;
+    opacity: 1;
+  }
+  .immersed {
+    opacity: 0;
   }
   .pages-wrapper {
     transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -106,9 +166,6 @@
   .single {
     flex-direction: row-reverse;
   }
-  .input-group button {
-    flex: unset;
-  }
   .buttons {
     bottom: 8rem;
     left: 50%;
@@ -117,11 +174,5 @@
   .sticky-alerts {
     --sticky-alerts-top: auto;
     bottom: 1rem;
-  }
-  input::-webkit-inner-spin-button {
-    display: none;
-  }
-  input {
-    -moz-appearance: textfield;
   }
 </style>

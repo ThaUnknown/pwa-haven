@@ -4,8 +4,11 @@
   export let file = null
   $: updateFile(file)
   async function updateFile(file) {
-    const blob = await file.blob()
-    src = URL.createObjectURL(blob)
+    if (!src) {
+      console.log(file)
+      const blob = await file.blob()
+      src = URL.createObjectURL(blob)
+    }
   }
   onDestroy(() => {
     URL.revokeObjectURL(src)
@@ -117,7 +120,6 @@
 <div
   class="w-full overflow-hidden position-relative dragarea d-flex justify-content-center flex-column transition"
   class:overflow-y-auto={options.mode === 'cover'}
-  class:pad={options.pad}
   on:pointerdown={dragStart}
   on:pointerup={dragEnd}
   on:wheel|passive={handleZoom}
@@ -136,9 +138,6 @@
 </div>
 
 <style>
-  .pad {
-    padding: 0 20rem;
-  }
   img {
     object-fit: contain;
     --top: 0;
