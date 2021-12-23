@@ -1,9 +1,9 @@
-<script lang="ts">
+<script>
   export let currentIndex = 0
   export let items = []
 
   $: length = items.length
-  $: currentItems = [-1, 0, 1].map(i => (currentIndex + i <= length ? items[currentIndex + i] : false)).filter(i => i !== false)
+  $: currentItems = [-1, 0, 1].map(i => (currentIndex + i <= length ? { item: items[currentIndex + i], index: currentIndex + i } : { item: false })).filter(i => i.item !== false)
   let prev = false
   let next = false
 
@@ -26,13 +26,21 @@
       }, 200)
     }
   }
+  function autoFocus(node) {
+    return {
+      update(current) {
+        if (current) node.focus()
+      }
+    }
+  }
 </script>
 
-<div class="h-full d-flex flex-row-reverse overflow-hidden">
+<div class="h-full d-flex flex-row-reverse overflow-x-hidden">
   {#if length}
-    {#each currentItems as item (items.indexOf(item))}
-      <div class="item w-full h-full" class:motion={prev || next} class:prev class:next>
-        <slot {item} index={items.indexOf(item)} />
+    <!-- svelte-ignore missing-declaration -->
+    {#each currentItems as { item, index } (index)}
+      <div class="item w-full h-full overflow-y-auto" class:prev class:next use:autoFocus={currentIndex === index}>
+        <slot {item} />
       </div>
     {/each}
   {/if}
@@ -44,7 +52,7 @@
     transform: translateX(100%);
   }
 
-  .motion {
+  .prev, .next {
     transition: transform 0.2s;
   }
 

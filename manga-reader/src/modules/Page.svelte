@@ -5,7 +5,6 @@
   $: updateFile(file)
   async function updateFile(file) {
     if (!src && file) {
-      console.log(file)
       const blob = await file.blob()
       src = URL.createObjectURL(blob)
     }
@@ -111,43 +110,30 @@
   }
   $: handleStyle({ disPos, zoom })
 
-  function handleImage() {
+  function handleImage(image) {
     dimensions.x = image.naturalWidth
     dimensions.y = image.naturalHeight
   }
-  let wrapper = null
-  export let index = 0
-  export let currentIndex = 0
-  $: updateFocus(currentIndex)
-  function updateFocus(currentIndex) {
-    if (currentIndex === index) wrapper?.focus()
-  }
 </script>
 
-<div
-  class="w-full h-full overflow-hidden position-relative dragarea d-flex justify-content-center flex-column transition"
-  class:overflow-y-auto={options.mode === 'cover'}
-  bind:this={wrapper}
-  on:pointerdown={dragStart}
-  on:pointerup={dragEnd}
-  on:wheel|passive={handleZoom}
-  on:touchend={dragEnd}
-  on:touchstart={checkPinch}
-  on:touchmove={handlePinch}>
-  {#if src}
-    <img
-      {src}
-      class:transition
-      alt="view"
-      class="w-full"
-      class:position-absolute={options.mode !== 'vertical'}
-      class:h-full={options.mode === 'fit'}
-      bind:this={image}
-      on:load={handleImage} />
+{#if src}
+  {#if options.mode !== 'fit'}
+    <img {src} alt="view" class="w-full" />
   {:else}
-    <div class="d-flex align-items-center justify-content-center font-size-24 font-weight-bold">There's no next page.</div>
+    <div
+      class="w-full h-full overflow-hidden position-relative dragarea"
+      on:pointerdown={dragStart}
+      on:pointerup={dragEnd}
+      on:wheel|passive={handleZoom}
+      on:touchend={dragEnd}
+      on:touchstart={checkPinch}
+      on:touchmove={handlePinch}>
+      <img {src} class:transition alt="view" class="w-full h-full position-absolute" bind:this={image} on:load={handleImage} />
+    </div>
   {/if}
-</div>
+{:else}
+  <div class="d-flex align-items-center justify-content-center font-size-24 font-weight-bold w-full h-full">There's no next page.</div>
+{/if}
 
 <style>
   img {
@@ -164,7 +150,6 @@
     display: none;
   }
   .dragarea {
-    flex: none;
     user-select: none;
     cursor: grab;
     touch-action: none;

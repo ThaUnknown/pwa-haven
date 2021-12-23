@@ -4,6 +4,7 @@
   import { unzip } from 'unzipit'
   import Page from './modules/Page.svelte'
   import Reader from './modules/Reader.svelte'
+  import VerticalReader from './modules/VerticalReader.svelte'
   let name = 'Manga Reader'
   let pages = []
   let options = {
@@ -34,7 +35,7 @@
     if (newfiles?.length) {
       pages = Object.values((await unzip(newfiles[0])).entries).filter(page => !page.isDirectory)
       name = newfiles[0].name.match(/([^-–]+)/)[0].trim()
-      page = 0
+      currentIndex = 0
     }
   }
   handleFiles(getSearchFiles(['book']))
@@ -72,21 +73,23 @@
 <div class="sticky-alerts d-flex flex-column-reverse">
   <InstallPrompt />
 </div>
-<!-- <div
-  class="h-full w-full pages-wrapper"
-  class:overflow-y-auto={options.mode === 'vertical'}
-  class:single={options.mode !== 'vertical'}
-  style={options.mode !== 'vertical' ? `transform: translateX(${100 * page}vw)` : ''}>
-</div> -->
-<Reader bind:items={pages} let:item let:index bind:gotoNext bind:gotoPrev bind:currentIndex>
-  <Page file={item} bind:options {currentIndex} {index} />
-</Reader>
+{#if options.mode === 'vertical'}
+  <VerticalReader items={pages} let:item>
+    <Page file={item} {options}/>
+  </VerticalReader>
+{:else}
+  <Reader items={pages} let:item bind:gotoNext bind:gotoPrev bind:currentIndex>
+    <Page file={item} {options} />
+  </Reader>
+{/if}
 
 <div class="position-absolute buttons row w-full justify-content-center controls" class:immersed>
-  <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={gotoNext}>arrow_back</button>
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={gotoPrev}>arrow_forward</button>
-  </div>
+  {#if options.mode !== 'vertical'}
+    <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={gotoNext}>arrow_back</button>
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={gotoPrev}>arrow_forward</button>
+    </div>
+  {/if}
 
   <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
     <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => (options.mode = 'fit')}>zoom_out_map</button>
