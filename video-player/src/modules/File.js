@@ -1,7 +1,6 @@
 /* eslint-env browser */
 import rangeParser from 'range-parser'
 import eos from 'end-of-stream'
-import FileReadStream from 'filestream/read'
 import { URLFile } from '../../../shared/URLFile.js'
 import { Readable } from 'stream'
 
@@ -112,5 +111,35 @@ class ReadableURL extends Readable {
 
   destroy () {
     this.destroyed = true
+  }
+}
+
+// modded filestream lib, caches 1 piece ahead
+class FileReadStream extends Readable {
+  /**
+   * @param {Blob} blob
+   * @param {any} opts
+   */
+  constructor (blob, opts = {}) {
+    super(opts)
+    this.destroyed = false
+    this.reader = (async function * () {
+      const stream = blob.stream()
+      const reader = stream.getReader()
+      let last = reader.read()
+      while (!last.done) {
+        const temp = last
+        last = reader.read()
+        yield (await temp).value
+      }
+      yield (await last).value
+    })()
+  }
+
+  async _read () {
+    if (this.destroyed) return
+    const { value } = await this.reader.next()
+    if (value == null) this.destroyed = true
+    this.push(value || null)
   }
 }

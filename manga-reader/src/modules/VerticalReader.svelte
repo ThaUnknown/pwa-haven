@@ -2,33 +2,29 @@
   let scrollContainer = {}
   export let items = []
 
-  $: currentItems = items.slice(hidden, hidden + displaying).map(item => {
+  $: currentItems = items.slice(currentIndex, currentIndex + displaying).map(item => {
     return { index: items.indexOf(item), item }
   })
 
-  let hidden = 0
+  export let currentIndex = 0
   let displaying = 1
   const observer = new IntersectionObserver(entries => {
     const nodes = [...scrollContainer.children]
     for (const entry of entries) {
-      if (nodes.indexOf(entry.target) === nodes.length - 2) {
-        if (!entry.isIntersecting) {
-          displaying = Math.max(1, displaying - 1)
+      const index = nodes.indexOf(entry.target)
+      if (entry.isIntersecting) {
+        if (index === 0) {
+          currentIndex = Math.max(0, currentIndex - 1)
         }
-      }
-      if (nodes.indexOf(entry.target) === nodes.length - 1) {
-        if (entry.isIntersecting) {
+        if (index === nodes.length - 1) {
           ++displaying
         }
-      }
-      if (displaying > 2 && nodes.indexOf(entry.target) === 1) {
-        if (!entry.isIntersecting) {
-          ++hidden
+      } else {
+        if (nodes.length > 2 && index === 1) {
+          ++currentIndex
         }
-      }
-      if (nodes.indexOf(entry.target) === 0) {
-        if (entry.isIntersecting) {
-          hidden = Math.max(0, hidden - 1)
+        if (index > 1 && index !== nodes.length - 1) {
+          displaying = Math.max(1, displaying - 1)
         }
       }
     }

@@ -2543,7 +2543,7 @@ var app = (function () {
     			div = element("div");
     			if (default_slot) default_slot.c();
     			t = space();
-    			attr_dev(div, "class", "item w-full h-full overflow-y-auto svelte-cyx4m4");
+    			attr_dev(div, "class", "item w-full h-full overflow-y-auto svelte-ym67ze");
     			toggle_class(div, "prev", /*prev*/ ctx[2]);
     			toggle_class(div, "next", /*next*/ ctx[3]);
     			add_location(div, file$2, 41, 6, 1078);
@@ -2868,7 +2868,7 @@ var app = (function () {
     const get_default_slot_changes = dirty => ({ item: dirty & /*currentItems*/ 4 });
     const get_default_slot_context = ctx => ({ item: /*item*/ ctx[10] });
 
-    // (47:2) {#if items.length}
+    // (43:2) {#if items.length}
     function create_if_block$1(ctx) {
     	let each_blocks = [];
     	let each_1_lookup = new Map();
@@ -2940,14 +2940,14 @@ var app = (function () {
     		block,
     		id: create_if_block$1.name,
     		type: "if",
-    		source: "(47:2) {#if items.length}",
+    		source: "(43:2) {#if items.length}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (49:4) {#each currentItems as { item, index }
+    // (45:4) {#each currentItems as { item, index }
     function create_each_block(key_1, ctx) {
     	let div;
     	let t;
@@ -2965,7 +2965,7 @@ var app = (function () {
     			if (default_slot) default_slot.c();
     			t = space();
     			attr_dev(div, "class", "w-full");
-    			add_location(div, file$1, 49, 6, 1403);
+    			add_location(div, file$1, 45, 6, 1304);
     			this.first = div;
     		},
     		m: function mount(target, anchor) {
@@ -3022,7 +3022,7 @@ var app = (function () {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(49:4) {#each currentItems as { item, index }",
+    		source: "(45:4) {#each currentItems as { item, index }",
     		ctx
     	});
 
@@ -3039,7 +3039,7 @@ var app = (function () {
     			div = element("div");
     			if (if_block) if_block.c();
     			attr_dev(div, "class", "h-full d-flex flex-column overflow-x-hidden overflow-y-auto");
-    			add_location(div, file$1, 45, 0, 1171);
+    			add_location(div, file$1, 41, 0, 1072);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -3107,34 +3107,30 @@ var app = (function () {
     	validate_slots('VerticalReader', slots, ['default']);
     	let scrollContainer = {};
     	let { items = [] } = $$props;
-    	let hidden = 0;
+    	let { currentIndex = 0 } = $$props;
     	let displaying = 1;
 
     	const observer = new IntersectionObserver(entries => {
     			const nodes = [...scrollContainer.children];
 
     			for (const entry of entries) {
-    				if (nodes.indexOf(entry.target) === nodes.length - 2) {
-    					if (!entry.isIntersecting) {
-    						$$invalidate(5, displaying = Math.max(1, displaying - 1));
-    					}
-    				}
+    				const index = nodes.indexOf(entry.target);
 
-    				if (nodes.indexOf(entry.target) === nodes.length - 1) {
-    					if (entry.isIntersecting) {
+    				if (entry.isIntersecting) {
+    					if (index === 0) {
+    						$$invalidate(4, currentIndex = Math.max(0, currentIndex - 1));
+    					}
+
+    					if (index === nodes.length - 1) {
     						$$invalidate(5, ++displaying);
     					}
-    				}
-
-    				if (displaying > 2 && nodes.indexOf(entry.target) === 1) {
-    					if (!entry.isIntersecting) {
-    						$$invalidate(4, ++hidden);
+    				} else {
+    					if (nodes.length > 2 && index === 1) {
+    						$$invalidate(4, ++currentIndex);
     					}
-    				}
 
-    				if (nodes.indexOf(entry.target) === 0) {
-    					if (entry.isIntersecting) {
-    						$$invalidate(4, hidden = Math.max(0, hidden - 1));
+    					if (index > 1 && index !== nodes.length - 1) {
+    						$$invalidate(5, displaying = Math.max(1, displaying - 1));
     					}
     				}
     			}
@@ -3150,7 +3146,7 @@ var app = (function () {
     		};
     	}
 
-    	const writable_props = ['items'];
+    	const writable_props = ['items', 'currentIndex'];
 
     	Object.keys($$props).forEach(key => {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<VerticalReader> was created with unknown prop '${key}'`);
@@ -3165,13 +3161,14 @@ var app = (function () {
 
     	$$self.$$set = $$props => {
     		if ('items' in $$props) $$invalidate(0, items = $$props.items);
+    		if ('currentIndex' in $$props) $$invalidate(4, currentIndex = $$props.currentIndex);
     		if ('$$scope' in $$props) $$invalidate(6, $$scope = $$props.$$scope);
     	};
 
     	$$self.$capture_state = () => ({
     		scrollContainer,
     		items,
-    		hidden,
+    		currentIndex,
     		displaying,
     		observer,
     		infiniteScrolling,
@@ -3181,7 +3178,7 @@ var app = (function () {
     	$$self.$inject_state = $$props => {
     		if ('scrollContainer' in $$props) $$invalidate(1, scrollContainer = $$props.scrollContainer);
     		if ('items' in $$props) $$invalidate(0, items = $$props.items);
-    		if ('hidden' in $$props) $$invalidate(4, hidden = $$props.hidden);
+    		if ('currentIndex' in $$props) $$invalidate(4, currentIndex = $$props.currentIndex);
     		if ('displaying' in $$props) $$invalidate(5, displaying = $$props.displaying);
     		if ('currentItems' in $$props) $$invalidate(2, currentItems = $$props.currentItems);
     	};
@@ -3191,8 +3188,8 @@ var app = (function () {
     	}
 
     	$$self.$$.update = () => {
-    		if ($$self.$$.dirty & /*items, hidden, displaying*/ 49) {
-    			$$invalidate(2, currentItems = items.slice(hidden, hidden + displaying).map(item => {
+    		if ($$self.$$.dirty & /*items, currentIndex, displaying*/ 49) {
+    			$$invalidate(2, currentItems = items.slice(currentIndex, currentIndex + displaying).map(item => {
     				return { index: items.indexOf(item), item };
     			}));
     		}
@@ -3203,7 +3200,7 @@ var app = (function () {
     		scrollContainer,
     		currentItems,
     		infiniteScrolling,
-    		hidden,
+    		currentIndex,
     		displaying,
     		$$scope,
     		slots,
@@ -3214,7 +3211,7 @@ var app = (function () {
     class VerticalReader extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$1, create_fragment$1, safe_not_equal, { items: 0 });
+    		init(this, options, instance$1, create_fragment$1, safe_not_equal, { items: 0, currentIndex: 4 });
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
@@ -3229,6 +3226,14 @@ var app = (function () {
     	}
 
     	set items(value) {
+    		throw new Error("<VerticalReader>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get currentIndex() {
+    		throw new Error("<VerticalReader>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set currentIndex(value) {
     		throw new Error("<VerticalReader>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
@@ -3247,15 +3252,15 @@ var app = (function () {
     	let current;
 
     	function reader_gotoNext_binding(value) {
-    		/*reader_gotoNext_binding*/ ctx[15](value);
+    		/*reader_gotoNext_binding*/ ctx[16](value);
     	}
 
     	function reader_gotoPrev_binding(value) {
-    		/*reader_gotoPrev_binding*/ ctx[16](value);
+    		/*reader_gotoPrev_binding*/ ctx[17](value);
     	}
 
     	function reader_currentIndex_binding(value) {
-    		/*reader_currentIndex_binding*/ ctx[17](value);
+    		/*reader_currentIndex_binding*/ ctx[18](value);
     	}
 
     	let reader_props = {
@@ -3263,8 +3268,8 @@ var app = (function () {
     		$$slots: {
     			default: [
     				create_default_slot_1,
-    				({ item }) => ({ 25: item }),
-    				({ item }) => item ? 33554432 : 0
+    				({ item }) => ({ 26: item }),
+    				({ item }) => item ? 67108864 : 0
     			]
     		},
     		$$scope: { ctx }
@@ -3299,7 +3304,7 @@ var app = (function () {
     			const reader_changes = {};
     			if (dirty & /*pages*/ 2) reader_changes.items = /*pages*/ ctx[1];
 
-    			if (dirty & /*$$scope, item, options*/ 100663300) {
+    			if (dirty & /*$$scope, item, options*/ 201326596) {
     				reader_changes.$$scope = { dirty, ctx };
     			}
 
@@ -3351,22 +3356,35 @@ var app = (function () {
     // (76:0) {#if options.mode === 'vertical'}
     function create_if_block_1(ctx) {
     	let verticalreader;
+    	let updating_currentIndex;
     	let current;
 
+    	function verticalreader_currentIndex_binding(value) {
+    		/*verticalreader_currentIndex_binding*/ ctx[15](value);
+    	}
+
+    	let verticalreader_props = {
+    		items: /*pages*/ ctx[1],
+    		$$slots: {
+    			default: [
+    				create_default_slot,
+    				({ item }) => ({ 26: item }),
+    				({ item }) => item ? 67108864 : 0
+    			]
+    		},
+    		$$scope: { ctx }
+    	};
+
+    	if (/*currentIndex*/ ctx[6] !== void 0) {
+    		verticalreader_props.currentIndex = /*currentIndex*/ ctx[6];
+    	}
+
     	verticalreader = new VerticalReader({
-    			props: {
-    				items: /*pages*/ ctx[1],
-    				$$slots: {
-    					default: [
-    						create_default_slot,
-    						({ item }) => ({ 25: item }),
-    						({ item }) => item ? 33554432 : 0
-    					]
-    				},
-    				$$scope: { ctx }
-    			},
+    			props: verticalreader_props,
     			$$inline: true
     		});
+
+    	binding_callbacks.push(() => bind(verticalreader, 'currentIndex', verticalreader_currentIndex_binding));
 
     	const block = {
     		c: function create() {
@@ -3380,8 +3398,14 @@ var app = (function () {
     			const verticalreader_changes = {};
     			if (dirty & /*pages*/ 2) verticalreader_changes.items = /*pages*/ ctx[1];
 
-    			if (dirty & /*$$scope, item, options*/ 100663300) {
+    			if (dirty & /*$$scope, item, options*/ 201326596) {
     				verticalreader_changes.$$scope = { dirty, ctx };
+    			}
+
+    			if (!updating_currentIndex && dirty & /*currentIndex*/ 64) {
+    				updating_currentIndex = true;
+    				verticalreader_changes.currentIndex = /*currentIndex*/ ctx[6];
+    				add_flush_callback(() => updating_currentIndex = false);
     			}
 
     			verticalreader.$set(verticalreader_changes);
@@ -3418,7 +3442,7 @@ var app = (function () {
 
     	page = new Page({
     			props: {
-    				file: /*item*/ ctx[25],
+    				file: /*item*/ ctx[26],
     				options: /*options*/ ctx[2]
     			},
     			$$inline: true
@@ -3434,7 +3458,7 @@ var app = (function () {
     		},
     		p: function update(ctx, dirty) {
     			const page_changes = {};
-    			if (dirty & /*item*/ 33554432) page_changes.file = /*item*/ ctx[25];
+    			if (dirty & /*item*/ 67108864) page_changes.file = /*item*/ ctx[26];
     			if (dirty & /*options*/ 4) page_changes.options = /*options*/ ctx[2];
     			page.$set(page_changes);
     		},
@@ -3463,14 +3487,14 @@ var app = (function () {
     	return block;
     }
 
-    // (77:2) <VerticalReader items={pages} let:item>
+    // (77:2) <VerticalReader items={pages} let:item bind:currentIndex>
     function create_default_slot(ctx) {
     	let page;
     	let current;
 
     	page = new Page({
     			props: {
-    				file: /*item*/ ctx[25],
+    				file: /*item*/ ctx[26],
     				options: /*options*/ ctx[2]
     			},
     			$$inline: true
@@ -3486,7 +3510,7 @@ var app = (function () {
     		},
     		p: function update(ctx, dirty) {
     			const page_changes = {};
-    			if (dirty & /*item*/ 33554432) page_changes.file = /*item*/ ctx[25];
+    			if (dirty & /*item*/ 67108864) page_changes.file = /*item*/ ctx[26];
     			if (dirty & /*options*/ 4) page_changes.options = /*options*/ ctx[2];
     			page.$set(page_changes);
     		},
@@ -3508,7 +3532,7 @@ var app = (function () {
     		block,
     		id: create_default_slot.name,
     		type: "slot",
-    		source: "(77:2) <VerticalReader items={pages} let:item>",
+    		source: "(77:2) <VerticalReader items={pages} let:item bind:currentIndex>",
     		ctx
     	});
 
@@ -3534,12 +3558,12 @@ var app = (function () {
     			button1.textContent = "arrow_forward";
     			attr_dev(button0, "class", "btn btn-lg btn-square material-icons");
     			attr_dev(button0, "type", "button");
-    			add_location(button0, file, 88, 6, 2380);
+    			add_location(button0, file, 88, 6, 2398);
     			attr_dev(button1, "class", "btn btn-lg btn-square material-icons");
     			attr_dev(button1, "type", "button");
-    			add_location(button1, file, 89, 6, 2493);
+    			add_location(button1, file, 89, 6, 2511);
     			attr_dev(div, "class", "btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto");
-    			add_location(div, file, 87, 4, 2306);
+    			add_location(div, file, 87, 4, 2324);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -3662,23 +3686,23 @@ var app = (function () {
     			add_location(div0, file, 72, 0, 1814);
     			attr_dev(button0, "class", "btn btn-lg btn-square material-icons");
     			attr_dev(button0, "type", "button");
-    			add_location(button0, file, 94, 4, 2697);
+    			add_location(button0, file, 94, 4, 2715);
     			attr_dev(button1, "class", "btn btn-lg btn-square material-icons");
     			attr_dev(button1, "type", "button");
-    			add_location(button1, file, 95, 4, 2830);
+    			add_location(button1, file, 95, 4, 2848);
     			attr_dev(button2, "class", "btn btn-lg btn-square material-icons");
     			attr_dev(button2, "type", "button");
-    			add_location(button2, file, 96, 4, 2959);
+    			add_location(button2, file, 96, 4, 2977);
     			attr_dev(div1, "class", "btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto");
-    			add_location(div1, file, 93, 2, 2625);
+    			add_location(div1, file, 93, 2, 2643);
     			attr_dev(button3, "class", "btn btn-lg btn-square material-icons");
     			attr_dev(button3, "type", "button");
-    			add_location(button3, file, 99, 4, 3170);
+    			add_location(button3, file, 99, 4, 3188);
     			attr_dev(div2, "class", "btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto");
-    			add_location(div2, file, 98, 2, 3098);
+    			add_location(div2, file, 98, 2, 3116);
     			attr_dev(div3, "class", "position-absolute buttons row w-full justify-content-center controls svelte-1x2rqc2");
     			toggle_class(div3, "immersed", /*immersed*/ ctx[3]);
-    			add_location(div3, file, 85, 0, 2168);
+    			add_location(div3, file, 85, 0, 2186);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -3717,10 +3741,10 @@ var app = (function () {
     					listen_dev(window_1, "mousemove", /*resetImmerse*/ ctx[9], false, false, false),
     					listen_dev(window_1, "touchmove", /*resetImmerse*/ ctx[9], false, false, false),
     					listen_dev(window_1, "mouseleave", /*immerseReader*/ ctx[8], false, false, false),
-    					listen_dev(button0, "click", /*click_handler*/ ctx[18], false, false, false),
-    					listen_dev(button1, "click", /*click_handler_1*/ ctx[19], false, false, false),
-    					listen_dev(button2, "click", /*click_handler_2*/ ctx[20], false, false, false),
-    					listen_dev(button3, "click", /*click_handler_3*/ ctx[21], false, false, false)
+    					listen_dev(button0, "click", /*click_handler*/ ctx[19], false, false, false),
+    					listen_dev(button1, "click", /*click_handler_1*/ ctx[20], false, false, false),
+    					listen_dev(button2, "click", /*click_handler_2*/ ctx[21], false, false, false),
+    					listen_dev(button3, "click", /*click_handler_3*/ ctx[22], false, false, false)
     				];
 
     				mounted = true;
@@ -3901,6 +3925,11 @@ var app = (function () {
     		bubble.call(this, $$self, event);
     	}
 
+    	function verticalreader_currentIndex_binding(value) {
+    		currentIndex = value;
+    		$$invalidate(6, currentIndex);
+    	}
+
     	function reader_gotoNext_binding(value) {
     		gotoNext = value;
     		$$invalidate(4, gotoNext);
@@ -3978,6 +4007,7 @@ var app = (function () {
     		dragover_handler,
     		dragstart_handler,
     		dragleave_handler,
+    		verticalreader_currentIndex_binding,
     		reader_gotoNext_binding,
     		reader_gotoPrev_binding,
     		reader_currentIndex_binding,

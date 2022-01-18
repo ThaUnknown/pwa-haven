@@ -74,7 +74,7 @@
   <InstallPrompt />
 </div>
 {#if options.mode === 'vertical'}
-  <VerticalReader items={pages} let:item>
+  <VerticalReader items={pages} let:item bind:currentIndex>
     <Page file={item} {options}/>
   </VerticalReader>
 {:else}

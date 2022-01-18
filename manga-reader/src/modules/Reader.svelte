@@ -52,7 +52,8 @@
     transform: translateX(100%);
   }
 
-  .prev, .next {
+  .prev,
+  .next {
     transition: transform 0.2s;
   }
 

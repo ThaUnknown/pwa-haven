@@ -630,7 +630,7 @@
       const elementRatio = offsetWidth / offsetHeight
       // video is shorter than element && has space for menubar offset
       if (!document.fullscreenElement && menubar && elementRatio <= videoRatio && offsetHeight - offsetWidth / videoRatio > menubar) {
-        menubarOffset = menubar / 2 * -1
+        menubarOffset = (menubar / 2) * -1
       } else {
         menubarOffset = 0
       }
@@ -756,7 +756,7 @@
           <div class="ts">{toTS(hoverTime)}</div>
         </div>
       </div>
-      <div class="ts">{toTS(duration, duration > 3600 ? 2 : 3)}</div>
+      <div class="ts">{toTS(duration - targetTime, duration > 3600 ? 2 : 3)}</div>
     </div>
     {#if subHeaders?.length}
       <div class="subtitles dropdown dropup with-arrow">
