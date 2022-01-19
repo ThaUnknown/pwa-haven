@@ -528,15 +528,19 @@
     }
   }
   let fast = false
+  let successCount = 0
   async function checkSpeed() {
     if (!fast && (current instanceof File || current instanceof URLFile) && duration) {
       const byterate = current.size / duration
       const currBps = speed()
       if (currBps > 5 * byterate) {
-        console.log('Access speed exceeds x5 bitrate')
-        fast = true
-        await subs?.parseSubtitles()
-        finishThumbnails()
+        successCount++
+        if (successCount > 10) {
+          console.log('Access speed exceeds x5 bitrate')
+          fast = true
+          await subs?.parseSubtitles()
+          finishThumbnails()
+        }
       }
     }
   }
