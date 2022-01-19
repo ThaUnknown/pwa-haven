@@ -534,13 +534,15 @@
       const byterate = current.size / duration
       const currBps = speed()
       if (currBps > 5 * byterate) {
-        successCount++
+        ++successCount
         if (successCount > 10) {
           console.log('Access speed exceeds x5 bitrate')
           fast = true
           await subs?.parseSubtitles()
           finishThumbnails()
         }
+      } else {
+        successCount = 0
       }
     }
   }
