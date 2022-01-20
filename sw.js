@@ -10,7 +10,7 @@ const cacheList = {
     ]
   },
   'img-viewer': {
-    version: '1.2.1',
+    version: '1.2.2',
     resources: [
       '../img-viewer/public/build/bundle.js',
       '../img-viewer/public/build/bundle.css',
@@ -71,6 +71,17 @@ const cacheList = {
       '../screen-recorder/public/512.png',
       '../screen-recorder/public/site.webmanifest',
       '../screen-recorder/public/'
+    ]
+  },
+  'manga-reader': {
+    version: '1.0.0',
+    resources: [
+      '../manga-reader/public/site.webmanifest',
+      '../manga-reader/public/128.png',
+      '../manga-reader/public/512.png',
+      '../manga-reader/public/',
+      '../manga-reader/public/build/bundle.js',
+      '../manga-reader/public/build/bundle.css'
     ]
   }
 }

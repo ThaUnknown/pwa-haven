@@ -49,6 +49,7 @@
         ],
         "image/png": ".png",
         "image/svg+xml": ".svg",
+        "image/svg": ".svg",
         "image/tiff": [".tif" ,".tiff"],
         "image/webp": ".webp",
         "image/vnd.microsoft.icon": ".ico"
