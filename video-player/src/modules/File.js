@@ -2,9 +2,8 @@
 import rangeParser from 'range-parser'
 import eos from 'end-of-stream'
 import { URLFile } from '../../../shared/URLFile.js'
-import { Readable } from 'stream'
-
-// yeah, dont do this XD these are hacky patches lol
+import { Readable } from 'streamx'
+import { BlobReadStream } from 'fast-blob-stream'
 
 // way too lazy to implement this on each file the browser creates
 URLFile.prototype.onStream = File.prototype.onStream = () => { }
@@ -61,8 +60,7 @@ URLFile.prototype.serve = File.prototype.serve = function (req) {
 }
 File.prototype.createReadStream = function (opts = {}) {
   opts.chunkSize = 1024 * 1024 * 2
-  return new FileReadStream(opts ? this.slice(opts.start) : this)
-  // streamX is a viable alternative, but seems to have issues
+  return new BlobReadStream(opts ? this.slice(opts.start) : this)
 }
 
 URLFile.prototype.createReadStream = function (opts) {
@@ -84,7 +82,7 @@ class ReadableURL extends Readable {
     this._chunkSize = parseInt(opts.chunkSize || Math.max(this._end / 1000, 200 * 1024))
   }
 
-  _read () {
+  _read (cb) {
     if (this.destroyed) return
     const startOffset = this._start
     let endOffset = this._start + this._chunkSize
@@ -93,6 +91,7 @@ class ReadableURL extends Readable {
     if (startOffset === this._length) {
       this.destroy()
       this.push(null)
+      cb()
       return
     }
     fetch(this._url, {
@@ -103,6 +102,7 @@ class ReadableURL extends Readable {
     }).then(res => {
       res.arrayBuffer().then(ab => {
         this.push(new Uint8Array(ab))
+        cb()
       })
     })
     // update the stream offset
@@ -111,35 +111,5 @@ class ReadableURL extends Readable {
 
   destroy () {
     this.destroyed = true
-  }
-}
-
-// modded filestream lib, caches 1 piece ahead
-class FileReadStream extends Readable {
-  /**
-   * @param {Blob} blob
-   * @param {any} opts
-   */
-  constructor (blob, opts = {}) {
-    super(opts)
-    this.destroyed = false
-    this.reader = (async function * () {
-      const stream = blob.stream()
-      const reader = stream.getReader()
-      let last = reader.read()
-      while (!last.done) {
-        const temp = last
-        last = reader.read()
-        yield (await temp).value
-      }
-      yield (await last).value
-    })()
-  }
-
-  async _read () {
-    if (this.destroyed) return
-    const { value } = await this.reader.next()
-    if (value == null) this.destroyed = true
-    this.push(value || null)
   }
 }

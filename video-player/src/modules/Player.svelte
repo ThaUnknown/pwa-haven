@@ -535,6 +535,7 @@
       const currBps = speed()
       if (currBps > 5 * byterate) {
         ++successCount
+        // this is faulty logic, because there might not be a need to pull data, even if the speeds can be reached
         if (successCount > 10) {
           console.log('Access speed exceeds x5 bitrate')
           fast = true
