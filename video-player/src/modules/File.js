@@ -108,8 +108,4 @@ class ReadableURL extends Readable {
     // update the stream offset
     this._start = endOffset + 1
   }
-
-  destroy () {
-    this.destroyed = true
-  }
 }
