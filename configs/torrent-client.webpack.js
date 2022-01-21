@@ -8,8 +8,7 @@ const prod = mode === 'production'
 
 module.exports = {
   entry: {
-    'audio-player/public/build/bundle': ['./audio-player/src/main.js'],
-    'audio-player/public/build/cast': ['./audio-player/src/cast.js']
+    'torrent-client/public/build/bundle': ['./torrent-client/src/main.js']
   },
   resolve: {
     alias: {
@@ -19,7 +18,7 @@ module.exports = {
     mainFields: ['svelte', 'browser', 'module', 'main']
   },
   output: {
-    path: path.join(__dirname),
+    path: process.cwd(),
     filename: '[name].js',
     chunkFilename: '[name].[id].js'
   },
@@ -59,39 +58,7 @@ module.exports = {
     new webpack.ProvidePlugin({
       process: 'process-fast'
     }),
-    // this one is really weird, it still includes shit that you dont need, but when you specify that you dont need it, it will only include it if its ACTUALLY needed.
-    // tldr exclude ALL, loose filesize
-    new NodePolyfillPlugin({
-      excludeAliases: [
-        'assert',
-        'buffer',
-        'console',
-        'constants',
-        'crypto',
-        'domain',
-        'events',
-        'http',
-        'https',
-        'os',
-        'path',
-        'punycode',
-        'process',
-        'querystring',
-        '_stream_duplex',
-        '_stream_passthrough',
-        '_stream_readable',
-        '_stream_transform',
-        '_stream_writable',
-        'string_decoder',
-        'sys',
-        'timers',
-        'tty',
-        'url',
-        'util',
-        'vm',
-        'zlib'
-      ]
-    }),
+    new NodePolyfillPlugin(),
     new MiniCssExtractPlugin({
       filename: '[name].css'
     })
@@ -100,7 +67,7 @@ module.exports = {
   devServer: {
     hot: true,
     static: {
-      directory: path.join(__dirname, 'audio-player/public')
+      directory: './torrent-client/public'
     }
   }
 }

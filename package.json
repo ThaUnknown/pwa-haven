@@ -4,25 +4,29 @@
   "private": true,
   "standard": {
     "ignore": [
-      "/build/*",
-      "/lib/subtitles-octopus-worker.js"
+      "bundle.js",
+      "build/*",
+      "subtitles-octopus-worker.js"
     ],
     "env": "browser"
   },
   "scripts": {
-    "build": "rollup -c",
-    "dev": "rollup -c -w",
+    "buildall": "npm run build && npm run build-manga-reader && npm run build-img-viewer && npm run build-screen-recorder && npm run build-video-player && npm run build-audio-player && npm run build-torrent-client",
+    "build": "rollup -c ./configs/home.rollup.js",
+    "dev": "rollup -w -c ./configs/home.rollup.js",
     "start": "sirv --no-clear",
-    "build-manga-reader": "rollup -c manga-reader.rollup.js",
-    "dev-manga-reader": "rollup -w -c manga-reader.rollup.js",
-    "build-img-viewer": "rollup -c img-viewer.rollup.js",
-    "dev-img-viewer": "rollup -w -c img-viewer.rollup.js",
-    "build-video-player": "cross-env NODE_ENV=production webpack --config ./video-player.webpack.js",
-    "dev-video-player": "webpack serve --config ./video-player.webpack.js",
-    "build-audio-player": "cross-env NODE_ENV=production webpack --config ./audio-player.webpack.js",
-    "dev-audio-player": "webpack serve --config ./audio-player.webpack.js",
-    "build-torrent-client": "cross-env NODE_ENV=production webpack --config ./torrent-client.webpack.js",
-    "dev-torrent-client": "webpack serve --config ./torrent-client.webpack.js"
+    "build-manga-reader": "rollup -c ./configs/manga-reader.rollup.js",
+    "dev-manga-reader": "rollup -w -c ./configs/manga-reader.rollup.js",
+    "build-img-viewer": "rollup -c ./configs/img-viewer.rollup.js",
+    "dev-img-viewer": "rollup -w -c ./configs/img-viewer.rollup.js",
+    "build-screen-recorder": "rollup -c ./configs/screen-recorder.rollup.js",
+    "dev-screen-recorder": "rollup -w -c ./configs/screen-recorder.rollup.js",
+    "build-video-player": "cross-env NODE_ENV=production webpack --config ./configs/video-player.webpack.js",
+    "dev-video-player": "webpack serve --config ./configs/video-player.webpack.js",
+    "build-audio-player": "cross-env NODE_ENV=production webpack --config ./configs/audio-player.webpack.js",
+    "dev-audio-player": "webpack serve --config ./configs/audio-player.webpack.js",
+    "build-torrent-client": "cross-env NODE_ENV=production webpack --config ./configs/torrent-client.webpack.js",
+    "dev-torrent-client": "webpack serve --config ./configs/torrent-client.webpack.js"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",

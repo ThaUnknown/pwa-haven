@@ -1,7 +1,7 @@
 /* eslint-env serviceworker, browser */
 const cacheList = {
   shared: {
-    version: '1.0.4',
+    version: '1.0.5',
     resources: [
       'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/css/halfmoon-variables.min.css',
       'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/js/halfmoon.min.js',
@@ -10,7 +10,7 @@ const cacheList = {
     ]
   },
   'img-viewer': {
-    version: '1.2.2',
+    version: '1.2.3',
     resources: [
       '../img-viewer/public/build/bundle.js',
       '../img-viewer/public/build/bundle.css',
@@ -21,7 +21,7 @@ const cacheList = {
     ]
   },
   'audio-player': {
-    version: '1.6.1',
+    version: '1.6.2',
     resources: [
       '../audio-player/public/build/bundle.js',
       '../audio-player/public/build/bundle.css',
@@ -34,7 +34,7 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '1.9.9',
+    version: '1.9.10',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.wasm',
@@ -52,7 +52,7 @@ const cacheList = {
     ]
   },
   'torrent-client': {
-    version: '1.2.0',
+    version: '1.2.1',
     resources: [
       '../torrent-client/public/build/bundle.js',
       '../torrent-client/public/build/bundle.css',
@@ -63,7 +63,7 @@ const cacheList = {
     ]
   },
   'screen-recorder': {
-    version: '1.0.5',
+    version: '1.0.6',
     resources: [
       '../screen-recorder/public/build/bundle.js',
       '../screen-recorder/public/build/bundle.css',
@@ -74,7 +74,7 @@ const cacheList = {
     ]
   },
   'manga-reader': {
-    version: '1.0.0',
+    version: '1.0.1',
     resources: [
       '../manga-reader/public/site.webmanifest',
       '../manga-reader/public/128.png',

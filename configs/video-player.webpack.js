@@ -25,7 +25,7 @@ module.exports = {
     }
   },
   output: {
-    path: path.join(__dirname),
+    path: process.cwd(),
     filename: '[name].js',
     chunkFilename: '[name].[id].js'
   },
@@ -104,7 +104,7 @@ module.exports = {
   devServer: {
     hot: true,
     static: {
-      directory: path.join(__dirname, 'video-player/public')
+      directory: './video-player/public'
     }
   }
 }
