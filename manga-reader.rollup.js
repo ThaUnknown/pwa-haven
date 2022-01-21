@@ -17,7 +17,7 @@ function serve () {
   return {
     writeBundle () {
       if (server) return
-      server = require('child_process').spawn('npm', ['run', 'start', '--', '--dev'], {
+      server = require('child_process').spawn('sirv', ['manga-reader/public'], {
         stdio: ['ignore', 'inherit', 'inherit'],
         shell: true
       })
@@ -29,12 +29,12 @@ function serve () {
 }
 
 export default {
-  input: 'src/main.js',
+  input: 'manga-reader/src/main.js',
   output: {
     sourcemap: true,
     format: 'iife',
     name: 'app',
-    file: 'public/build/bundle.js'
+    file: 'manga-reader/public/build/bundle.js'
   },
   plugins: [
     svelte({

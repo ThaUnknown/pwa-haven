@@ -8,7 +8,8 @@ const prod = mode === 'production'
 
 module.exports = {
   entry: {
-    'build/bundle': ['./src/main.js']
+    'video-player/public/build/bundle': ['./video-player/src/main.js'],
+    'video-player/public/build/cast': ['./video-player/src/cast.js']
   },
   externals: {
     anitomyscript: 'anitomyscript'
@@ -18,10 +19,13 @@ module.exports = {
       svelte: path.dirname(require.resolve('svelte/package.json'))
     },
     extensions: ['.mjs', '.js', '.svelte'],
-    mainFields: ['svelte', 'browser', 'module', 'main']
+    mainFields: ['svelte', 'browser', 'module', 'main'],
+    fallback: {
+      zlib: require.resolve('pako')
+    }
   },
   output: {
-    path: path.join(__dirname, '/public'),
+    path: path.join(__dirname),
     filename: '[name].js',
     chunkFilename: '[name].[id].js'
   },
@@ -61,13 +65,46 @@ module.exports = {
     new webpack.ProvidePlugin({
       process: 'process-fast'
     }),
-    new NodePolyfillPlugin(),
+    new NodePolyfillPlugin({
+      excludeAliases: [
+        'assert',
+        'buffer',
+        'console',
+        'constants',
+        'crypto',
+        'domain',
+        'events',
+        'http',
+        'https',
+        'os',
+        'path',
+        'punycode',
+        'process',
+        'querystring',
+        '_stream_duplex',
+        '_stream_passthrough',
+        '_stream_readable',
+        '_stream_transform',
+        '_stream_writable',
+        'string_decoder',
+        'sys',
+        'timers',
+        'tty',
+        'url',
+        'util',
+        'vm',
+        'zlib'
+      ]
+    }),
     new MiniCssExtractPlugin({
       filename: '[name].css'
     })
   ],
   devtool: 'source-map',
   devServer: {
-    hot: true
+    hot: true,
+    static: {
+      directory: path.join(__dirname, 'video-player/public')
+    }
   }
 }

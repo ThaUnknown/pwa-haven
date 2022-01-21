@@ -8,11 +8,8 @@ const prod = mode === 'production'
 
 module.exports = {
   entry: {
-    'build/bundle': ['./src/main.js'],
-    'build/cast': ['./src/cast.js']
-  },
-  externals: {
-    anitomyscript: 'anitomyscript'
+    'audio-player/public/build/bundle': ['./audio-player/src/main.js'],
+    'audio-player/public/build/cast': ['./audio-player/src/cast.js']
   },
   resolve: {
     alias: {
@@ -22,7 +19,7 @@ module.exports = {
     mainFields: ['svelte', 'browser', 'module', 'main']
   },
   output: {
-    path: path.join(__dirname, '/public'),
+    path: path.join(__dirname),
     filename: '[name].js',
     chunkFilename: '[name].[id].js'
   },
@@ -101,6 +98,9 @@ module.exports = {
   ],
   devtool: 'source-map',
   devServer: {
-    hot: true
+    hot: true,
+    static: {
+      directory: path.join(__dirname, 'audio-player/public')
+    }
   }
 }
