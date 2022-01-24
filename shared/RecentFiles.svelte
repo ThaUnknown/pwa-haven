@@ -16,14 +16,20 @@
   }
 
   let handles = []
-  export async function updateRecents(file) {
+
+  async function handleSingleHandle(handle) {
+    if (!(await asyncSome(handles, recent => recent.isSameEntry(handle)))) {
+      handles.unshift(handle)
+      handles.length = Math.min(handles.length, 15)
+      set('recents', handles, db)
+    }
+  }
+  export async function updateRecents(files) {
     if (supported) {
-      const handle = file instanceof FileSystemFileHandle ? file : await file.getAsFileSystemHandle()
-      if (!(await asyncSome(handles, recent => recent.isSameEntry(handle)))) {
-        handles.unshift(handle)
-        handles.length = Math.min(handles.length, 15)
-        set('recents', handles, db)
+      for (const file of files) {
+        handleSingleHandle(file instanceof FileSystemFileHandle ? file : await file.getAsFileSystemHandle())
       }
+      set('recents', handles, db)
     }
   }
 </script>
@@ -42,7 +48,7 @@
   export let handlePopup = () => {}
 </script>
 
-<div class="content h-full my-0">
+<div class="h-full my-0 bg-very-dark">
   <div class="container d-flex flex-column justify-content-between h-full py-20">
     <div class="py-20">
       <div class="font-weight-bold font-size-24 p-5">Recent Files</div>
@@ -56,12 +62,14 @@
           <div>Your recent files will show up here!</div>
         {/each}
       {:else if window.chrome}
-        <div>Your browser doesn't support recent files, but it could! Visit chrome://flags and enable #file-system-access-api!</div>
+        <div>
+          Your browser doesn't support recent files, but it could! Visit <code class="code">chrome://flags</code> and enable <code class="code">#file-system-access-api!</code>
+        </div>
       {:else}
         <div>Your browser doesn't support recent files.</div>
       {/if}
     </div>
-    <div class="py-20 pointer" on:click={handlePopup}>You can also drag-drop or paste files, or click here to select some!</div>
+    <div class="py-20 pointer text-muted hover" on:click={handlePopup}>You can also drag-drop or paste files, or click here to select some!</div>
   </div>
 </div>
 

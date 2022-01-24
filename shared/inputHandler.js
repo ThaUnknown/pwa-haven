@@ -31,7 +31,7 @@ async function processItem (item, types) {
   if (item.type) {
     // type matches File
     if (types.some(type => item.type.indexOf(type) === 0)) {
-      updateRecents(item)
+      updateRecents([item])
       return item.getAsFile()
     }
     // text
@@ -91,19 +91,35 @@ async function processItem (item, types) {
     }
   }
 }
-export function filePopup (types = []) {
-  return new Promise(resolve => {
-    let input = document.createElement('input')
-    input.type = 'file'
-    input.multiple = 'multiple'
-    input.accept = types.map(type => '.' + exMap[type].join(',.')).flat()
+export async function filePopup (types = []) {
+  if ('FileSystemFileHandle' in window) {
+    const handles = await window.showOpenFilePicker({
+      types: [{
+        description: types.join(', '),
+        accept: {
+          '*/*': types.map(type =>
+            exMap[type].map(ex => '.' + ex)
+          ).flat()
+        }
+      }],
+      multiple: true
+    })
+    updateRecents(handles)
+    return await Promise.all(handles.map(handle => handle.getFile()))
+  } else {
+    return new Promise(resolve => {
+      let input = document.createElement('input')
+      input.type = 'file'
+      input.multiple = 'multiple'
+      input.accept = types.map(type => '.' + exMap[type].join(',.')).flat()
 
-    input.onchange = async ({ target }) => {
-      resolve([...target.files])
-      input = null
-    }
-    input.click()
-  })
+      input.onchange = async ({ target }) => {
+        resolve([...target.files])
+        input = null
+      }
+      input.click()
+    })
+  }
 }
 
 export function getSearchFiles (types) {
@@ -130,7 +146,7 @@ export async function getLaunchFiles () {
         return
       }
       const promises = launchParams.files.map(file => {
-        updateRecents(file)
+        updateRecents([file])
         return file.getFile()
       })
       // for some fucking reason, the same file can get passed multiple times, why? I still want to future-proof multi-files
