@@ -132,7 +132,8 @@ export function getSearchFiles (types) {
       const name = param[1].substring(Math.max(param[1].lastIndexOf('\\') + 2, param[1].lastIndexOf('/') + 1))
       files.push({
         name,
-        url: param[1]
+        url: param[1],
+        type: type + '/*'
       })
     }
   }
