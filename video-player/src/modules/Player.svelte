@@ -709,7 +709,9 @@
     <span class="material-icons ctrl font-size-12 p-10" title="Keybinds [`]" data-name="togglePopout" on:click={() => (showKeybinds = true)}> help_outline </span>
   </div>
   <div class="middle d-flex align-items-center justify-content-center flex-grow-1 z-40 position-relative">
-    <div class="position-absolute w-full h-full" on:click={playPause} on:dblclick={toggleFullscreen} />
+    <div class="position-absolute w-full h-full" on:dblclick={toggleFullscreen}>
+      <div class="play-overlay w-full h-full" on:click={playPause} />
+    </div>
     {#if videos?.length > 1}
       <span class="material-icons ctrl" data-name="playLast" on:click={playLast}> skip_previous </span>
     {/if}
@@ -905,6 +907,9 @@
   @media (pointer: none), (pointer: coarse) {
     .middle .ctrl {
       display: flex;
+    }
+    .middle .play-overlay {
+      display: none !important
     }
   }
 
