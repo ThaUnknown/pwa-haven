@@ -17,7 +17,7 @@ function serve () {
   return {
     writeBundle () {
       if (server) return
-      server = require('child_process').spawn('sirv', ['img-viewer/public'], {
+      server = require('child_process').spawn('sirv', ['./img-viewer/public', ['-D']], {
         stdio: ['ignore', 'inherit', 'inherit'],
         shell: true
       })
@@ -29,12 +29,12 @@ function serve () {
 }
 
 export default {
-  input: 'img-viewer/src/main.js',
+  input: './img-viewer/src/main.js',
   output: {
     sourcemap: true,
     format: 'iife',
     name: 'app',
-    file: 'img-viewer/public/build/bundle.js'
+    file: './img-viewer/public/build/bundle.js'
   },
   plugins: [
     svelte({
@@ -64,7 +64,7 @@ export default {
 
     // Watch the `public` directory and refresh the
     // browser on changes when not in production
-    !production && livereload('public'),
+    !production && livereload('./img-viewer/public'),
 
     // If we're building for production (npm run build
     // instead of npm run dev), minify

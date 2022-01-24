@@ -5,6 +5,10 @@
   import Page from './modules/Page.svelte'
   import Reader from './modules/Reader.svelte'
   import VerticalReader from './modules/VerticalReader.svelte'
+  import RecentFiles, { initDb } from '../../shared/RecentFiles.svelte'
+
+  initDb('manga-reader')
+
   let name = 'Manga Reader'
   let pages = []
   let options = {
@@ -27,10 +31,12 @@
     getLaunchFiles().then(handleFiles)
   }
   async function handlePopup() {
-    if (!files.length) {
+    if (!pages.length) {
       handleFiles(await filePopup(['book']))
     }
   }
+  let files = []
+  $: handleFiles(files)
   async function handleFiles(newfiles) {
     if (newfiles?.length) {
       pages = Object.values((await unzip(newfiles[0])).entries).filter(page => !page.isDirectory)
@@ -73,33 +79,37 @@
 <div class="sticky-alerts d-flex flex-column-reverse">
   <InstallPrompt />
 </div>
-{#if options.mode === 'vertical'}
-  <VerticalReader items={pages} let:item bind:currentIndex>
-    <Page file={item} {options}/>
-  </VerticalReader>
+{#if !pages.length}
+  <RecentFiles bind:files {handlePopup} />
 {:else}
-  <Reader items={pages} let:item bind:gotoNext bind:gotoPrev bind:currentIndex>
-    <Page file={item} {options} />
-  </Reader>
-{/if}
-
-<div class="position-absolute buttons row w-full justify-content-center controls" class:immersed>
-  {#if options.mode !== 'vertical'}
-    <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
-      <button class="btn btn-lg btn-square material-icons" type="button" on:click={gotoNext}>arrow_back</button>
-      <button class="btn btn-lg btn-square material-icons" type="button" on:click={gotoPrev}>arrow_forward</button>
-    </div>
+  {#if options.mode === 'vertical'}
+    <VerticalReader items={pages} let:item bind:currentIndex>
+      <Page file={item} {options} />
+    </VerticalReader>
+  {:else}
+    <Reader items={pages} let:item bind:gotoNext bind:gotoPrev bind:currentIndex>
+      <Page file={item} {options} />
+    </Reader>
   {/if}
 
-  <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => (options.mode = 'fit')}>zoom_out_map</button>
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => (options.mode = 'cover')}>expand</button>
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => (options.mode = 'vertical')}>height</button>
+  <div class="position-absolute buttons row w-full justify-content-center controls" class:immersed>
+    {#if options.mode !== 'vertical'}
+      <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
+        <button class="btn btn-lg btn-square material-icons" type="button" on:click={gotoNext}>arrow_back</button>
+        <button class="btn btn-lg btn-square material-icons" type="button" on:click={gotoPrev}>arrow_forward</button>
+      </div>
+    {/if}
+
+    <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => (options.mode = 'fit')}>zoom_out_map</button>
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => (options.mode = 'cover')}>expand</button>
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => (options.mode = 'vertical')}>height</button>
+    </div>
+    <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => (options.crop = !options.crop)}>{options.crop ? 'crop' : 'crop_free'}</button>
+    </div>
   </div>
-  <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => (options.crop = !options.crop)}>{options.crop ? 'crop' : 'crop_free'}</button>
-  </div>
-</div>
+{/if}
 
 <svelte:head>
   <title>{name}</title>

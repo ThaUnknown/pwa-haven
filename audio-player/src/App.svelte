@@ -4,6 +4,9 @@
   import { parseBlob } from 'music-metadata-browser'
   import { handleItems, getSearchFiles, getLaunchFiles, filePopup } from '../../shared/inputHandler.js'
   import { URLFile } from '../../shared/URLFile.js'
+  import RecentFiles, { initDb } from '../../shared/RecentFiles.svelte'
+
+  initDb('audio-player')
 
   let name = ''
   let files = []
@@ -71,8 +74,12 @@
 <div class="sticky-alerts d-flex flex-column-reverse">
   <InstallPrompt />
 </div>
-<div class="page-wrapper with-navbar-fixed-bottom" on:click={handlePopup}>
-  <Player bind:name {songs} />
+<div class="page-wrapper with-navbar-fixed-bottom">
+  {#if !songs.length}
+    <RecentFiles bind:files {handlePopup} />
+  {:else}
+    <Player bind:name {songs} />
+  {/if}
 </div>
 
 <svelte:head>

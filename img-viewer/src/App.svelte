@@ -1,6 +1,10 @@
 <script>
   import InstallPrompt from './modules/InstallPrompt.svelte'
   import { filePopup, handleItems, getSearchFiles, getLaunchFiles } from '../../shared/inputHandler.js'
+  import RecentFiles, { initDb } from '../../shared/RecentFiles.svelte'
+
+  initDb('img-viewer')
+
   let src = null
   let image = null
   let scale = 0
@@ -15,7 +19,6 @@
   const units = [' B', ' KB', ' MB', ' GB']
   let files = []
   let current = null
-  $: setSource(current)
 
   navigator.serviceWorker.register('/sw.js')
 
@@ -133,6 +136,7 @@
       handleFiles(await filePopup(['image']))
     }
   }
+  $: handleFiles(files)
   function handleFiles(newfiles) {
     if (newfiles?.length) {
       for (const file of newfiles) {
@@ -183,48 +187,53 @@
     image?.style.setProperty('--top', disPos.y + 'px')
   }
   $: handleStyle({ disPos, mirror, flip, rotation, zoom })
+
+  $: setSource(current)
 </script>
 
 <div class="sticky-alerts d-flex flex-column-reverse">
   <InstallPrompt />
 </div>
-<div
-  class="w-full h-full overflow-hidden position-relative dragarea"
-  on:pointerdown={dragStart}
-  on:pointerup={dragEnd}
-  on:wheel|passive={handleZoom}
-  on:touchend={dragEnd}
-  on:touchstart={checkPinch}
-  on:touchmove={handlePinch}
-  on:click={handlePopup}>
-  <img {src} class:transition alt="view" class="w-full h-full position-absolute" bind:this={image} on:load={handleImage} />
-</div>
+{#if !files.length}
+  <RecentFiles bind:files {handlePopup} />
+{:else}
+  <div
+    class="w-full h-full overflow-hidden position-relative dragarea"
+    on:pointerdown={dragStart}
+    on:pointerup={dragEnd}
+    on:wheel|passive={handleZoom}
+    on:touchend={dragEnd}
+    on:touchstart={checkPinch}
+    on:touchmove={handlePinch}>
+    <img {src} class:transition alt="view" class="w-full h-full position-absolute" bind:this={image} on:load={handleImage} />
+  </div>
 
-<div class="position-absolute buttons row w-full justify-content-center">
-  {#if files.length > 1}
-    <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
-      <button class="btn btn-lg btn-square material-icons" type="button" on:click={viewLast}>arrow_back</button>
-      <button class="btn btn-lg btn-square material-icons" type="button" on:click={viewNext}>arrow_forward</button>
+  <div class="position-absolute buttons row w-full justify-content-center">
+    {#if files.length > 1}
+      <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
+        <button class="btn btn-lg btn-square material-icons" type="button" on:click={viewLast}>arrow_back</button>
+        <button class="btn btn-lg btn-square material-icons" type="button" on:click={viewNext}>arrow_forward</button>
+      </div>
+    {/if}
+
+    <div class="btn-group input-group bg-dark-dm bg-light-lm rounded m-5 w-200 col-auto">
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={resetPos}>zoom_out_map</button>
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => handleZoom({ deltaY: 100 })}>remove</button>
+      <input type="number" step="0.1" min="0.1" class="form-control form-control-lg text-right" placeholder="Scale" readonly value={zoom.toFixed(1)} />
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => handleZoom({ deltaY: -100 })}>add</button>
     </div>
-  {/if}
 
-  <div class="btn-group input-group bg-dark-dm bg-light-lm rounded m-5 w-200 col-auto">
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={resetPos}>zoom_out_map</button>
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => handleZoom({ deltaY: 100 })}>remove</button>
-    <input type="number" step="0.1" min="0.1" class="form-control form-control-lg text-right" placeholder="Scale" readonly value={zoom.toFixed(1)} />
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => handleZoom({ deltaY: -100 })}>add</button>
+    <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={toggleBlur}>
+        {isBlurred ? 'blur_off' : 'blur_on'}
+      </button>
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={rotateL}>rotate_left</button>
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={rotateR}>rotate_right</button>
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={toggleFlip}><div class="flip">flip</div></button>
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={toggleMirror}>flip</button>
+    </div>
   </div>
-
-  <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={toggleBlur}>
-      {isBlurred ? 'blur_off' : 'blur_on'}
-    </button>
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={rotateL}>rotate_left</button>
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={rotateR}>rotate_right</button>
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={toggleFlip}><div class="flip">flip</div></button>
-    <button class="btn btn-lg btn-square material-icons" type="button" on:click={toggleMirror}>flip</button>
-  </div>
-</div>
+{/if}
 
 <svelte:head>
   <title>{name} {dimensions.x && dimensions.y ? `(${dimensions.x} x ${dimensions.y})` : ''} {prettyBytes(fileSize)}</title>

@@ -645,6 +645,9 @@
       }
     }
   }
+  function autoPlay() { // autoplay is wank
+    video.play()
+  }
 </script>
 
 <svelte:window on:keydown={handleKeydown} bind:innerWidth bind:innerHeight />
@@ -681,6 +684,7 @@
     bind:ended
     bind:muted
     bind:playbackRate
+    on:loadeddata={autoPlay}
     on:timeupdate={checkSpeed}
     on:timeupdate={() => createThumbnail()}
     on:waiting={showBuffering}

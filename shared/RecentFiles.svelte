@@ -38,7 +38,7 @@
   export let files = null
   let recents = []
   get('recents', db).then(async rec => {
-    recents = handles = (await Promise.all(rec)) || []
+    recents = handles = await Promise.all(rec || [])
   })
   async function selectFile(handle) {
     await handle.requestPermission({ mode: 'read' })
