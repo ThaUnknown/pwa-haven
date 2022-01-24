@@ -111,8 +111,10 @@
         if (!current) {
           handleCurrent(videos[0])
         } else {
-          subs.files = files || []
-          subs.findSubtitleFiles(current)
+          if (subs) {
+            subs.files = files || []
+            subs.findSubtitleFiles(current)
+          }
         }
       }
     }
@@ -139,10 +141,10 @@
       }
     }
   }
-  $: initSubs(current)
+  $: initSubs(current, video)
 
-  function initSubs(current) {
-    if (current) {
+  function initSubs(current, video) {
+    if (current && video) {
       if (subs) subs.destroy()
       subs = new Subtitles(video, files, current, handleHeaders)
     }

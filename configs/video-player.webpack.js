@@ -8,9 +8,10 @@ const prod = mode === 'production'
 
 module.exports = {
   entry: {
-    'video-player/public/build/bundle': ['./video-player/src/main.js'],
-    'video-player/public/build/cast': ['./video-player/src/cast.js']
+    'build/bundle': ['./src/main.js'],
+    'build/cast': ['./src/cast.js']
   },
+  context: process.cwd() + '/video-player/',
   externals: {
     anitomyscript: 'anitomyscript'
   },
@@ -25,7 +26,7 @@ module.exports = {
     }
   },
   output: {
-    path: process.cwd(),
+    path: process.cwd() + '/video-player/public',
     filename: '[name].js',
     chunkFilename: '[name].[id].js'
   },
@@ -102,9 +103,12 @@ module.exports = {
   ],
   devtool: 'source-map',
   devServer: {
-    hot: true,
+    hot: false, // IDB, and workers break :/
     static: {
       directory: './video-player/public'
+    },
+    client: {
+      overlay: { errors: true, warnings: false }
     }
   }
 }

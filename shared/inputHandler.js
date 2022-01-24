@@ -1,5 +1,6 @@
 /* eslint-env browser */
 import { audioRx, videoRx, imageRx, subRx, bookRx, audioExtensions, videoExtensions, imageExtensions, subtitleExtensions, bookExtensions, DOMPARSER } from './util'
+import { updateRecents } from './RecentFiles.svelte'
 
 // types: image, audio, video, subtitle
 export async function handleItems (transferList = [], types = []) {
@@ -29,7 +30,10 @@ async function processItem (item, types) {
   if (!item) return null
   if (item.type) {
     // type matches File
-    if (types.some(type => item.type.indexOf(type) === 0)) return item.getAsFile()
+    if (types.some(type => item.type.indexOf(type) === 0)) {
+      updateRecents(item)
+      return item.getAsFile()
+    }
     // text
     if (item.type === 'text/plain') {
       // URL
@@ -52,6 +56,7 @@ async function processItem (item, types) {
       // Text File
       if (item.kind === 'file') {
         const file = item.getAsFile()
+        updateRecents(item)
         if (types.some(type => file.name.match(rxMap[type]))) return file
       }
       return null
@@ -124,7 +129,10 @@ export async function getLaunchFiles () {
       if (!launchParams.files.length) {
         return
       }
-      const promises = launchParams.files.map(file => file.getFile())
+      const promises = launchParams.files.map(file => {
+        updateRecents(file)
+        return file.getFile()
+      })
       // for some fucking reason, the same file can get passed multiple times, why? I still want to future-proof multi-files
       resolve((await Promise.all(promises)).filter((file, index, all) => {
         return all.findIndex(search => {

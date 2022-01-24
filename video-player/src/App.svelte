@@ -3,6 +3,9 @@
   import InstallPrompt from './modules/InstallPrompt.svelte'
   import { filePopup, handleItems, getSearchFiles, getLaunchFiles } from '../../shared/inputHandler.js'
   import { URLFile } from '../../shared/URLFile.js'
+  import RecentFiles, { initDb } from '../../shared/RecentFiles.svelte'
+
+  initDb('video-player')
 
   let name = ''
   let files = []
@@ -32,16 +35,18 @@
   }
   async function handleFiles(newfiles) {
     if (newfiles?.length) {
-      files = files.concat(await Promise.all(
-        newfiles.map(async file => {
-          if (file instanceof File) return file
-          const urlfile = new URLFile(file)
-          if(!(await urlfile.ready instanceof Error)){
-            return urlfile
-          }
-          return file
-        })
-      ))
+      files = files.concat(
+        await Promise.all(
+          newfiles.map(async file => {
+            if (file instanceof File) return file
+            const urlfile = new URLFile(file)
+            if (!((await urlfile.ready) instanceof Error)) {
+              return urlfile
+            }
+            return file
+          })
+        )
+      )
     }
   }
   handleFiles(getSearchFiles(['video', 'subtitle']))
@@ -50,8 +55,12 @@
 <div class="sticky-alerts d-flex flex-column-reverse">
   <InstallPrompt />
 </div>
-<div class="page-wrapper" on:click={handlePopup}>
-  <Player bind:files bind:name />
+<div class="page-wrapper">
+  {#if !files.length}
+    <RecentFiles bind:files {handlePopup} />
+  {:else}
+    <Player bind:files bind:name />
+  {/if}
 </div>
 
 <svelte:head>
