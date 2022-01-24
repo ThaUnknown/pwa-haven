@@ -55,8 +55,8 @@ async function processItem (item, types) {
       }
       // Text File
       if (item.kind === 'file') {
-        const file = item.getAsFile()
         updateRecents(item)
+        const file = item.getAsFile()
         if (types.some(type => file.name.match(rxMap[type]))) return file
       }
       return null

@@ -11,27 +11,26 @@
   }
 
   let db = null
+  async function setHandles() {
+    handles = (await get('recents', db)) || []
+  }
   export function initDb(appName) {
     db = createStore(appName, 'recents')
-    get('recents', db).then(hand => {
-      handles = hand || []
-    })
   }
 
   let handles = []
 
-  async function handleSingleHandle(handle) {
-    if (!(await asyncSome(handles, recent => recent.isSameEntry(handle)))) {
-      handles.unshift(handle)
-      handles.length = Math.min(handles.length, 15)
-      set('recents', handles, db)
-    }
-  }
+  // this is clunky, but dataTransfer doesn't persist across async calls.... https://stackoverflow.com/questions/55658851
   export async function updateRecents(files) {
     if (supported && db) {
-      for (const file of files) {
-        handleSingleHandle(file instanceof FileSystemFileHandle ? file : await file.getAsFileSystemHandle())
-      }
+      const promises = files.map(async file => {
+        const handle = file instanceof FileSystemFileHandle ? file : await file.getAsFileSystemHandle()
+        return !(await asyncSome(handles, recent => recent.isSameEntry(handle))) && handle
+      })
+      const newHandles = (await Promise.all(promises)).filter(i => i)
+      await setHandles()
+      handles.unshift(...newHandles)
+      handles.length = Math.min(handles.length, 15)
       set('recents', handles, db)
     }
   }
@@ -40,8 +39,8 @@
 <script>
   export let files = null
   let recents = []
-  get('recents', db).then(async rec => {
-    recents = handles = await Promise.all(rec || [])
+  setHandles().then(() => {
+    recents = handles
   })
   async function selectFile(handle) {
     await handle.requestPermission({ mode: 'read' })
