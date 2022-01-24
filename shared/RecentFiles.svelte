@@ -4,10 +4,15 @@
   const supported = 'FileSystemFileHandle' in window
 
   const asyncSome = async (arr, predicate) => {
-    for (let e of arr) {
+    for (const e of arr) {
       if (await predicate(e)) return true
     }
     return false
+  }
+  const asyncFilter = async (arr, predicate) => {
+    const results = await Promise.all(arr.map(predicate))
+
+    return arr.filter((_v, index) => results[index])
   }
 
   let db = null
@@ -22,13 +27,13 @@
 
   // this is clunky, but dataTransfer doesn't persist across async calls.... https://stackoverflow.com/questions/55658851
   export async function updateRecents(files) {
-    if (supported && db) {
-      const promises = files.map(async file => {
-        const handle = file instanceof FileSystemFileHandle ? file : await file.getAsFileSystemHandle()
-        return !(await asyncSome(handles, recent => recent.isSameEntry(handle))) && handle
-      })
-      const newHandles = (await Promise.all(promises)).filter(i => i)
+    if (supported && db && files?.length) {
+      const promises = files.map(file => (file instanceof FileSystemFileHandle ? file : file.getAsFileSystemHandle()))
+      const newHandles = await Promise.all(promises)
       await setHandles()
+      handles = await asyncFilter(handles, async handle => {
+        return !(await asyncSome(newHandles, recent => recent.isSameEntry(handle)))
+      })
       handles.unshift(...newHandles)
       handles.length = Math.min(handles.length, 15)
       set('recents', handles, db)
