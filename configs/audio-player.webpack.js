@@ -8,9 +8,10 @@ const prod = mode === 'production'
 
 module.exports = {
   entry: {
-    'audio-player/public/build/bundle': ['./audio-player/src/main.js'],
-    'audio-player/public/build/cast': ['./audio-player/src/cast.js']
+    'build/bundle': ['./src/main.js'],
+    'build/cast': ['./src/cast.js']
   },
+  context: process.cwd() + '/audio-player/',
   resolve: {
     alias: {
       svelte: path.dirname(require.resolve('svelte/package.json'))
@@ -19,7 +20,7 @@ module.exports = {
     mainFields: ['svelte', 'browser', 'module', 'main']
   },
   output: {
-    path: process.cwd(),
+    path: process.cwd() + '/audio-player/public',
     filename: '[name].js',
     chunkFilename: '[name].[id].js'
   },
@@ -101,6 +102,9 @@ module.exports = {
     hot: true,
     static: {
       directory: './audio-player/public'
+    },
+    client: {
+      overlay: { errors: true, warnings: false }
     }
   }
 }

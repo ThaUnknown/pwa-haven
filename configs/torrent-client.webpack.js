@@ -8,8 +8,9 @@ const prod = mode === 'production'
 
 module.exports = {
   entry: {
-    'torrent-client/public/build/bundle': ['./torrent-client/src/main.js']
+    'build/bundle': ['./src/main.js']
   },
+  context: process.cwd() + '/torrent-client/',
   resolve: {
     alias: {
       svelte: path.dirname(require.resolve('svelte/package.json'))
@@ -18,7 +19,7 @@ module.exports = {
     mainFields: ['svelte', 'browser', 'module', 'main']
   },
   output: {
-    path: process.cwd(),
+    path: process.cwd() + '/torrent-client/public',
     filename: '[name].js',
     chunkFilename: '[name].[id].js'
   },
@@ -68,6 +69,9 @@ module.exports = {
     hot: true,
     static: {
       directory: './torrent-client/public'
+    },
+    client: {
+      overlay: { errors: true, warnings: false }
     }
   }
 }
