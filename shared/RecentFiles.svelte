@@ -13,6 +13,9 @@
   let db = null
   export function initDb(appName) {
     db = createStore(appName, 'recents')
+    get('recents', db).then(hand => {
+      handles = hand || []
+    })
   }
 
   let handles = []
@@ -52,7 +55,7 @@
   <div class="container h-full py-20">
     <div class="py-20 d-flex flex-column h-full">
       <div class="font-weight-bold font-size-24 p-5">Recent Files</div>
-      <hr class="w-full my-15"/>
+      <hr class="w-full my-15" />
       <div class="overflow-y-auto">
         {#if supported}
           {#each recents as recent}
