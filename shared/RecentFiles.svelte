@@ -59,7 +59,7 @@
             <div class="ml-5">{recent.name}</div>
           </div>
         {:else}
-          <div>Your recent files will show up here!</div>
+          <div class="ml-5 p-5">Your recent files will show up here!</div>
         {/each}
       {:else if window.chrome}
         <div>
