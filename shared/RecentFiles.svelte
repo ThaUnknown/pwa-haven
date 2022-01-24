@@ -48,6 +48,7 @@
     recents = handles
   })
   async function selectFile(handle) {
+    updateRecents([handle])
     await handle.requestPermission({ mode: 'read' })
     files = [await handle.getFile()]
   }
