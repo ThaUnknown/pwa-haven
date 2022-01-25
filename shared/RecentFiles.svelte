@@ -57,8 +57,8 @@
 </script>
 
 <div class="h-full my-0 bg-very-dark">
-  <div class="container h-full py-20">
-    <div class="py-20 d-flex flex-column h-full">
+  <div class="container h-full p-20">
+    <div class="p-20 d-flex flex-column h-full">
       <div class="font-weight-bold font-size-24 p-5">Recent Files</div>
       <hr class="w-full my-15" />
       <div class="overflow-y-auto">

@@ -3,11 +3,11 @@
 export class URLFile {
   constructor (url) {
     if (url instanceof Object) {
-      this.name = url.name
+      this.name = url.name.replace(/_/g, ' ').trim()
       this.url = url.url
       this.type = url.type
     } else {
-      this.name = url.substring(url.lastIndexOf('/') + 1)
+      this.name = url.substring(url.lastIndexOf('/') + 1).replace(/_/g, ' ').trim()
       this.url = url
       this.type = ''
     }
