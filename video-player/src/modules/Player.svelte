@@ -272,7 +272,7 @@
         seek(-90)
         break
       case ',':
-        seek(1 / (await video.fps) || 0)
+        seek(-1 / (await video.fps) || 0)
         break
       case '.':
         seek(1 / (await video.fps) || 0)
