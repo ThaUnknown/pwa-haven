@@ -10,7 +10,7 @@ const cacheList = {
     ]
   },
   'img-viewer': {
-    version: '1.3.3',
+    version: '1.3.4',
     resources: [
       '../img-viewer/public/build/bundle.js',
       '../img-viewer/public/build/bundle.css',
@@ -21,7 +21,7 @@ const cacheList = {
     ]
   },
   'audio-player': {
-    version: '1.7.4',
+    version: '1.7.5',
     resources: [
       '../audio-player/public/build/bundle.js',
       '../audio-player/public/build/bundle.css',
@@ -34,7 +34,7 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '1.11.6',
+    version: '1.11.7',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.wasm',
@@ -52,7 +52,7 @@ const cacheList = {
     ]
   },
   'torrent-client': {
-    version: '1.2.1',
+    version: '1.2.2',
     resources: [
       '../torrent-client/public/build/bundle.js',
       '../torrent-client/public/build/bundle.css',
@@ -63,7 +63,7 @@ const cacheList = {
     ]
   },
   'screen-recorder': {
-    version: '1.0.6',
+    version: '1.0.7',
     resources: [
       '../screen-recorder/public/build/bundle.js',
       '../screen-recorder/public/build/bundle.css',
@@ -74,7 +74,7 @@ const cacheList = {
     ]
   },
   'manga-reader': {
-    version: '1.1.4',
+    version: '1.1.5',
     resources: [
       '../manga-reader/public/site.webmanifest',
       '../manga-reader/public/128.png',
