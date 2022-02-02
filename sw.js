@@ -74,7 +74,7 @@ const cacheList = {
     ]
   },
   'manga-reader': {
-    version: '1.1.5',
+    version: '1.2.0',
     resources: [
       '../manga-reader/public/site.webmanifest',
       '../manga-reader/public/128.png',

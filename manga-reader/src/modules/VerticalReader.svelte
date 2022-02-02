@@ -43,7 +43,7 @@
   {#if items.length}
     <!-- svelte-ignore missing-declaration -->
     {#each currentItems as { item, index } (index)}
-      <div class="w-full" use:infiniteScrolling>
+      <div class="w-full d-flex" use:infiniteScrolling>
         <slot {item} />
       </div>
     {/each}

@@ -4,120 +4,135 @@
   export let file = null
   $: updateFile(file)
 
-  async function getCropped(blob) {
+  async function getCropped(blob, opts) {
     const img = new Image()
     img.src = URL.createObjectURL(blob)
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
-    await img.decode()
+    await new Promise(resolve => {
+      img.onload = resolve
+      if (img.complete) resolve()
+    })
     URL.revokeObjectURL(img.src)
     canvas.width = img.width
     canvas.height = img.height
     ctx.drawImage(img, 0, 0)
     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-    const { top, bottom, left, right } = getBorders(imgData, { threshold: 15, margin: 2, padding: 5 })
+    const { top, bottom, left, right } = getBorders(imgData, opts)
     canvas.width = img.width - left - right
     canvas.height = img.height - top - bottom
     ctx.drawImage(img, -left, -top)
-    return await new Promise(resolve => canvas.toBlob(resolve))
+    return [canvas.toDataURL('image/png'), ctx.getImageData(0, 0, canvas.width, canvas.height)]
   }
 
   function getBorders(imgData, options = {}) {
     if (!imgData) return null
     const { threshold = 15, margin = 2, padding = 5 } = options
-    const opts = { threshold, margin, padding, ...imgData } // data, height, width
+    const { data, width, height } = imgData
+    const opts = { whitethreshold: 255 - threshold, blackthreshold: threshold, margin, data: new Uint32Array(data.buffer), width, height }
+    // entire array of data is flipped [reversed], including colors
     return {
-      top: topBorder(imgData),
-      bottom: bottomBorder(imgData),
-      left: leftBorder(imgData),
-      right: rightBorder(imgData)
+      top: Math.max(0, topBorder(opts) - padding),
+      bottom: Math.max(0, bottomBorder(opts) - padding),
+      left: Math.max(0, leftBorder(opts) - padding),
+      right: Math.max(0, rightBorder(opts) - padding)
     }
   }
 
-  function topBorder(imgData) {
-    let white = 0
-    let black = 0
-    for (; white < imgData.data.length; white += 4) {
-      if (imgData.data[white] < 240 || imgData.data[white + 1] < 240 || imgData.data[white + 2] < 240) break
-    }
-    for (; black < imgData.data.length; black += 4) {
-      if (imgData.data[black] > 15 || imgData.data[black + 1] > 15 || imgData.data[black + 2] > 15) break
-    }
-    return Math.max(0, Math.floor(Math.max(white, black) / 4 / imgData.width) - 5)
-  }
-
-  function bottomBorder(imgData) {
-    let white = imgData.data.length - 4
-    let black = imgData.data.length - 4
-    for (; white >= 0; white -= 4) {
-      if (imgData.data[white] < 240 || imgData.data[white + 1] < 240 || imgData.data[white + 2] < 240) break
-    }
-    for (; black >= 0; black -= 4) {
-      if (imgData.data[black] > 15 || imgData.data[black + 1] > 15 || imgData.data[black + 2] > 15) break
-    }
-    return Math.max(0, Math.floor(imgData.height - Math.min(white, black) / 4 / imgData.width) - 5)
-  }
-
-  function leftBorder(imgData) {
-    let white = 0
-    let black = 0
-    lbwl: for (; white < imgData.width; ++white) {
-      for (let height = 0; height < imgData.height; ++height) {
-        if (
-          imgData.data[height * imgData.width * 4 + white * 4] < 240 ||
-          imgData.data[height * imgData.width * 4 + white * 4 + 1] < 240 ||
-          imgData.data[height * imgData.width * 4 + white * 4 + 2] < 240
-        )
-          break lbwl
+  function topBorder({ whitethreshold, blackthreshold, margin, data, height, width }) {
+    let white = margin
+    let black = margin
+    bbwl: for (; white < height - margin * 2; ++white) {
+      const offset = white * width
+      for (let wid = margin; wid < width - margin * 2; ++wid) {
+        const color = data[offset + wid]
+        if ((color & 0xff) < whitethreshold || ((color >> 8) & 0xff) < whitethreshold || ((color >> 16) & 0xff) < whitethreshold) break bbwl
       }
     }
-    lbbl: for (; black < imgData.width; ++black) {
-      for (let height = 0; height < imgData.height; ++height) {
-        if (
-          imgData.data[height * imgData.width * 4 + black * 4] < 240 ||
-          imgData.data[height * imgData.width * 4 + black * 4 + 1] < 240 ||
-          imgData.data[height * imgData.width * 4 + black * 4 + 2] < 240
-        )
-          break lbbl
+    bbbl: for (; black < height - margin * 2; ++black) {
+      const offset = black * width
+      for (let wid = margin; wid < width - margin * 2; ++wid) {
+        const color = data[offset + wid]
+        if ((color & 0xff) > blackthreshold || ((color >> 8) & 0xff) > blackthreshold || ((color >> 16) & 0xff) > blackthreshold) break bbbl
       }
     }
-    return Math.max(0, Math.max(white, black) - 5)
+    return Math.max(black, white)
   }
 
-  function rightBorder(imgData) {
-    let white = imgData.width - 1
-    let black = imgData.width - 1
-    rbwl: for (; white >= 0; --white) {
-      for (let height = 0; height < imgData.height; ++height) {
-        if (
-          imgData.data[height * imgData.width * 4 + white * 4] < 240 ||
-          imgData.data[height * imgData.width * 4 + white * 4 + 1] < 240 ||
-          imgData.data[height * imgData.width * 4 + white * 4 + 2] < 240
-        )
-          break rbwl
+  function bottomBorder({ whitethreshold, blackthreshold, margin, data, height, width }) {
+    let white = height - 1 - margin
+    let black = height - 1 - margin
+    tbwl: for (; white >= margin; --white) {
+      const offset = white * width
+      for (let wid = margin; wid < width - margin * 2; ++wid) {
+        const color = data[offset + wid]
+        if ((color & 0xff) < whitethreshold || ((color >> 8) & 0xff) < whitethreshold || ((color >> 16) & 0xff) < whitethreshold) break tbwl
       }
     }
-    rbbl: for (; black >= 0; --black) {
-      for (let height = 0; height < imgData.height; ++height) {
-        if (
-          imgData.data[height * imgData.width * 4 + black * 4] < 240 ||
-          imgData.data[height * imgData.width * 4 + black * 4 + 1] < 240 ||
-          imgData.data[height * imgData.width * 4 + black * 4 + 2] < 240
-        )
-          break rbbl
+    tbbl: for (; black >= margin; --black) {
+      const offset = black * width
+      for (let wid = margin; wid < width - margin * 2; ++wid) {
+        const color = data[offset + wid]
+        if ((color & 0xff) > blackthreshold || ((color >> 8) & 0xff) > blackthreshold || ((color >> 16) & 0xff) > blackthreshold) break tbbl
       }
     }
-    return Math.max(0, imgData.width - Math.min(black, white) - 5 - 1)
+
+    return height - Math.min(white, black) - 1
   }
 
-  async function updateFile(file) {
-    if (!src && file) {
-      const blob = await file.blob()
-      console.log(file)
+  function leftBorder({ whitethreshold, blackthreshold, margin, data, height, width }) {
+    let white = margin
+    let black = margin
+    lbwl: for (; white < width - margin * 2; ++white) {
+      for (let hei = margin; hei < height - margin * 2; ++hei) {
+        const color = data[hei * width + white]
+        if ((color & 0xff) < whitethreshold || ((color >> 8) & 0xff) < whitethreshold || ((color >> 16) & 0xff) < whitethreshold) break lbwl
+      }
+    }
+    lbbl: for (; black < width - margin * 2; ++black) {
+      for (let hei = margin; hei < height - margin * 2; ++hei) {
+        const color = data[hei * width + black]
+        if ((color & 0xff) > blackthreshold || ((color >> 8) & 0xff) > blackthreshold || ((color >> 16) & 0xff) > blackthreshold) break lbbl
+      }
+    }
+    return Math.max(white, black)
+  }
+
+  function rightBorder({ whitethreshold, blackthreshold, margin, data, height, width }) {
+    let white = width - 1 - margin
+    let black = width - 1 - margin
+
+    rbwl: for (; white >= margin; --white) {
+      for (let hei = margin; hei < height - margin * 2; ++hei) {
+        const color = data[hei * width + white]
+        if ((color & 0xff) < whitethreshold || ((color >> 8) & 0xff) < whitethreshold || ((color >> 16) & 0xff) < whitethreshold) break rbwl
+      }
+    }
+    rbbl: for (; black >= margin; --black) {
+      for (let hei = margin; hei < height - margin * 2; ++hei) {
+        const color = data[hei * width + black]
+        if ((color & 0xff) < blackthreshold || ((color >> 8) & 0xff) < blackthreshold || ((color >> 16) & 0xff) < blackthreshold) break rbbl
+      }
+    }
+
+    return width - Math.min(white, black) - 1
+  }
+
+  function updateFile(file) {
+    if (!blob && file) {
+      blob = file.blob()
+    }
+  }
+  let blob = null
+  let oldopts = null
+  $: setSource(blob, options)
+  async function setSource(blob, options) {
+    if (blob && oldopts !== options.crop) {
+      oldopts == options.crop
       if (options.crop) {
-        src = URL.createObjectURL(await getCropped(blob))
+        src = (await getCropped(await blob, { padding: 2 }))[0]
       } else {
-        src = URL.createObjectURL(blob)
+        src = URL.createObjectURL(await blob)
       }
     }
   }
