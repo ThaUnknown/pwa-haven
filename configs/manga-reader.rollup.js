@@ -17,7 +17,7 @@ function serve () {
   return {
     writeBundle () {
       if (server) return
-      server = require('child_process').spawn('sirv', ['./manga-reader/public'], {
+      server = require('child_process').spawn('sirv', ['./manga-reader/public', ['-D']], {
         stdio: ['ignore', 'inherit', 'inherit'],
         shell: true
       })

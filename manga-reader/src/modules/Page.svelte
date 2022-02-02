@@ -3,10 +3,122 @@
 
   export let file = null
   $: updateFile(file)
+
+  async function getCropped(blob) {
+    const img = new Image()
+    img.src = URL.createObjectURL(blob)
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    await img.decode()
+    URL.revokeObjectURL(img.src)
+    canvas.width = img.width
+    canvas.height = img.height
+    ctx.drawImage(img, 0, 0)
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const { top, bottom, left, right } = getBorders(imgData, { threshold: 15, margin: 2, padding: 5 })
+    canvas.width = img.width - left - right
+    canvas.height = img.height - top - bottom
+    ctx.drawImage(img, -left, -top)
+    return await new Promise(resolve => canvas.toBlob(resolve))
+  }
+
+  function getBorders(imgData, options = {}) {
+    if (!imgData) return null
+    const { threshold = 15, margin = 2, padding = 5 } = options
+    const opts = { threshold, margin, padding, ...imgData } // data, height, width
+    return {
+      top: topBorder(imgData),
+      bottom: bottomBorder(imgData),
+      left: leftBorder(imgData),
+      right: rightBorder(imgData)
+    }
+  }
+
+  function topBorder(imgData) {
+    let white = 0
+    let black = 0
+    for (; white < imgData.data.length; white += 4) {
+      if (imgData.data[white] < 240 || imgData.data[white + 1] < 240 || imgData.data[white + 2] < 240) break
+    }
+    for (; black < imgData.data.length; black += 4) {
+      if (imgData.data[black] > 15 || imgData.data[black + 1] > 15 || imgData.data[black + 2] > 15) break
+    }
+    return Math.max(0, Math.floor(Math.max(white, black) / 4 / imgData.width) - 5)
+  }
+
+  function bottomBorder(imgData) {
+    let white = imgData.data.length - 4
+    let black = imgData.data.length - 4
+    for (; white >= 0; white -= 4) {
+      if (imgData.data[white] < 240 || imgData.data[white + 1] < 240 || imgData.data[white + 2] < 240) break
+    }
+    for (; black >= 0; black -= 4) {
+      if (imgData.data[black] > 15 || imgData.data[black + 1] > 15 || imgData.data[black + 2] > 15) break
+    }
+    return Math.max(0, Math.floor(imgData.height - Math.min(white, black) / 4 / imgData.width) - 5)
+  }
+
+  function leftBorder(imgData) {
+    let white = 0
+    let black = 0
+    lbwl: for (; white < imgData.width; ++white) {
+      for (let height = 0; height < imgData.height; ++height) {
+        if (
+          imgData.data[height * imgData.width * 4 + white * 4] < 240 ||
+          imgData.data[height * imgData.width * 4 + white * 4 + 1] < 240 ||
+          imgData.data[height * imgData.width * 4 + white * 4 + 2] < 240
+        )
+          break lbwl
+      }
+    }
+    lbbl: for (; black < imgData.width; ++black) {
+      for (let height = 0; height < imgData.height; ++height) {
+        if (
+          imgData.data[height * imgData.width * 4 + black * 4] < 240 ||
+          imgData.data[height * imgData.width * 4 + black * 4 + 1] < 240 ||
+          imgData.data[height * imgData.width * 4 + black * 4 + 2] < 240
+        )
+          break lbbl
+      }
+    }
+    return Math.max(0, Math.max(white, black) - 5)
+  }
+
+  function rightBorder(imgData) {
+    let white = imgData.width - 1
+    let black = imgData.width - 1
+    rbwl: for (; white >= 0; --white) {
+      for (let height = 0; height < imgData.height; ++height) {
+        if (
+          imgData.data[height * imgData.width * 4 + white * 4] < 240 ||
+          imgData.data[height * imgData.width * 4 + white * 4 + 1] < 240 ||
+          imgData.data[height * imgData.width * 4 + white * 4 + 2] < 240
+        )
+          break rbwl
+      }
+    }
+    rbbl: for (; black >= 0; --black) {
+      for (let height = 0; height < imgData.height; ++height) {
+        if (
+          imgData.data[height * imgData.width * 4 + black * 4] < 240 ||
+          imgData.data[height * imgData.width * 4 + black * 4 + 1] < 240 ||
+          imgData.data[height * imgData.width * 4 + black * 4 + 2] < 240
+        )
+          break rbbl
+      }
+    }
+    return Math.max(0, imgData.width - Math.min(black, white) - 5 - 1)
+  }
+
   async function updateFile(file) {
     if (!src && file) {
       const blob = await file.blob()
-      src = URL.createObjectURL(blob)
+      console.log(file)
+      if (options.crop) {
+        src = URL.createObjectURL(await getCropped(blob))
+      } else {
+        src = URL.createObjectURL(blob)
+      }
     }
   }
   onDestroy(() => {
