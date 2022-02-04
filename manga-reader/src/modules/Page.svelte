@@ -244,25 +244,30 @@
 </script>
 
 {#if src}
-  {#if options.mode !== 'fit'}
-    <img {src} alt="view" class="w-full" />
-  {:else}
-    <div
-      class="w-full h-full overflow-hidden position-relative dragarea"
-      on:pointerdown={dragStart}
-      on:pointerup={dragEnd}
-      on:wheel|passive={handleZoom}
-      on:touchend={dragEnd}
-      on:touchstart={checkPinch}
-      on:touchmove={handlePinch}>
-      <img {src} class:transition alt="view" class="w-full h-full position-absolute" bind:this={image} on:load={handleImage} />
+    {#if options.mode !== 'fit'}
+    <div class="w-full d-flex align-items-center justify-content-center overflow-y-auto">
+      <img {src} alt="view" class="w-full" class:pad={options.pad} />
     </div>
-  {/if}
+    {:else}
+      <div
+        class="w-full h-full overflow-hidden position-relative dragarea d-flex align-items-center justify-content-center"
+        on:pointerdown={dragStart}
+        on:pointerup={dragEnd}
+        on:wheel|passive={handleZoom}
+        on:touchend={dragEnd}
+        on:touchstart={checkPinch}
+        on:touchmove={handlePinch}>
+        <img {src} class:pad={options.pad} class:transition alt="view" class="w-full h-full position-absolute" bind:this={image} on:load={handleImage} />
+      </div>
+    {/if}
 {:else}
   <div class="d-flex align-items-center justify-content-center font-size-24 font-weight-bold w-full h-full">There's no next page.</div>
 {/if}
 
 <style>
+  .pad {
+    max-width: 100vh !important;
+  }
   img {
     object-fit: contain;
     --top: 0;

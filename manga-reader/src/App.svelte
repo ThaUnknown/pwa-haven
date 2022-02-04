@@ -62,6 +62,16 @@
     immerseTimeout = setTimeout(immerseReader, 2 * 1000)
   }
 
+  let isFullscreen = false
+
+  document.addEventListener('fullscreenchange', () => {
+    isFullscreen = !!document.fullscreenElement
+  })
+
+  function toggleFullscreen() {
+    document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()
+  }
+
   async function handleKeydown({ key }) {
     switch (key) {
       case 'ArrowLeft':
@@ -107,6 +117,10 @@
     </div>
     <div class="btn-group bg-dark-dm bg-light-lm rounded m-5 col-auto">
       <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => (options.crop = !options.crop)}>{options.crop ? 'crop' : 'crop_free'}</button>
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={() => (options.pad = !options.pad)}>
+        <div class="rotate">{options.pad ? 'unfold_more' : 'unfold_less'}</div>
+      </button>
+      <button class="btn btn-lg btn-square material-icons" type="button" on:click={toggleFullscreen}>{isFullscreen ? 'fullscreen_exit' : 'fullscreen'}</button>
     </div>
   </div>
 {/if}
@@ -130,6 +144,10 @@
 <style>
   :global(body) {
     position: unset !important;
+  }
+
+  .rotate {
+    transform: rotate(90deg);
   }
 
   .controls {
