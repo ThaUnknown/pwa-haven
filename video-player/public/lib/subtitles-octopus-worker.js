@@ -5,7 +5,7 @@ if (!Module.expectedDataFileDownloads) {
 Module.expectedDataFileDownloads++;
 (function () {
   var loadPackage = function (metadata) {
-    function runWithFS () {
+    function runWithFS() {
       Module.FS_createPath('/', 'assets', true, true)
       var fileData0 = []
       fileData0.push.apply(fileData0, [60, 63, 120, 109, 108, 32, 118, 101, 114, 115, 105, 111, 110, 61, 34, 49, 46, 48, 34, 63, 62, 10, 60, 33, 68, 79, 67, 84, 89, 80, 69, 32, 102, 111, 110, 116, 99, 111, 110, 102, 105, 103, 32, 83, 89, 83, 84, 69, 77, 32, 34, 102, 111, 110, 116, 115, 46, 100, 116, 100, 34, 62, 10, 60, 102, 111, 110, 116, 99, 111, 110, 102, 105, 103, 62, 10, 9, 60, 100, 105, 114, 62, 47, 102, 111, 110, 116, 115, 60, 47, 100, 105, 114, 62, 10, 9, 60, 109, 97, 116, 99, 104, 32, 116, 97, 114, 103, 101, 116, 61, 34, 112, 97, 116, 116, 101, 114, 110, 34, 62, 10, 9, 9, 60, 116, 101, 115, 116, 32, 113, 117, 97, 108, 61, 34, 97, 110, 121, 34, 32, 110, 97, 109, 101, 61, 34, 102, 97, 109, 105, 108, 121, 34, 62, 10, 9, 9, 9, 60, 115, 116, 114, 105, 110, 103, 62, 109, 111, 110, 111, 60, 47, 115, 116, 114, 105, 110, 103, 62, 10, 9, 9, 60, 47, 116, 101, 115, 116, 62, 10, 9, 9, 60, 101, 100, 105, 116, 32, 110, 97, 109, 101, 61, 34, 102, 97, 109, 105, 108, 121, 34, 32, 109, 111, 100, 101, 61, 34, 97, 115, 115, 105, 103, 110, 34, 32, 98, 105, 110, 100, 105, 110, 103, 61, 34, 115, 97, 109, 101, 34, 62, 10, 9, 9, 9, 60, 115, 116, 114, 105, 110, 103, 62, 109, 111, 110, 111, 115, 112, 97, 99, 101, 60, 47, 115, 116, 114, 105, 110, 103, 62, 10, 9, 9, 60, 47, 101, 100, 105, 116, 62, 10, 9, 60, 47, 109, 97, 116, 99, 104, 62, 10, 9, 60, 109, 97, 116, 99, 104, 32, 116, 97, 114, 103, 101, 116, 61, 34, 112, 97, 116, 116, 101, 114, 110, 34, 62, 10, 9, 9, 60, 116, 101, 115, 116, 32, 113, 117, 97, 108, 61, 34, 97, 110, 121, 34, 32, 110, 97, 109, 101, 61, 34, 102, 97, 109, 105, 108, 121, 34, 62, 10, 9, 9, 9, 60, 115, 116, 114, 105, 110, 103, 62, 115, 97, 110, 115, 32, 115, 101, 114, 105, 102, 60, 47, 115, 116, 114, 105, 110, 103, 62, 10, 9, 9, 60, 47, 116, 101, 115, 116, 62, 10, 9, 9, 60, 101, 100, 105, 116, 32, 110, 97, 109, 101, 61, 34, 102, 97, 109, 105, 108, 121, 34, 32, 109, 111, 100, 101, 61, 34, 97, 115, 115, 105, 103, 110, 34, 32, 98, 105, 110, 100, 105, 110, 103, 61, 34, 115, 97, 109, 101, 34, 62, 10, 9, 9, 9, 60, 115, 116, 114, 105, 110, 103, 62, 115, 97, 110, 115, 45, 115, 101, 114, 105, 102, 60, 47, 115, 116, 114, 105, 110, 103, 62, 10, 9, 9, 60, 47, 101, 100, 105, 116, 62, 10, 9, 60, 47, 109, 97, 116, 99, 104, 62, 10, 9, 60, 109, 97, 116, 99, 104, 32, 116, 97, 114, 103, 101, 116, 61, 34, 112, 97, 116, 116, 101, 114, 110, 34, 62, 10, 9, 9, 60, 116, 101, 115, 116, 32, 113, 117, 97, 108, 61, 34, 97, 110, 121, 34, 32, 110, 97, 109, 101, 61, 34, 102, 97, 109, 105, 108, 121, 34, 62, 10, 9, 9, 9, 60, 115, 116, 114, 105, 110, 103, 62, 115, 97, 110, 115, 60, 47, 115, 116, 114, 105, 110, 103, 62, 10, 9, 9, 60, 47, 116, 101, 115, 116, 62, 10, 9, 9, 60, 101, 100, 105, 116, 32, 110, 97, 109, 101, 61, 34, 102, 97, 109, 105, 108, 121, 34, 32, 109, 111, 100, 101, 61, 34, 97, 115, 115, 105, 103, 110, 34, 32, 98, 105, 110, 100, 105, 110, 103, 61, 34, 115, 97, 109, 101, 34, 62, 10, 9, 9, 9, 60, 115, 116, 114, 105, 110, 103, 62, 115, 97, 110, 115, 45, 115, 101, 114, 105, 102, 60, 47, 115, 116, 114, 105, 110, 103, 62, 10, 9, 9, 60, 47, 101, 100, 105, 116, 62, 10, 9, 60, 47, 109, 97, 116, 99, 104, 62, 10, 9, 60, 99, 97, 99, 104, 101, 100, 105, 114, 62, 47, 46, 102, 111, 110, 116, 99, 111, 110, 102, 105, 103, 60, 47, 99, 97, 99, 104, 101, 100, 105, 114, 62, 10, 9, 60, 99, 111, 110, 102, 105, 103, 62, 10, 9, 9, 60, 114, 101, 115, 99, 97, 110, 62, 10, 9, 9, 9, 60, 105, 110, 116, 62, 51, 48, 60, 47, 105, 110, 116, 62, 10, 9, 9, 60, 47, 114, 101, 115, 99, 97, 110, 62, 10, 9, 60, 47, 99, 111, 110, 102, 105, 103, 62, 10, 60, 47, 102, 111, 110, 116, 99, 111, 110, 102, 105, 103, 62, 10])
@@ -128,7 +128,7 @@ ENVIRONMENT_IS_NODE = typeof process === 'object' && typeof process.versions ===
 ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER
 var scriptDirectory = ''
 
-function locateFile (path) {
+function locateFile(path) {
   if (Module.locateFile) {
     return Module.locateFile(path, scriptDirectory)
   }
@@ -146,7 +146,7 @@ if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
   } else {
     scriptDirectory = ''
   }
-  read_ = function shell_read (url) {
+  read_ = function shell_read(url) {
     try {
       var xhr = new XMLHttpRequest()
       xhr.open('GET', url, false)
@@ -161,7 +161,7 @@ if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
     }
   }
   if (ENVIRONMENT_IS_WORKER) {
-    readBinary = function readBinary (url) {
+    readBinary = function readBinary(url) {
       try {
         var xhr = new XMLHttpRequest()
         xhr.open('GET', url, false)
@@ -177,11 +177,11 @@ if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
       }
     }
   }
-  readAsync = function readAsync (url, onload, onerror) {
+  readAsync = function readAsync(url, onload, onerror) {
     var xhr = new XMLHttpRequest()
     xhr.open('GET', url, true)
     xhr.responseType = 'arraybuffer'
-    xhr.onload = function xhr_onload () {
+    xhr.onload = function xhr_onload() {
       if (xhr.status == 200 || xhr.status == 0 && xhr.response) {
         onload(xhr.response)
         return
@@ -214,14 +214,14 @@ if (Module.thisProgram) thisProgram = Module.thisProgram
 if (Module.quit) quit_ = Module.quit
 var STACK_ALIGN = 16
 
-function dynamicAlloc (size) {
+function dynamicAlloc(size) {
   var ret = HEAP32[DYNAMICTOP_PTR >> 2]
   var end = ret + size + 15 & -16
   HEAP32[DYNAMICTOP_PTR >> 2] = end
   return ret
 }
 
-function alignMemory (size, factor) {
+function alignMemory(size, factor) {
   if (!factor) factor = STACK_ALIGN
   return Math.ceil(size / factor) * factor
 }
@@ -237,7 +237,7 @@ if (Module.wasmBinary) wasmBinary = Module.wasmBinary
 var noExitRuntime
 if (Module.noExitRuntime) noExitRuntime = Module.noExitRuntime
 
-function getValue (ptr, type, noSafe) {
+function getValue(ptr, type, noSafe) {
   type = type || 'i8'
   if (type.charAt(type.length - 1) === '*') type = 'i32'
   switch (type) {
@@ -269,19 +269,19 @@ var wasmTable = new WebAssembly.Table({
 var ABORT = false
 var EXITSTATUS = 0
 
-function assert (condition, text) {
+function assert(condition, text) {
   if (!condition) {
     abort('Assertion failed: ' + text)
   }
 }
 
-function getCFunc (ident) {
+function getCFunc(ident) {
   var func = Module['_' + ident]
   assert(func, 'Cannot call unknown function ' + ident + ', make sure it is exported')
   return func
 }
 
-function ccall (ident, returnType, argTypes, args, opts) {
+function ccall(ident, returnType, argTypes, args, opts) {
   var toC = {
     string: function (str) {
       var ret = 0
@@ -299,7 +299,7 @@ function ccall (ident, returnType, argTypes, args, opts) {
     }
   }
 
-  function convertReturnValue (ret) {
+  function convertReturnValue(ret) {
     if (returnType === 'string') return UTF8ToString(ret)
     if (returnType === 'boolean') return Boolean(ret)
     return ret
@@ -324,7 +324,7 @@ function ccall (ident, returnType, argTypes, args, opts) {
   return ret
 }
 
-function cwrap (ident, returnType, argTypes, opts) {
+function cwrap(ident, returnType, argTypes, opts) {
   argTypes = argTypes || []
   var numericArgs = argTypes.every(function (type) {
     return type === 'number'
@@ -338,27 +338,27 @@ function cwrap (ident, returnType, argTypes, opts) {
   }
 }
 
-function getMemory (size) {
+function getMemory(size) {
   if (!runtimeInitialized) return dynamicAlloc(size)
   return _malloc(size)
 }
 var UTF8Decoder = new TextDecoder('utf8')
 
-function UTF8ArrayToString (heap, idx, maxBytesToRead) {
+function UTF8ArrayToString(heap, idx, maxBytesToRead) {
   var endIdx = idx + maxBytesToRead
   var endPtr = idx
   while (heap[endPtr] && !(endPtr >= endIdx)) ++endPtr
   return UTF8Decoder.decode(heap.subarray ? heap.subarray(idx, endPtr) : new Uint8Array(heap.slice(idx, endPtr)))
 }
 
-function UTF8ToString (ptr, maxBytesToRead) {
+function UTF8ToString(ptr, maxBytesToRead) {
   if (!ptr) return ''
   var maxPtr = ptr + maxBytesToRead
   for (var end = ptr; !(end >= maxPtr) && HEAPU8[end];) ++end
   return UTF8Decoder.decode(HEAPU8.subarray(ptr, end))
 }
 
-function stringToUTF8Array (str, heap, outIdx, maxBytesToWrite) {
+function stringToUTF8Array(str, heap, outIdx, maxBytesToWrite) {
   if (!(maxBytesToWrite > 0)) return 0
   var startIdx = outIdx
   var endIdx = outIdx + maxBytesToWrite - 1
@@ -392,11 +392,11 @@ function stringToUTF8Array (str, heap, outIdx, maxBytesToWrite) {
   return outIdx - startIdx
 }
 
-function stringToUTF8 (str, outPtr, maxBytesToWrite) {
+function stringToUTF8(str, outPtr, maxBytesToWrite) {
   return stringToUTF8Array(str, HEAPU8, outPtr, maxBytesToWrite)
 }
 
-function lengthBytesUTF8 (str) {
+function lengthBytesUTF8(str) {
   var len = 0
   for (var i = 0; i < str.length; ++i) {
     var u = str.charCodeAt(i)
@@ -409,18 +409,18 @@ function lengthBytesUTF8 (str) {
   return len
 }
 
-function allocateUTF8OnStack (str) {
+function allocateUTF8OnStack(str) {
   var size = lengthBytesUTF8(str) + 1
   var ret = stackAlloc(size)
   stringToUTF8Array(str, HEAP8, ret, size)
   return ret
 }
 
-function writeArrayToMemory (array, buffer) {
+function writeArrayToMemory(array, buffer) {
   HEAP8.set(array, buffer)
 }
 
-function writeAsciiToMemory (str, buffer, dontAddNull) {
+function writeAsciiToMemory(str, buffer, dontAddNull) {
   for (var i = 0; i < str.length; ++i) {
     HEAP8[buffer++ >> 0] = str.charCodeAt(i)
   }
@@ -428,7 +428,7 @@ function writeAsciiToMemory (str, buffer, dontAddNull) {
 }
 var WASM_PAGE_SIZE = 65536
 
-function alignUp (x, multiple) {
+function alignUp(x, multiple) {
   if (x % multiple > 0) {
     x += multiple - x % multiple
   }
@@ -436,7 +436,7 @@ function alignUp (x, multiple) {
 }
 var buffer, HEAP8, HEAPU8, HEAP16, HEAPU16, HEAP32, HEAPU32, HEAPF32, HEAPF64
 
-function updateGlobalBufferAndViews (buf) {
+function updateGlobalBufferAndViews(buf) {
   buffer = buf
   Module.HEAP8 = HEAP8 = new Int8Array(buf)
   Module.HEAP16 = HEAP16 = new Int16Array(buf)
@@ -471,7 +471,7 @@ var __ATPOSTRUN__ = []
 var runtimeInitialized = false
 var runtimeExited = false
 
-function preRun () {
+function preRun() {
   if (Module.preRun) {
     if (typeof Module.preRun === 'function') Module.preRun = [Module.preRun]
     while (Module.preRun.length) {
@@ -481,23 +481,23 @@ function preRun () {
   callRuntimeCallbacks(__ATPRERUN__)
 }
 
-function initRuntime () {
+function initRuntime() {
   runtimeInitialized = true
   if (!Module.noFSInit && !FS.init.initialized) FS.init()
   TTY.init()
   callRuntimeCallbacks(__ATINIT__)
 }
 
-function preMain () {
+function preMain() {
   FS.ignorePermissions = false
   callRuntimeCallbacks(__ATMAIN__)
 }
 
-function exitRuntime () {
+function exitRuntime() {
   runtimeExited = true
 }
 
-function postRun () {
+function postRun() {
   if (Module.postRun) {
     if (typeof Module.postRun === 'function') Module.postRun = [Module.postRun]
     while (Module.postRun.length) {
@@ -507,15 +507,15 @@ function postRun () {
   callRuntimeCallbacks(__ATPOSTRUN__)
 }
 
-function addOnPreRun (cb) {
+function addOnPreRun(cb) {
   __ATPRERUN__.unshift(cb)
 }
 
-function addOnPreMain (cb) {
+function addOnPreMain(cb) {
   __ATMAIN__.unshift(cb)
 }
 
-function addOnPostRun (cb) {
+function addOnPostRun(cb) {
   __ATPOSTRUN__.unshift(cb)
 }
 var Math_abs = Math.abs
@@ -526,18 +526,18 @@ var runDependencies = 0
 var runDependencyWatcher = null
 var dependenciesFulfilled = null
 
-function getUniqueRunDependency (id) {
+function getUniqueRunDependency(id) {
   return id
 }
 
-function addRunDependency (id) {
+function addRunDependency(id) {
   runDependencies++
   if (Module.monitorRunDependencies) {
     Module.monitorRunDependencies(runDependencies)
   }
 }
 
-function removeRunDependency (id) {
+function removeRunDependency(id) {
   runDependencies--
   if (Module.monitorRunDependencies) {
     Module.monitorRunDependencies(runDependencies)
@@ -557,7 +557,7 @@ function removeRunDependency (id) {
 Module.preloadedImages = {}
 Module.preloadedAudios = {}
 
-function abort (what) {
+function abort(what) {
   if (Module.onAbort) {
     Module.onAbort(what)
   }
@@ -570,12 +570,12 @@ function abort (what) {
   throw e
 }
 
-function hasPrefix (str, prefix) {
+function hasPrefix(str, prefix) {
   return String.prototype.startsWith ? str.startsWith(prefix) : str.indexOf(prefix) === 0
 }
 var dataURIPrefix = 'data:application/octet-stream;base64,'
 
-function isDataURI (filename) {
+function isDataURI(filename) {
   return hasPrefix(filename, dataURIPrefix)
 }
 var wasmBinaryFile = 'subtitles-octopus-worker.wasm'
@@ -583,7 +583,7 @@ if (!isDataURI(wasmBinaryFile)) {
   wasmBinaryFile = locateFile(wasmBinaryFile)
 }
 
-function getBinary () {
+function getBinary() {
   try {
     if (wasmBinary) {
       return new Uint8Array(wasmBinary)
@@ -602,7 +602,7 @@ function getBinary () {
   }
 }
 
-function getBinaryPromise () {
+function getBinaryPromise() {
   if (!wasmBinary && (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) && typeof fetch === 'function') {
     return fetch(wasmBinaryFile, {
       credentials: 'same-origin'
@@ -618,23 +618,23 @@ function getBinaryPromise () {
   return Promise.resolve().then(getBinary)
 }
 
-function createWasm () {
+function createWasm() {
   var info = {
     a: asmLibraryArg
   }
 
-  function receiveInstance (instance, module) {
+  function receiveInstance(instance, module) {
     var exports = instance.exports
     Module.asm = exports
     removeRunDependency('wasm-instantiate')
   }
   addRunDependency('wasm-instantiate')
 
-  function receiveInstantiatedSource (output) {
+  function receiveInstantiatedSource(output) {
     receiveInstance(output.instance)
   }
 
-  function instantiateArrayBuffer (receiver) {
+  function instantiateArrayBuffer(receiver) {
     return getBinaryPromise().then(function (binary) {
       return WebAssembly.instantiate(binary, info)
     }).then(receiver, function (reason) {
@@ -647,7 +647,7 @@ function createWasm () {
     })
   }
 
-  function instantiateAsync () {
+  function instantiateAsync() {
     if (!wasmBinary && typeof WebAssembly.instantiateStreaming === 'function' && !isDataURI(wasmBinaryFile) && typeof fetch === 'function') {
       fetch(wasmBinaryFile, {
         credentials: 'same-origin'
@@ -683,7 +683,7 @@ __ATINIT__.push({
   }
 })
 
-function callRuntimeCallbacks (callbacks) {
+function callRuntimeCallbacks(callbacks) {
   while (callbacks.length > 0) {
     var callback = callbacks.shift()
     if (typeof callback === 'function') {
@@ -703,11 +703,11 @@ function callRuntimeCallbacks (callbacks) {
   }
 }
 
-function demangle (func) {
+function demangle(func) {
   return func
 }
 
-function demangleAll (text) {
+function demangleAll(text) {
   var regex = /\b_Z[\w\d_]+/g
   return text.replace(regex, function (x) {
     var y = demangle(x)
@@ -715,7 +715,7 @@ function demangleAll (text) {
   })
 }
 
-function jsStackTrace () {
+function jsStackTrace() {
   var error = new Error()
   if (!error.stack) {
     try {
@@ -730,13 +730,13 @@ function jsStackTrace () {
   return error.stack.toString()
 }
 
-function stackTrace () {
+function stackTrace() {
   var js = jsStackTrace()
   if (Module.extraStackTrace) js += '\n' + Module.extraStackTrace()
   return demangleAll(js)
 }
 
-function ___assert_fail (condition, filename, line, func) {
+function ___assert_fail(condition, filename, line, func) {
   abort('Assertion failed: ' + UTF8ToString(condition) + ', at: ' + [filename ? UTF8ToString(filename) : 'unknown filename', line, func ? UTF8ToString(func) : 'unknown function'])
 }
 var _emscripten_get_now
@@ -745,12 +745,12 @@ _emscripten_get_now = function () {
 }
 var _emscripten_get_now_is_monotonic = true
 
-function setErrNo (value) {
+function setErrNo(value) {
   HEAP32[___errno_location() >> 2] = value
   return value
 }
 
-function _clock_gettime (clk_id, tp) {
+function _clock_gettime(clk_id, tp) {
   var now
   if (clk_id === 0) {
     now = Date.now()
@@ -765,7 +765,7 @@ function _clock_gettime (clk_id, tp) {
   return 0
 }
 
-function ___clock_gettime (a0, a1) {
+function ___clock_gettime(a0, a1) {
   return _clock_gettime(a0, a1)
 }
 var PATH = {
@@ -862,7 +862,7 @@ var PATH_FS = {
     from = PATH_FS.resolve(from).substr(1)
     to = PATH_FS.resolve(to).substr(1)
 
-    function trim (arr) {
+    function trim(arr) {
       var start = 0
       for (; start < arr.length; start++) {
         if (arr[start] !== '') break
@@ -894,8 +894,8 @@ var PATH_FS = {
 }
 var TTY = {
   ttys: [],
-  init: function () {},
-  shutdown: function () {},
+  init: function () { },
+  shutdown: function () { },
   register: function (dev, ops) {
     TTY.ttys[dev] = {
       input: [],
@@ -1187,7 +1187,7 @@ var MEMFS = {
         var new_node
         try {
           new_node = FS.lookupNode(new_dir, new_name)
-        } catch (e) {}
+        } catch (e) { }
         if (new_node) {
           for (var i in new_node.contents) {
             throw new FS.ErrnoError(55)
@@ -1561,7 +1561,7 @@ var FS = {
     try {
       var node = FS.lookupNode(dir, name)
       return 20
-    } catch (e) {}
+    } catch (e) { }
     return FS.nodePermissions(dir, 'wx')
   },
   mayDelete: function (dir, name, isdir) {
@@ -1618,7 +1618,7 @@ var FS = {
   },
   createStream: function (stream, fd_start, fd_end) {
     if (!FS.FSStream) {
-      FS.FSStream = function () {}
+      FS.FSStream = function () { }
       FS.FSStream.prototype = {
         object: {
           get: function () {
@@ -1709,12 +1709,12 @@ var FS = {
     var mounts = FS.getMounts(FS.root.mount)
     var completed = 0
 
-    function doCallback (errCode) {
+    function doCallback(errCode) {
       FS.syncFSRequests--
       return callback(errCode)
     }
 
-    function done (errCode) {
+    function done(errCode) {
       if (errCode) {
         if (!done.errored) {
           done.errored = true
@@ -1900,7 +1900,7 @@ var FS = {
     var new_node
     try {
       new_node = FS.lookupNode(new_dir, new_name)
-    } catch (e) {}
+    } catch (e) { }
     if (old_node === new_node) {
       return
     }
@@ -2171,7 +2171,7 @@ var FS = {
           follow: !(flags & 131072)
         })
         node = lookup.node
-      } catch (e) {}
+      } catch (e) { }
     }
     var created = false
     if (flags & 64) {
@@ -2457,7 +2457,7 @@ var FS = {
         crypto.getRandomValues(randomBuffer)
         return randomBuffer[0]
       }
-    } else {}
+    } else { }
     if (!random_device) {
       random_device = function () {
         abort('random_device')
@@ -2521,7 +2521,7 @@ var FS = {
   },
   ensureErrnoError: function () {
     if (FS.ErrnoError) return
-    FS.ErrnoError = function ErrnoError (errno, node) {
+    FS.ErrnoError = function ErrnoError(errno, node) {
       this.node = node
       this.setErrno = function (errno) {
         this.errno = errno
@@ -2599,7 +2599,7 @@ var FS = {
         follow: !dontResolveLastLink
       })
       path = lookup.path
-    } catch (e) {}
+    } catch (e) { }
     var ret = {
       isRoot: false,
       exists: false,
@@ -2646,7 +2646,7 @@ var FS = {
       var current = PATH.join2(parent, part)
       try {
         FS.mkdir(current)
-      } catch (e) {}
+      } catch (e) { }
       parent = current
     }
     return current
@@ -2748,11 +2748,11 @@ var FS = {
     return success
   },
   createLazyFile: function (parent, name, url, canRead, canWrite) {
-    function LazyUint8Array () {
+    function LazyUint8Array() {
       this.lengthKnown = false
       this.chunks = []
     }
-    LazyUint8Array.prototype.get = function LazyUint8Array_get (idx) {
+    LazyUint8Array.prototype.get = function LazyUint8Array_get(idx) {
       if (idx > this.length - 1 || idx < 0) {
         return undefined
       }
@@ -2760,10 +2760,10 @@ var FS = {
       var chunkNum = idx / this.chunkSize | 0
       return this.getter(chunkNum)[chunkOffset]
     }
-    LazyUint8Array.prototype.setDataGetter = function LazyUint8Array_setDataGetter (getter) {
+    LazyUint8Array.prototype.setDataGetter = function LazyUint8Array_setDataGetter(getter) {
       this.getter = getter
     }
-    LazyUint8Array.prototype.cacheLength = function LazyUint8Array_cacheLength () {
+    LazyUint8Array.prototype.cacheLength = function LazyUint8Array_cacheLength() {
       var xhr = new XMLHttpRequest()
       xhr.open('GET', url, false)
       xhr.send(null)
@@ -2862,14 +2862,14 @@ var FS = {
     var keys = Object.keys(node.stream_ops)
     keys.forEach(function (key) {
       var fn = node.stream_ops[key]
-      stream_ops[key] = function forceLoadLazyFile () {
+      stream_ops[key] = function forceLoadLazyFile() {
         if (!FS.forceLoadFile(node)) {
           throw new FS.ErrnoError(29)
         }
         return fn.apply(null, arguments)
       }
     })
-    stream_ops.read = function stream_ops_read (stream, buffer, offset, length, position) {
+    stream_ops.read = function stream_ops_read(stream, buffer, offset, length, position) {
       if (!FS.forceLoadFile(node)) {
         throw new FS.ErrnoError(29)
       }
@@ -2895,8 +2895,8 @@ var FS = {
     var fullname = name ? PATH_FS.resolve(PATH.join2(parent, name)) : parent
     var dep = getUniqueRunDependency('cp ' + fullname)
 
-    function processData (byteArray) {
-      function finish (byteArray) {
+    function processData(byteArray) {
+      function finish(byteArray) {
         if (preFinish) preFinish()
         if (!dontCreateFile) {
           FS.createDataFile(parent, name, byteArray, canRead, canWrite, canOwn)
@@ -2935,20 +2935,20 @@ var FS = {
   DB_VERSION: 20,
   DB_STORE_NAME: 'FILE_DATA',
   saveFilesToDB: function (paths, onload, onerror) {
-    onload = onload || function () {}
-    onerror = onerror || function () {}
+    onload = onload || function () { }
+    onerror = onerror || function () { }
     var indexedDB = FS.indexedDB()
     try {
       var openRequest = indexedDB.open(FS.DB_NAME(), FS.DB_VERSION)
     } catch (e) {
       return onerror(e)
     }
-    openRequest.onupgradeneeded = function openRequest_onupgradeneeded () {
+    openRequest.onupgradeneeded = function openRequest_onupgradeneeded() {
       out('creating db')
       var db = openRequest.result
       db.createObjectStore(FS.DB_STORE_NAME)
     }
-    openRequest.onsuccess = function openRequest_onsuccess () {
+    openRequest.onsuccess = function openRequest_onsuccess() {
       var db = openRequest.result
       var transaction = db.transaction([FS.DB_STORE_NAME], 'readwrite')
       var files = transaction.objectStore(FS.DB_STORE_NAME)
@@ -2956,17 +2956,17 @@ var FS = {
       var fail = 0
       var total = paths.length
 
-      function finish () {
+      function finish() {
         if (fail == 0) onload()
         else onerror()
       }
       paths.forEach(function (path) {
         var putRequest = files.put(FS.analyzePath(path).object.contents, path)
-        putRequest.onsuccess = function putRequest_onsuccess () {
+        putRequest.onsuccess = function putRequest_onsuccess() {
           ok++
           if (ok + fail == total) finish()
         }
-        putRequest.onerror = function putRequest_onerror () {
+        putRequest.onerror = function putRequest_onerror() {
           fail++
           if (ok + fail == total) finish()
         }
@@ -2976,8 +2976,8 @@ var FS = {
     openRequest.onerror = onerror
   },
   loadFilesFromDB: function (paths, onload, onerror) {
-    onload = onload || function () {}
-    onerror = onerror || function () {}
+    onload = onload || function () { }
+    onerror = onerror || function () { }
     var indexedDB = FS.indexedDB()
     try {
       var openRequest = indexedDB.open(FS.DB_NAME(), FS.DB_VERSION)
@@ -2985,7 +2985,7 @@ var FS = {
       return onerror(e)
     }
     openRequest.onupgradeneeded = onerror
-    openRequest.onsuccess = function openRequest_onsuccess () {
+    openRequest.onsuccess = function openRequest_onsuccess() {
       var db = openRequest.result
       try {
         var transaction = db.transaction([FS.DB_STORE_NAME], 'readonly')
@@ -2998,13 +2998,13 @@ var FS = {
       var fail = 0
       var total = paths.length
 
-      function finish () {
+      function finish() {
         if (fail == 0) onload()
         else onerror()
       }
       paths.forEach(function (path) {
         var getRequest = files.get(path)
-        getRequest.onsuccess = function getRequest_onsuccess () {
+        getRequest.onsuccess = function getRequest_onsuccess() {
           if (FS.analyzePath(path).exists) {
             FS.unlink(path)
           }
@@ -3012,7 +3012,7 @@ var FS = {
           ok++
           if (ok + fail == total) finish()
         }
-        getRequest.onerror = function getRequest_onerror () {
+        getRequest.onerror = function getRequest_onerror() {
           fail++
           if (ok + fail == total) finish()
         }
@@ -3178,7 +3178,7 @@ var SYSCALLS = {
   }
 }
 
-function ___sys_access (path, amode) {
+function ___sys_access(path, amode) {
   try {
     path = SYSCALLS.getStr(path)
     return SYSCALLS.doAccess(path, amode)
@@ -3188,7 +3188,7 @@ function ___sys_access (path, amode) {
   }
 }
 
-function ___sys_chmod (path, mode) {
+function ___sys_chmod(path, mode) {
   try {
     path = SYSCALLS.getStr(path)
     FS.chmod(path, mode)
@@ -3199,7 +3199,7 @@ function ___sys_chmod (path, mode) {
   }
 }
 
-function ___sys_fcntl64 (fd, cmd, varargs) {
+function ___sys_fcntl64(fd, cmd, varargs) {
   SYSCALLS.varargs = varargs
   try {
     var stream = SYSCALLS.getStreamFromFD(fd)
@@ -3248,7 +3248,7 @@ function ___sys_fcntl64 (fd, cmd, varargs) {
   }
 }
 
-function ___sys_fstat64 (fd, buf) {
+function ___sys_fstat64(fd, buf) {
   try {
     var stream = SYSCALLS.getStreamFromFD(fd)
     return SYSCALLS.doStat(FS.stat, stream.path, buf)
@@ -3258,7 +3258,7 @@ function ___sys_fstat64 (fd, buf) {
   }
 }
 
-function ___sys_getcwd (buf, size) {
+function ___sys_getcwd(buf, size) {
   try {
     if (size === 0) return -28
     var cwd = FS.cwd()
@@ -3272,7 +3272,7 @@ function ___sys_getcwd (buf, size) {
   }
 }
 
-function ___sys_getdents64 (fd, dirp, count) {
+function ___sys_getdents64(fd, dirp, count) {
   try {
     var stream = SYSCALLS.getStreamFromFD(fd)
     if (!stream.getdents) {
@@ -3310,11 +3310,11 @@ function ___sys_getdents64 (fd, dirp, count) {
   }
 }
 
-function ___sys_getpid () {
+function ___sys_getpid() {
   return 42
 }
 
-function ___sys_ioctl (fd, op, varargs) {
+function ___sys_ioctl(fd, op, varargs) {
   SYSCALLS.varargs = varargs
   try {
     var stream = SYSCALLS.getStreamFromFD(fd)
@@ -3364,11 +3364,11 @@ function ___sys_ioctl (fd, op, varargs) {
   }
 }
 
-function ___sys_link (oldpath, newpath) {
+function ___sys_link(oldpath, newpath) {
   return -34
 }
 
-function ___sys_lstat64 (path, buf) {
+function ___sys_lstat64(path, buf) {
   try {
     path = SYSCALLS.getStr(path)
     return SYSCALLS.doStat(FS.lstat, path, buf)
@@ -3378,7 +3378,7 @@ function ___sys_lstat64 (path, buf) {
   }
 }
 
-function ___sys_mkdir (path, mode) {
+function ___sys_mkdir(path, mode) {
   try {
     path = SYSCALLS.getStr(path)
     return SYSCALLS.doMkdir(path, mode)
@@ -3388,11 +3388,11 @@ function ___sys_mkdir (path, mode) {
   }
 }
 
-function ___sys_mprotect (addr, len, size) {
+function ___sys_mprotect(addr, len, size) {
   return 0
 }
 
-function ___sys_open (path, flags, varargs) {
+function ___sys_open(path, flags, varargs) {
   SYSCALLS.varargs = varargs
   try {
     var pathname = SYSCALLS.getStr(path)
@@ -3405,7 +3405,7 @@ function ___sys_open (path, flags, varargs) {
   }
 }
 
-function ___sys_read (fd, buf, count) {
+function ___sys_read(fd, buf, count) {
   try {
     var stream = SYSCALLS.getStreamFromFD(fd)
     return FS.read(stream, HEAP8, buf, count)
@@ -3415,7 +3415,7 @@ function ___sys_read (fd, buf, count) {
   }
 }
 
-function ___sys_readlink (path, buf, bufsize) {
+function ___sys_readlink(path, buf, bufsize) {
   try {
     path = SYSCALLS.getStr(path)
     return SYSCALLS.doReadlink(path, buf, bufsize)
@@ -3425,7 +3425,7 @@ function ___sys_readlink (path, buf, bufsize) {
   }
 }
 
-function ___sys_rename (old_path, new_path) {
+function ___sys_rename(old_path, new_path) {
   try {
     old_path = SYSCALLS.getStr(old_path)
     new_path = SYSCALLS.getStr(new_path)
@@ -3437,7 +3437,7 @@ function ___sys_rename (old_path, new_path) {
   }
 }
 
-function ___sys_rmdir (path) {
+function ___sys_rmdir(path) {
   try {
     path = SYSCALLS.getStr(path)
     FS.rmdir(path)
@@ -3448,7 +3448,7 @@ function ___sys_rmdir (path) {
   }
 }
 
-function ___sys_stat64 (path, buf) {
+function ___sys_stat64(path, buf) {
   try {
     path = SYSCALLS.getStr(path)
     return SYSCALLS.doStat(FS.stat, path, buf)
@@ -3458,7 +3458,7 @@ function ___sys_stat64 (path, buf) {
   }
 }
 
-function ___sys_symlink (target, linkpath) {
+function ___sys_symlink(target, linkpath) {
   try {
     target = SYSCALLS.getStr(target)
     linkpath = SYSCALLS.getStr(linkpath)
@@ -3470,7 +3470,7 @@ function ___sys_symlink (target, linkpath) {
   }
 }
 
-function ___sys_unlink (path) {
+function ___sys_unlink(path) {
   try {
     path = SYSCALLS.getStr(path)
     FS.unlink(path)
@@ -3481,36 +3481,36 @@ function ___sys_unlink (path) {
   }
 }
 
-function _abort () {
+function _abort() {
   abort()
 }
 
-function _longjmp (env, value) {
+function _longjmp(env, value) {
   _setThrew(env, value || 1)
   throw 'longjmp'
 }
 
-function _emscripten_longjmp (env, value) {
+function _emscripten_longjmp(env, value) {
   _longjmp(env, value)
 }
 
-function _emscripten_memcpy_big (dest, src, num) {
+function _emscripten_memcpy_big(dest, src, num) {
   HEAPU8.copyWithin(dest, src, src + num)
 }
 
-function _emscripten_get_heap_size () {
+function _emscripten_get_heap_size() {
   return HEAPU8.length
 }
 
-function emscripten_realloc_buffer (size) {
+function emscripten_realloc_buffer(size) {
   try {
     wasmMemory.grow(size - buffer.byteLength + 65535 >>> 16)
     updateGlobalBufferAndViews(wasmMemory.buffer)
     return 1
-  } catch (e) {}
+  } catch (e) { }
 }
 
-function _emscripten_resize_heap (requestedSize) {
+function _emscripten_resize_heap(requestedSize) {
   requestedSize = requestedSize >>> 0
   var oldSize = _emscripten_get_heap_size()
   var maxHeapSize = 2147483648
@@ -3531,11 +3531,11 @@ function _emscripten_resize_heap (requestedSize) {
 }
 var ENV = {}
 
-function getExecutableName () {
+function getExecutableName() {
   return thisProgram || './this.program'
 }
 
-function getEnvStrings () {
+function getEnvStrings() {
   if (!getEnvStrings.strings) {
     var lang = (typeof navigator === 'object' && navigator.languages && navigator.languages[0] || 'C').replace('-', '_') + '.UTF-8'
     var env = {
@@ -3559,7 +3559,7 @@ function getEnvStrings () {
   return getEnvStrings.strings
 }
 
-function _environ_get (__environ, environ_buf) {
+function _environ_get(__environ, environ_buf) {
   var bufSize = 0
   getEnvStrings().forEach(function (string, i) {
     var ptr = environ_buf + bufSize
@@ -3570,7 +3570,7 @@ function _environ_get (__environ, environ_buf) {
   return 0
 }
 
-function _environ_sizes_get (penviron_count, penviron_buf_size) {
+function _environ_sizes_get(penviron_count, penviron_buf_size) {
   var strings = getEnvStrings()
   HEAP32[penviron_count >> 2] = strings.length
   var bufSize = 0
@@ -3581,11 +3581,11 @@ function _environ_sizes_get (penviron_count, penviron_buf_size) {
   return 0
 }
 
-function _exit (status) {
+function _exit(status) {
   exit(status)
 }
 
-function _fd_close (fd) {
+function _fd_close(fd) {
   try {
     var stream = SYSCALLS.getStreamFromFD(fd)
     FS.close(stream)
@@ -3596,7 +3596,7 @@ function _fd_close (fd) {
   }
 }
 
-function _fd_fdstat_get (fd, pbuf) {
+function _fd_fdstat_get(fd, pbuf) {
   try {
     var stream = SYSCALLS.getStreamFromFD(fd)
     var type = stream.tty ? 2 : FS.isDir(stream.mode) ? 3 : FS.isLink(stream.mode) ? 7 : 4
@@ -3608,7 +3608,7 @@ function _fd_fdstat_get (fd, pbuf) {
   }
 }
 
-function _fd_read (fd, iov, iovcnt, pnum) {
+function _fd_read(fd, iov, iovcnt, pnum) {
   try {
     var stream = SYSCALLS.getStreamFromFD(fd)
     var num = SYSCALLS.doReadv(stream, iov, iovcnt)
@@ -3620,7 +3620,7 @@ function _fd_read (fd, iov, iovcnt, pnum) {
   }
 }
 
-function _fd_seek (fd, offset_low, offset_high, whence, newOffset) {
+function _fd_seek(fd, offset_low, offset_high, whence, newOffset) {
   try {
     var stream = SYSCALLS.getStreamFromFD(fd)
     var HIGH_OFFSET = 4294967296
@@ -3639,7 +3639,7 @@ function _fd_seek (fd, offset_low, offset_high, whence, newOffset) {
   }
 }
 
-function _fd_write (fd, iov, iovcnt, pnum) {
+function _fd_write(fd, iov, iovcnt, pnum) {
   try {
     var stream = SYSCALLS.getStreamFromFD(fd)
     var num = SYSCALLS.doWritev(stream, iov, iovcnt)
@@ -3651,14 +3651,14 @@ function _fd_write (fd, iov, iovcnt, pnum) {
   }
 }
 
-function _gettimeofday (ptr) {
+function _gettimeofday(ptr) {
   var now = Date.now()
   HEAP32[ptr >> 2] = now / 1e3 | 0
   HEAP32[ptr + 4 >> 2] = now % 1e3 * 1e3 | 0
   return 0
 }
 
-function _sysconf (name) {
+function _sysconf(name) {
   switch (name) {
     case 30:
       return 16384
@@ -3818,7 +3818,7 @@ function _sysconf (name) {
   return -1
 }
 
-function _time (ptr) {
+function _time(ptr) {
   var ret = Date.now() / 1e3 | 0
   if (ptr) {
     HEAP32[ptr >> 2] = ret
@@ -3881,7 +3881,7 @@ Module.FS_createDevice = FS.createDevice
 Module.FS_unlink = FS.unlink
 var ASSERTIONS = false
 
-function intArrayFromString (stringy, dontAddNull, length) {
+function intArrayFromString(stringy, dontAddNull, length) {
   var len = length > 0 ? length : lengthBytesUTF8(stringy) + 1
   var u8array = new Array(len)
   var numBytesWritten = stringToUTF8Array(stringy, u8array, 0, u8array.length)
@@ -3889,7 +3889,7 @@ function intArrayFromString (stringy, dontAddNull, length) {
   return u8array
 }
 
-function intArrayToString (array) {
+function intArrayToString(array) {
   var ret = []
   for (var i = 0; i < array.length; i++) {
     var chr = array[i]
@@ -3929,7 +3929,7 @@ var decodeBase64 = typeof atob === 'function' ? atob : function (input) {
   return output
 }
 
-function intArrayFromBase64 (s) {
+function intArrayFromBase64(s) {
   try {
     var decoded = decodeBase64(s)
     var bytes = new Uint8Array(decoded.length)
@@ -3942,7 +3942,7 @@ function intArrayFromBase64 (s) {
   }
 }
 
-function tryParseAsDataURI (filename) {
+function tryParseAsDataURI(filename) {
   if (!isDataURI(filename)) {
     return
   }
@@ -4745,7 +4745,7 @@ var stackAlloc = Module.stackAlloc = function () {
   return (stackAlloc = Module.stackAlloc = Module.asm.we).apply(null, arguments)
 }
 
-function invoke_iii (index, a1, a2) {
+function invoke_iii(index, a1, a2) {
   var sp = stackSave()
   try {
     return wasmTable.get(index)(a1, a2)
@@ -4756,7 +4756,7 @@ function invoke_iii (index, a1, a2) {
   }
 }
 
-function invoke_iiiii (index, a1, a2, a3, a4) {
+function invoke_iiiii(index, a1, a2, a3, a4) {
   var sp = stackSave()
   try {
     return wasmTable.get(index)(a1, a2, a3, a4)
@@ -4767,7 +4767,7 @@ function invoke_iiiii (index, a1, a2, a3, a4) {
   }
 }
 
-function invoke_iiii (index, a1, a2, a3) {
+function invoke_iiii(index, a1, a2, a3) {
   var sp = stackSave()
   try {
     return wasmTable.get(index)(a1, a2, a3)
@@ -4778,7 +4778,7 @@ function invoke_iiii (index, a1, a2, a3) {
   }
 }
 
-function invoke_vii (index, a1, a2) {
+function invoke_vii(index, a1, a2) {
   var sp = stackSave()
   try {
     wasmTable.get(index)(a1, a2)
@@ -4804,18 +4804,18 @@ Module.FS_createDevice = FS.createDevice
 Module.FS_unlink = FS.unlink
 var calledRun
 
-function ExitStatus (status) {
+function ExitStatus(status) {
   this.name = 'ExitStatus'
   this.message = 'Program terminated with exit(' + status + ')'
   this.status = status
 }
 var calledMain = false
-dependenciesFulfilled = function runCaller () {
+dependenciesFulfilled = function runCaller() {
   if (!calledRun) run()
   if (!calledRun) dependenciesFulfilled = runCaller
 }
 
-function callMain (args) {
+function callMain(args) {
   var entryFunction = Module._main
   args = args || []
   var argc = args.length + 1
@@ -4847,7 +4847,7 @@ function callMain (args) {
   }
 }
 
-function run (args) {
+function run(args) {
   args = args || arguments_
   if (runDependencies > 0) {
     return
@@ -4855,7 +4855,7 @@ function run (args) {
   preRun()
   if (runDependencies > 0) return
 
-  function doRun () {
+  function doRun() {
     if (calledRun) return
     calledRun = true
     Module.calledRun = true
@@ -4880,11 +4880,11 @@ function run (args) {
 }
 Module.run = run
 
-function exit (status, implicit) {
+function exit(status, implicit) {
   if (implicit && noExitRuntime && status === 0) {
     return
   }
-  if (noExitRuntime) {} else {
+  if (noExitRuntime) { } else {
     ABORT = true
     EXITSTATUS = status
     exitRuntime()
@@ -4903,19 +4903,19 @@ if (Module.noInitialRun) shouldRunNow = false
 noExitRuntime = true
 run()
 
-function WrapperObject () {}
+function WrapperObject() { }
 WrapperObject.prototype = Object.create(WrapperObject.prototype)
 WrapperObject.prototype.constructor = WrapperObject
 WrapperObject.prototype.__class__ = WrapperObject
 WrapperObject.__cache__ = {}
 Module.WrapperObject = WrapperObject
 
-function getCache (__class__) {
+function getCache(__class__) {
   return (__class__ || WrapperObject).__cache__
 }
 Module.getCache = getCache
 
-function wrapPointer (ptr, __class__) {
+function wrapPointer(ptr, __class__) {
   var cache = getCache(__class__)
   var ret = cache[ptr]
   if (ret) return ret
@@ -4925,30 +4925,30 @@ function wrapPointer (ptr, __class__) {
 }
 Module.wrapPointer = wrapPointer
 
-function castObject (obj, __class__) {
+function castObject(obj, __class__) {
   return wrapPointer(obj.ptr, __class__)
 }
 Module.castObject = castObject
 Module.NULL = wrapPointer(0)
 
-function destroy (obj) {
+function destroy(obj) {
   if (!obj.__destroy__) throw 'Error: Cannot destroy object. (Did you create it yourself?)'
   obj.__destroy__()
   delete getCache(obj.__class__)[obj.ptr]
 }
 Module.destroy = destroy
 
-function compare (obj1, obj2) {
+function compare(obj1, obj2) {
   return obj1.ptr === obj2.ptr
 }
 Module.compare = compare
 
-function getPointer (obj) {
+function getPointer(obj) {
   return obj.ptr
 }
 Module.getPointer = getPointer
 
-function getClass (obj) {
+function getClass(obj) {
   return obj.__class__
 }
 Module.getClass = getClass
@@ -5013,7 +5013,7 @@ var ensureCache = {
   }
 }
 
-function ensureString (value) {
+function ensureString(value) {
   if (typeof value === 'string') {
     var intArray = intArrayFromString(value)
     var offset = ensureCache.alloc(intArray, HEAP8)
@@ -5023,7 +5023,7 @@ function ensureString (value) {
   return value
 }
 
-function ASS_ParserPriv () {
+function ASS_ParserPriv() {
   throw 'cannot construct a ASS_ParserPriv, no constructor in IDL'
 }
 ASS_ParserPriv.prototype = Object.create(WrapperObject.prototype)
@@ -5032,7 +5032,7 @@ ASS_ParserPriv.prototype.__class__ = ASS_ParserPriv
 ASS_ParserPriv.__cache__ = {}
 Module.ASS_ParserPriv = ASS_ParserPriv
 
-function ASS_Event () {
+function ASS_Event() {
   throw 'cannot construct a ASS_Event, no constructor in IDL'
 }
 ASS_Event.prototype = Object.create(WrapperObject.prototype)
@@ -5190,7 +5190,7 @@ Object.defineProperty(ASS_Event.prototype, 'Text', {
   set: ASS_Event.prototype.set_Text
 })
 
-function ASS_Renderer () {
+function ASS_Renderer() {
   throw 'cannot construct a ASS_Renderer, no constructor in IDL'
 }
 ASS_Renderer.prototype = Object.create(WrapperObject.prototype)
@@ -5199,7 +5199,7 @@ ASS_Renderer.prototype.__class__ = ASS_Renderer
 ASS_Renderer.__cache__ = {}
 Module.ASS_Renderer = ASS_Renderer
 
-function RenderBlendResult () {
+function RenderBlendResult() {
   throw 'cannot construct a RenderBlendResult, no constructor in IDL'
 }
 RenderBlendResult.prototype = Object.create(WrapperObject.prototype)
@@ -5247,7 +5247,7 @@ Object.defineProperty(RenderBlendResult.prototype, 'part', {
   set: RenderBlendResult.prototype.set_part
 })
 
-function SubtitleOctopus () {
+function SubtitleOctopus() {
   this.ptr = _emscripten_bind_SubtitleOctopus_SubtitleOctopus_0()
   getCache(SubtitleOctopus)[this.ptr] = this
 }
@@ -5441,7 +5441,7 @@ SubtitleOctopus.prototype.__destroy__ = SubtitleOctopus.prototype.__destroy__ = 
   _emscripten_bind_SubtitleOctopus___destroy___0(self)
 }
 
-function ASS_Track () {
+function ASS_Track() {
   throw 'cannot construct a ASS_Track, no constructor in IDL'
 }
 ASS_Track.prototype = Object.create(WrapperObject.prototype)
@@ -5685,7 +5685,7 @@ Object.defineProperty(ASS_Track.prototype, 'name', {
   set: ASS_Track.prototype.set_name
 })
 
-function ASS_RenderPriv () {
+function ASS_RenderPriv() {
   throw 'cannot construct a ASS_RenderPriv, no constructor in IDL'
 }
 ASS_RenderPriv.prototype = Object.create(WrapperObject.prototype)
@@ -5694,7 +5694,7 @@ ASS_RenderPriv.prototype.__class__ = ASS_RenderPriv
 ASS_RenderPriv.__cache__ = {}
 Module.ASS_RenderPriv = ASS_RenderPriv
 
-function ASS_Style () {
+function ASS_Style() {
   throw 'cannot construct a ASS_Style, no constructor in IDL'
 }
 ASS_Style.prototype = Object.create(WrapperObject.prototype)
@@ -6045,7 +6045,7 @@ Object.defineProperty(ASS_Style.prototype, 'Justify', {
   set: ASS_Style.prototype.set_Justify
 })
 
-function EventStopTimesResult () {
+function EventStopTimesResult() {
   throw 'cannot construct a EventStopTimesResult, no constructor in IDL'
 }
 EventStopTimesResult.prototype = Object.create(WrapperObject.prototype)
@@ -6093,7 +6093,7 @@ Object.defineProperty(EventStopTimesResult.prototype, 'is_animated', {
   set: EventStopTimesResult.prototype.set_is_animated
 })
 
-function ASS_Image () {
+function ASS_Image() {
   throw 'cannot construct a ASS_Image, no constructor in IDL'
 }
 ASS_Image.prototype = Object.create(WrapperObject.prototype)
@@ -6208,7 +6208,7 @@ Object.defineProperty(ASS_Image.prototype, 'next', {
   set: ASS_Image.prototype.set_next
 })
 
-function VoidPtr () {
+function VoidPtr() {
   throw 'cannot construct a VoidPtr, no constructor in IDL'
 }
 VoidPtr.prototype = Object.create(WrapperObject.prototype)
@@ -6221,7 +6221,7 @@ VoidPtr.prototype.__destroy__ = VoidPtr.prototype.__destroy__ = function () {
   _emscripten_bind_VoidPtr___destroy___0(self)
 }
 
-function ASS_Library () {
+function ASS_Library() {
   throw 'cannot construct a ASS_Library, no constructor in IDL'
 }
 ASS_Library.prototype = Object.create(WrapperObject.prototype)
@@ -6230,7 +6230,7 @@ ASS_Library.prototype.__class__ = ASS_Library
 ASS_Library.__cache__ = {}
 Module.ASS_Library = ASS_Library
 
-function RenderBlendPart () {
+function RenderBlendPart() {
   throw 'cannot construct a RenderBlendPart, no constructor in IDL'
 }
 RenderBlendPart.prototype = Object.create(WrapperObject.prototype)
@@ -6319,7 +6319,7 @@ Object.defineProperty(RenderBlendPart.prototype, 'next', {
   set: RenderBlendPart.prototype.set_next
 })
 
-function libass () {
+function libass() {
   this.ptr = _emscripten_bind_libass_libass_0()
   getCache(libass)[this.ptr] = this
 }
@@ -6560,7 +6560,7 @@ libass.prototype.oct_step_sub = libass.prototype.oct_step_sub = function (track,
   return _emscripten_bind_libass_oct_step_sub_3(self, track, now, movement)
 };
 (function () {
-  function setupEnums () {
+  function setupEnums() {
     Module.ASS_HINTING_NONE = _emscripten_enum_ASS_Hinting_ASS_HINTING_NONE()
     Module.ASS_HINTING_LIGHT = _emscripten_enum_ASS_Hinting_ASS_HINTING_LIGHT()
     Module.ASS_HINTING_NORMAL = _emscripten_enum_ASS_Hinting_ASS_HINTING_NORMAL()
@@ -6971,12 +6971,7 @@ self.buildResultImage = (ptr) => {
   }
   return items
 }
-self.buildResultImageItem = (ptr) => {
-  const bitmap = ptr.bitmap
-  const stride = ptr.stride
-  const w = ptr.w
-  const h = ptr.h
-  const color = ptr.color
+self.buildResultImageItem = ({ bitmap, stride, w, h, color, dst_x, dst_y }) => {
   if (w === 0 || h === 0) return null
   const a = (255 - (color & 255)) / 255
   if (a === 0) return null
@@ -6984,19 +6979,14 @@ self.buildResultImageItem = (ptr) => {
   const buf = new ArrayBuffer(w * h * 4)
   const buf8 = new Uint8ClampedArray(buf)
   const data = new Uint32Array(buf) // operate on a single position, instead of 4 positions at once
-  let bitmapPosition = 0
-  let resultPosition = 0
-  for (let y = h; y--; bitmapPosition += stride) {
-    const offset = bitmap + bitmapPosition
-    for (let x = 0, z = w; z--; ++x, resultPosition++) {
-      const k = Module.HEAPU8[offset + x]
-      if (k !== 0) data[resultPosition] = ((a * k) << 24) | c // more black magic
+  for (let y = h + 1, pos = bitmap, res = 0; --y; pos += stride) {
+    for (let z = 0; z < w; ++z, ++res) {
+      const k = Module.HEAPU8[pos + z]
+      if (k !== 0) data[res] = ((a * k) << 24) | c // more black magic
     }
   }
   const image = new ImageData(buf8, w, h)
-  const x = ptr.dst_x
-  const y = ptr.dst_y
-  return { image, x, y }
+  return { image, x: dst_x, y: dst_y }
 }
 
 self.buildResult = (ptr) => {
@@ -7053,7 +7043,7 @@ if (typeof SDL !== 'undefined') {
  * Parse the content of an .ass file.
  * @param {!string} content the content of the file
  */
-function parseAss (content) {
+function parseAss(content) {
   let m, format, lastPart, parts, key, value, tmp, i, j, body
   const sections = []
   const lines = content.split(/[\r\n]+/g)
@@ -7132,11 +7122,11 @@ const screen = {
   height: 0
 }
 
-Module.print = function Module_print (x) {
+Module.print = function Module_print(x) {
   // dump('OUT: ' + x + '\n');
   postMessage({ target: 'stdout', content: x })
 }
-Module.printErr = function Module_printErr (x) {
+Module.printErr = function Module_printErr(x) {
   // dump('ERR: ' + x + '\n');
   postMessage({ target: 'stderr', content: x })
 }
@@ -7164,7 +7154,7 @@ addRunDependency('worker-init')
 let messageBuffer = null
 let messageResenderTimeout = null
 
-function messageResender () {
+function messageResender() {
   if (calledMain) {
     assert(messageBuffer && messageBuffer.length > 0)
     messageResenderTimeout = null
@@ -7177,7 +7167,7 @@ function messageResender () {
   }
 }
 
-function _applyKeys (input, output) {
+function _applyKeys(input, output) {
   const vargs = Object.keys(input)
 
   for (const varg of vargs) {
@@ -7185,7 +7175,7 @@ function _applyKeys (input, output) {
   }
 }
 
-function onMessageFromMainEmscriptenThread (message) {
+function onMessageFromMainEmscriptenThread(message) {
   if (!calledMain && !message.data.preMain) {
     if (!messageBuffer) {
       messageBuffer = []
