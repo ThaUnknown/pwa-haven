@@ -75,9 +75,10 @@ function loadWorker (controller) {
         let chunk
         try {
           chunk = (await asyncIterator.next()).value
-          speed(chunk.length)
+          speed(chunk?.length)
         } catch (e) {
-          // chunk is yet to be downloaded or it somehow failed, should this be logged?
+          port.postMessage(false)
+          cleanup()
         }
         port.postMessage(chunk)
         if (!chunk) cleanup()
