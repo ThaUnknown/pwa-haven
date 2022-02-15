@@ -59,7 +59,7 @@
     "range-parser": "^1.2.1",
     "sirv-cli": "^1.0.0",
     "speedometer": "^1.1.0",
-    "streamx": "^2.12.0",
+    "streamx": "^2.12.2",
     "unzipit": "^1.4.0",
     "webtorrent": "^1.7.1"
   }

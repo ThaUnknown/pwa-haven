@@ -456,7 +456,7 @@
   $: navigator.mediaSession?.setPositionState({
     duration: Math.max(0, duration || 0),
     playbackRate: 1,
-    position: Math.max(0, currentTime || 0)
+    position: Math.max(duration || 0, currentTime || 0)
   })
   async function mediaChange(current, image) {
     if (current) {
