@@ -462,7 +462,7 @@
     if (current) {
       const { release_group, anime_title, episode_number } = await anitomyscript(current.name)
       // honestly, this is made for anime, but works fantastic for everything else.
-      name = [anime_title, episode_number].filter(i => i).join(' - ')
+      name = [anime_title, episode_number, episode_title].filter(i => i).join(' - ')
       if ('mediaSession' in navigator) {
         const metadata = image
           ? new MediaMetadata({
