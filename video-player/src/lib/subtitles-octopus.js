@@ -1,229 +1,166 @@
-/*
-  author: Daodor, libass
-  license: MIT
+/* eslint-env browser */
 
-  re-written by: ThaUnknown_
-  license: GPL3
-*/
-export default class SubtitlesOctopus {
+// test ImageData constructor
+; (() => {
+  if (typeof ImageData.prototype.constructor === 'function') {
+    try {
+      // try actually calling ImageData, as on some browsers it's reported
+      // as existing but calling it errors out as "TypeError: Illegal constructor"
+      return new ImageData(new Uint8ClampedArray([0, 0, 0, 0]), 1, 1)
+    } catch (e) {
+      console.log('detected that ImageData is not constructable despite browser saying so')
+    }
+  }
+
+  const ctx = document.createElement('canvas').getContext('2d')
+
+  window.ImageData = (data, width, height) => {
+    const imageData = ctx.createImageData(width, height)
+    if (data) imageData.data.set(data)
+    return imageData
+  }
+})()
+
+export default class SubtitlesOctopus extends EventTarget {
   constructor (options = {}) {
+    super()
     if (!window.Worker) {
-      this.workerError('worker not supported')
-      return
+      this.destroy('Worker not supported')
     }
-    // opts
-    this.canvas = options.canvas // HTML canvas element (optional if video specified)
+    // blending mode, 'js' for hardware acceleration [if browser supports it], 'wasm' for devices/browsers that don't benetit from hardware acceleration
+    const _blendMode = options.blendMode || 'wasm'
+    // drop frames when under heavy load, good for website performance
+    const _asyncRender = typeof createImageBitmap !== 'undefined' && (options.asyncRender ?? true)
+    // render in worker, rather than on main thread
+    const _offscreenRender = typeof OffscreenCanvas !== 'undefined' && (options.offscreenRender ?? true)
+    // render subs as video player renders video frames, rather than "predicting" the time with events
+    this._onDemandRender = 'requestVideoFrameCallback' in HTMLVideoElement.prototype && (options.onDemandRender ?? true)
 
-    // choose best render mode based on browser support
-    this.renderMode = options.renderMode || 'offscreen'
-    if (this.renderMode !== 'blend' && this.renderMode !== 'normal') {
-      if (typeof OffscreenCanvas === 'undefined') {
-        this.renderMode = 'fast'
-      } else if (typeof createImageBitmap === 'undefined') {
-        this.renderMode = 'normal'
+    this.timeOffset = options.timeOffset || 0
+    this._video = options.video // HTML video element (optional if canvas specified)
+    this._canvasParent = null // HTML canvas parent element
+    if (this._video) {
+      this._canvasParent = document.createElement('div')
+      this._canvasParent.className = 'subtitles-octopus'
+      this._canvasParent.style.position = 'relative'
+
+      if (this._video.nextSibling) {
+        this._video.parentNode.insertBefore(this._canvasParent, this._video.nextSibling)
+      } else {
+        this._video.parentNode.appendChild(this._canvasParent)
       }
+    } else if (!this._canvas) {
+      this.destroy('Don\'t know where to render: you should give video or canvas in options.')
     }
 
-    // play with those when you need some speed, e.g. for slow devices
-    this.targetFps = options.targetFps || 23.976
-    this.prescaleTradeoff = options.prescaleTradeoff || null // render subtitles less than viewport when less than 1.0 to improve speed, render to more than 1.0 to improve quality; set to null to disable scaling
-    this.softHeightLimit = options.softHeightLimit || 1080 // don't apply prescaleTradeoff < 1 when viewport height is less that this limit
-    this.hardHeightLimit = options.hardHeightLimit || 2160 // don't ever go above this limit
-    this.resizeVariation = options.resizeVariation || 0.2 // by how many a size can vary before it would cause clearance of prerendered buffer
+    this._canvas = options.canvas || document.createElement('canvas') // HTML canvas element (optional if video specified)
+    this._canvas.style.display = 'block'
+    this._canvas.style.position = 'absolute'
+    this._canvas.style.pointerEvents = 'none'
+    this._canvasParent.appendChild(this._canvas)
 
-    this.video = options.video // HTML video element (optional if canvas specified)
-    this.canvasParent = null // (internal) HTML canvas parent element
-    this.onReadyEvent = options.onReady // Function called when SubtitlesOctopus is ready (optional)
-    this.onErrorEvent = options.onError // Function called in case of critical error meaning sub wouldn't be shown and you should use alternative method (for instance it occurs if browser doesn't support web workers).
+    this._bufferCanvas = document.createElement('canvas')
+    this._bufferCtx = this._bufferCanvas.getContext('2d')
+
+    this._canvasctrl = _offscreenRender ? this._canvas.transferControlToOffscreen() : this._canvas
+    this._ctx = !_offscreenRender && this._canvasctrl.getContext('2d')
+
+    this._lastRenderTime = 0 // Last time we got some frame from worker
     this.debug = !!options.debug // When debug enabled, some performance info printed in console.
-    this.lastRenderTime = 0 // (internal) Last time we got some frame from worker
 
-    this.timeOffset = options.timeOffset || 0 // Time offset would be applied to currentTime from video (option)
+    this.prescaleFactor = options.prescaleFactor || 1.0
+    this.prescaleHeightLimit = options.prescaleHeightLimit || 1080
+    this.maxRenderHeight = options.maxRenderHeight || 0 // 0 - no limit
 
-    this.renderedItems = [] // used to store items rendered ahead when renderAhead > 0
-    // how many MiB to render ahead and store; 0 to disable (approximate)
-    this.renderAhead = (options.renderAhead || 0) * 1024 * 1024 * 0.9 // try to eat less than requested
-    this.oneshotState = {
-      eventStart: null,
-      eventOver: false,
-      iteration: 0,
-      renderRequested: false,
-      requestNextTimestamp: -1,
-      prevWidth: null,
-      prevHeight: null
-    }
+    this._worker = new Worker(options.workerUrl || 'subtitles-octopus-worker.js')
+    this._worker.onmessage = e => this._onmessage(e)
+    this._worker.onerror = e => this._error(e)
 
-    this.renderFrameData = null
-    this.workerActive = false
-    this.frameId = 0
-    this.workerActive = false
+    // test alpha bug
+    const canvas2 = document.createElement('canvas')
+    const ctx2 = canvas2.getContext('2d')
 
-    // init worker
-    if (!this.worker) {
-      this.worker = new Worker(options.workerUrl || 'subtitles-octopus-worker.js')
-      this.worker.onmessage = event => this.onWorkerMessage(event)
-      this.worker.onerror = event => this.workerError(event)
-    }
+    // test for alpha bug, where e.g. WebKit can render a transparent pixel
+    // (with alpha == 0) as non-black which then leads to visual artifacts
+    this._bufferCanvas.width = 1
+    this._bufferCanvas.height = 1
+    this._bufferCtx.clearRect(0, 0, 1, 1)
+    ctx2.clearRect(0, 0, 1, 1)
+    const prePut = ctx2.getImageData(0, 0, 1, 1).data
+    this._bufferCtx.putImageData(new ImageData(new Uint8ClampedArray([0, 255, 0, 0]), 1, 1), 0, 0)
+    ctx2.drawImage(this._bufferCanvas, 0, 0)
+    const postPut = ctx2.getImageData(0, 0, 1, 1).data
+    this.hasAlphaBug = prePut[1] !== postPut[1]
+    if (this.hasAlphaBug) console.log('Detected a browser having issue with transparent pixels, applying workaround')
 
-    this.createCanvas()
-    this.setVideo(options.video)
-    this.worker.postMessage({
-      target: 'worker-init',
-      width: this.canvas.width,
-      height: this.canvas.height,
+    this._worker.postMessage({
+      target: 'init',
+      asyncRender: _asyncRender,
+      width: this._canvas.width,
+      height: this._canvas.height,
       URL: document.URL,
       currentScript: options.workerUrl || 'subtitles-octopus-worker.js', // Link to WebAssembly worker
       preMain: true,
-      renderMode: this.renderMode,
+      blendMode: _blendMode,
       subUrl: options.subUrl, // Link to sub file (optional if subContent specified)
       subContent: options.subContent || null, // Sub content (optional if subUrl specified)
-      fallbackFont: options.fallbackFont || null, // Override fallback font, for example, with a CJK one. Default fallback font is Liberation Sans
-      lazyFontLoading: options.lazyFontLoading || false, // Load fonts in a lazy way. Requires Access-Control-Expose-Headers for Accept-Ranges, Content-Length, and Content-Encoding. If Content-Encoding is compressed, file will be fully fetched instead of just a HEAD request.
       fonts: options.fonts || [], // Array with links to fonts used in sub (optional)
       availableFonts: options.availableFonts || [], // Object with all available fonts (optional). Key is font name in lower case, value is link: {"arial": "/font1.ttf"}
       debug: this.debug,
-      targetFps: this.targetFps,
+      targetFps: options.targetFps,
       libassMemoryLimit: options.libassMemoryLimit || 0, // set libass bitmap cache memory limit in MiB (approximate)
-      libassGlyphLimit: options.libassGlyphLimit || 0, // set libass glyph cache memory limit in MiB (approximate)
-      renderOnDemand: this.renderAhead > 0,
-      dropAllAnimations: !!options.dropAllAnimations
+      libassGlyphLimit: options.libassGlyphLimit || 0, // set libass glyph cache memory limit in MiB (approximate),
+      hasAlphaBug: this.hasAlphaBug
     })
-    if (this.renderMode === 'offscreen') this.pushOffscreenCanvas()
-    this.initDone = true
+    if (_offscreenRender === true) this.sendMessage('offscreenCanvas', null, [this._canvasctrl])
+    this.setVideo(options.video)
+    if (this._onDemandRender) this._video.requestVideoFrameCallback(this._demandRender.bind(this))
+  }
 
-    // test ImageData constructor
-    ;(() => {
-      if (typeof ImageData.prototype.constructor === 'function') {
-        try {
-          // try actually calling ImageData, as on some browsers it's reported
-          // as existing but calling it errors out as "TypeError: Illegal constructor"
-          return new ImageData(new Uint8ClampedArray([0, 0, 0, 0]), 1, 1)
-        } catch (e) {
-          console.log('detected that ImageData is not constructable despite browser saying so')
+  resize (width = 0, height = 0, top = 0, left = 0) {
+    let videoSize = null
+    if ((!width || !height) && this._video) {
+      videoSize = this._getVideoPosition()
+      const newsize = this._computeCanvasSize(videoSize.width || 0 * (window.devicePixelRatio || 1), videoSize.height || 0 * (window.devicePixelRatio || 1))
+      width = newsize.width
+      height = newsize.height
+      top = videoSize.y - (this._canvasParent.getBoundingClientRect().top - this._video.getBoundingClientRect().top)
+      left = videoSize.x
+    }
+
+    if (this._canvas.style.top !== top || this._canvas.style.left !== left) {
+      if (videoSize != null) {
+        this._canvas.style.top = top + 'px'
+        this._canvas.style.left = left + 'px'
+        this._canvas.style.width = videoSize.width + 'px'
+        this._canvas.style.height = videoSize.height + 'px'
+      }
+      if (!(this._canvasctrl.width === width && this._canvasctrl.height === height)) {
+        // only re-paint if dimensions actually changed
+        // dont spam re-paints like crazy when re-sizing with animations, but still update instantly without them
+        if (this._resizeTimeoutBuffer) {
+          clearTimeout(this._resizeTimeoutBuffer)
+          this._resizeTimeoutBuffer = setTimeout(() => {
+            this._resizeTimeoutBuffer = undefined
+            this._canvasctrl.width = width
+            this._canvasctrl.height = height
+            this.sendMessage('canvas', { width, height })
+          }, 50)
+        } else {
+          this._canvasctrl.width = width
+          this._canvasctrl.height = height
+          this.sendMessage('canvas', { width, height })
+          this._resizeTimeoutBuffer = setTimeout(() => {
+            this._resizeTimeoutBuffer = undefined
+          }, 50)
         }
       }
-
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-
-      window.ImageData = () => {
-        let i = 0
-        let data
-        if (arguments[0] instanceof Uint8ClampedArray) data = arguments[i++]
-        const width = arguments[i++]
-        const height = arguments[i]
-
-        const imageData = ctx.createImageData(width, height)
-        if (data) imageData.data.set(data)
-        return imageData
-      }
-    })()
-
-    // test alpha bug
-    if (this.renderMode !== 'offscreen') {
-      this.ctx = this.canvas.getContext('2d')
-      this.bufferCanvas = document.createElement('canvas')
-      this.bufferCanvasCtx = this.bufferCanvas.getContext('2d')
-
-      // test for alpha bug, where e.g. WebKit can render a transparent pixel
-      // (with alpha == 0) as non-black which then leads to visual artifacts
-      this.bufferCanvas.width = 1
-      this.bufferCanvas.height = 1
-      const testBuf = new Uint8ClampedArray([0, 255, 0, 0])
-      const testImage = new ImageData(testBuf, 1, 1)
-      this.bufferCanvasCtx.clearRect(0, 0, 1, 1)
-      this.ctx.clearRect(0, 0, 1, 1)
-      const prePut = this.ctx.getImageData(0, 0, 1, 1).data
-      this.bufferCanvasCtx.putImageData(testImage, 0, 0)
-      this.ctx.drawImage(this.bufferCanvas, 0, 0)
-      const postPut = this.ctx.getImageData(0, 0, 1, 1).data
-      this.hasAlphaBug = prePut[1] !== postPut[1]
-      if (this.hasAlphaBug) console.log('Detected a browser having issue with transparent pixels, applying workaround')
     }
   }
 
-  workerError (error) {
-    console.error('Worker error: ', error)
-    if (this.onErrorEvent) this.onErrorEvent(error)
-    if (!this.debug) {
-      this.destroy()
-      throw new Error('Worker error: ' + error)
-    }
-  }
-
-  pushOffscreenCanvas () {
-    const canvasControl = this.canvas.transferControlToOffscreen()
-    this.worker.postMessage({
-      target: 'offscreenCanvas',
-      canvas: canvasControl
-    }, [canvasControl])
-  }
-
-  createCanvas () {
-    if (this.video) {
-      this.canvas = document.createElement('canvas')
-      this.canvas.className = 'subtitles-octopus-canvas'
-      this.canvas.style.display = 'none'
-
-      this.canvasParent = document.createElement('div')
-      this.canvasParent.className = 'subtitles-octopus-canvas-parent'
-      this.canvasParent.appendChild(this.canvas)
-
-      if (this.video.nextSibling) {
-        this.video.parentNode.insertBefore(this.canvasParent, this.video.nextSibling)
-      } else {
-        this.video.parentNode.appendChild(this.canvasParent)
-      }
-    } else {
-      if (!this.canvas) {
-        this.workerError('Don\'t know where to render: you should give video or canvas in options.')
-      }
-    }
-  }
-
-  setVideo (video) {
-    this.video = video
-    if (this.video) {
-      let state = this.video.paused
-      const timeupdate = playing => {
-        if (playing != null) state = playing
-        this.setCurrentTime(this.video.paused || state, video.currentTime + this.timeOffset)
-      }
-      this.video.addEventListener('timeupdate', () => timeupdate(), false)
-      this.video.addEventListener('progress', () => timeupdate(), false)
-
-      this.video.addEventListener('waiting', () => timeupdate(true), false)
-      this.video.addEventListener('pause', () => timeupdate(true), false)
-      this.video.addEventListener('seeking', () => timeupdate(true), false)
-
-      this.video.addEventListener('playing', () => timeupdate(false), false)
-
-      this.video.addEventListener('seeked', () => {
-        timeupdate(false)
-        if (this.renderAhead > 0) {
-          this._cleanPastRendered(this.video.currentTime + this.timeOffset, true)
-        }
-      }, false)
-
-      this.video.addEventListener('ratechange', this.setRate.bind(this), false)
-
-      // Support Element Resize Observer
-      if (typeof ResizeObserver !== 'undefined') {
-        this.ro = new ResizeObserver(this.resize.bind(this, 0, 0, 0, 0))
-        this.ro.observe(this.video)
-      }
-
-      if (this.video.videoWidth > 0) {
-        this.resize()
-      } else {
-        this.video.addEventListener('loadedmetadata', this.resize.bind(this, 0, 0, 0, 0), false)
-      }
-    }
-  }
-
-  getVideoPosition () {
-    const videoRatio = this.video.videoWidth / this.video.videoHeight
-    const { offsetWidth, offsetHeight } = this.video
+  _getVideoPosition () {
+    const videoRatio = this._video.videoWidth / this._video.videoHeight
+    const { offsetWidth, offsetHeight } = this._video
     const elementRatio = offsetWidth / offsetHeight
     let width = offsetWidth
     let height = offsetHeight
@@ -239,585 +176,256 @@ export default class SubtitlesOctopus {
     return { width, height, x, y }
   }
 
-  _cleanPastRendered (currentTime, seekClean) {
-    let retainedItems = []
-    for (const item of this.renderedItems) {
-      if (item.emptyFinish < 0 || item.emptyFinish >= currentTime) {
-        // item is not yet finished, retain it
-        retainedItems.push(item)
-      }
-    }
+  _computeCanvasSize (width = 0, height = 0) {
+    const scalefactor = this.prescaleFactor <= 0 ? 1.0 : this.prescaleFactor
 
-    if (seekClean && retainedItems.length > 0) {
-      // items are ordered by event start time when we push to this.renderedItems,
-      // so first item is the earliest
-      if (currentTime < retainedItems[0].eventStart) {
-        if (retainedItems[0].eventStart - currentTime > 60) {
-          console.info('seeked back too far, cleaning prerender buffer')
-          retainedItems = []
-        } else {
-          console.info('seeked backwards, need to free up some buffer')
-          let size = 0; const limit = this.renderAhead * 0.3 /* try to take no more than 1/3 of buffer */
-          const retain = []
-          for (const item of retainedItems) {
-            size += item.size
-            if (size >= limit) break
-            retain.push(item)
-          }
-          retainedItems = retain
-        }
-      }
-    }
-
-    const removed = retainedItems.length < this.renderedItems
-    this.renderedItems = retainedItems
-    return removed
-  }
-
-  // Oneshot stuff
-  processOneshot (data) {
-    if (data.iteration !== this.oneshotState.iteration) {
-      console.debug('received stale prerender, ignoring')
-      return
-    }
-
-    if (this.debug) {
-      console.info('oneshot received (start=' +
-        data.eventStart + ', empty=' + data.emptyFinish +
-        '), render: ' + Math.round(data.spentTime) + ' ms')
-    }
-    this.oneshotState.renderRequested = false
-    if (Math.abs(data.lastRenderedTime - this.oneshotState.requestNextTimestamp) < 0.01) {
-      this.oneshotState.requestNextTimestamp = -1
-    }
-    if (data.eventStart - data.lastRenderedTime > 0.01) {
-      // generate bogus empty element, so all timeline is covered anyway
-      this.renderedItems.push({
-        eventStart: data.lastRenderedTime,
-        eventFinish: data.lastRenderedTime - 0.001,
-        emptyFinish: data.eventStart,
-        viewport: data.viewport,
-        spentTime: 0,
-        blendTime: 0,
-        items: [],
-        animated: false,
-        size: 0
-      })
-    }
-
-    const items = []
-    let size = 0
-    for (const item of data.canvases) {
-      items.push({
-        ...item,
-        image: new ImageData(new Uint8ClampedArray(item.buffer), item.w, item.h)
-      })
-      size += item.buffer.byteLength
-    }
-
-    let eventSplitted = false
-    if ((data.emptyFinish > 0 && data.emptyFinish - data.eventStart < 1.0 / this.targetFps) || data.animated) {
-      const newFinish = data.eventStart + 1.0 / this.targetFps
-      data.emptyFinish = newFinish
-      data.eventFinish = newFinish
-      eventSplitted = true
-    }
-    this.renderedItems.push({
-      ...data,
-      items: items,
-      size: size
-    })
-
-    this.renderedItems.sort((a, b) => a.eventStart - b.eventStart)
-
-    if (this.oneshotState.requestNextTimestamp >= 0) {
-      // requesting an out of order event render
-      this.tryRequestOneshot(this.oneshotState.requestNextTimestamp, true)
-    } else if (data.eventStart < 0) {
-      console.info('oneshot received "end of frames" event')
-    } else if (data.emptyFinish >= 0) {
-      // there's some more event to render, try requesting next event
-      this.tryRequestOneshot(data.emptyFinish, eventSplitted)
+    if (height <= 0 || width <= 0) {
+      width = 0
+      height = 0
     } else {
-      console.info('there are no more events to prerender')
-    }
-  }
-
-  tryRequestOneshot (currentTime, renderNow) {
-    if (!this.renderAhead || this.renderAhead <= 0) return
-    if (this.oneshotState.renderRequested && !renderNow) return
-
-    if (typeof currentTime === 'undefined') {
-      if (!this.video) return
-      currentTime = this.video.currentTime + this.timeOffset
-    }
-
-    let size = 0
-    for (const item of this.renderedItems) {
-      if (item.emptyFinish < 0) {
-        console.info('oneshot already reached end-of-events')
-        return
-      }
-      if (currentTime >= item.eventStart && currentTime < item.emptyFinish) {
-        // an event for requested time already exists
-        console.debug('not requesting a render for ' + currentTime +
-          ' as event already covering it exists (start=' +
-          item.eventStart + ', empty=' + item.emptyFinish + ')')
-        return
-      }
-      size += item.size
-    }
-
-    if (size <= this.renderAhead) {
-      const lastRendered = currentTime - (renderNow ? 0 : 0.001)
-      if (!this.oneshotState.renderRequested) {
-        this.oneshotState.renderRequested = true
-        this.worker.postMessage({
-          target: 'oneshot-render',
-          lastRendered: lastRendered,
-          renderNow: renderNow,
-          iteration: this.oneshotState.iteration
-        })
-      } else {
-        if (this.workerActive) console.info('worker busy, requesting to seek')
-        this.oneshotState.requestNextTimestamp = lastRendered
-      }
-    }
-  }
-
-  _renderSubtitleEvent (event, currentTime) {
-    const eventOver = event.eventFinish < currentTime
-    if (this.oneshotState.eventStart === event.eventStart && this.oneshotState.eventOver === eventOver) return
-    this.oneshotState.eventStart = event.eventStart
-    this.oneshotState.eventOver = eventOver
-
-    const beforeDrawTime = performance.now()
-    if (event.viewport.width !== this.canvas.width || event.viewport.height !== this.canvas.height) {
-      this.canvas.width = event.viewport.width
-      this.canvas.height = event.viewport.height
-    }
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-    if (!eventOver) {
-      for (const image of event.items) {
-        this.bufferCanvas.width = image.w
-        this.bufferCanvas.height = image.h
-        this.bufferCanvasCtx.putImageData(image.image, 0, 0)
-        this.ctx.drawImage(this.bufferCanvas, image.x, image.y)
-      }
-    }
-    if (this.debug) {
-      const drawTime = Math.round(performance.now() - beforeDrawTime)
-      console.log('render: ' + Math.round(event.spentTime - event.blendTime) + ' ms, blend: ' + Math.round(event.blendTime) + ' ms, draw: ' + drawTime + ' ms')
-    }
-  }
-
-  oneshotRender () {
-    window.requestAnimationFrame(this.oneshotRender)
-    if (!this.video) return
-
-    const currentTime = this.video.currentTime + this.timeOffset
-    let finishTime = -1; let eventShown = false; let animated = false
-    for (const item of this.renderedItems) {
-      if (!eventShown && item.eventStart <= currentTime && (item.emptyFinish < 0 || item.emptyFinish > currentTime)) {
-        this._renderSubtitleEvent(item, currentTime)
-        eventShown = true
-        finishTime = item.emptyFinish
-      } else if (finishTime >= 0) {
-        // we've already found a known event, now find
-        // the farthest point of consequent events
-        // NOTE: this.renderedItems may have gaps due to seeking
-        if (item.eventStart - finishTime < 0.01) {
-          finishTime = item.emptyFinish
-          animated = item.animated
-        } else {
-          break
-        }
-      }
-    }
-
-    if (!eventShown) {
-      if (Math.abs(this.oneshotState.requestNextTimestamp - currentTime) > 0.01) {
-        this._cleanPastRendered(currentTime)
-        this.tryRequestOneshot(currentTime, true)
-      }
-    } else if (this._cleanPastRendered(currentTime) && finishTime >= 0) {
-      this.tryRequestOneshot(finishTime, animated)
-    }
-  }
-
-  resetRenderAheadCache (isResizing) {
-    if (this.renderAhead > 0) {
-      const newCache = []
-      if (isResizing && this.oneshotState.prevHeight && this.oneshotState.prevWidth) {
-        if (this.oneshotState.prevHeight === this.canvas.height && this.oneshotState.prevWidth === this.canvas.width) return
-        let timeLimit = 10; let sizeLimit = this.renderAhead * 0.3
-        if (this.canvas.height >= this.oneshotState.prevHeight * (1.0 - this.resizeVariation) &&
-          this.canvas.height <= this.oneshotState.prevHeight * (1.0 + this.resizeVariation) &&
-          this.canvas.width >= this.oneshotState.prevWidth * (1.0 - this.resizeVariation) &&
-          this.canvas.width <= this.oneshotState.prevWidth * (1.0 + this.resizeVariation)) {
-          console.debug('viewport changes are small, leaving more of prerendered buffer')
-          timeLimit = 30
-          sizeLimit = this.renderAhead * 0.5
-        }
-        const stopTime = this.video.currentTime + this.timeOffset + timeLimit
-        let size = 0
-        for (const item of this.renderedItems) {
-          if (item.emptyFinish < 0 || item.emptyFinish >= stopTime) break
-          size += item.size
-          if (size >= sizeLimit) break
-          newCache.push(item)
-        }
+      const sgn = scalefactor < 1 ? -1 : 1
+      let newH = height
+      if (sgn * newH * scalefactor <= sgn * this.prescaleHeightLimit) {
+        newH *= scalefactor
+      } else if (sgn * newH < sgn * this.prescaleHeightLimit) {
+        newH = this.prescaleHeightLimit
       }
 
-      console.info('resetting prerender cache')
-      this.renderedItems = newCache
-      this.oneshotState.eventStart = null
-      this.oneshotState.iteration++
-      this.oneshotState.renderRequested = false
-      this.oneshotState.prevHeight = this.canvas.height
-      this.oneshotState.prevWidth = this.canvas.width
+      if (this.maxRenderHeight > 0 && newH > this.maxRenderHeight) newH = this.maxRenderHeight
 
-      window.requestAnimationFrame(this.oneshotRender)
-      this.tryRequestOneshot(undefined, true)
-    }
-  }
-
-  // Rendering
-  renderFrames (data) {
-    const beforeDrawTime = performance.now()
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-    for (const image of data.canvases) {
-      this.bufferCanvas.width = image.w
-      this.bufferCanvas.height = image.h
-      const imageBuffer = new Uint8ClampedArray(image.buffer)
-      if (this.hasAlphaBug) {
-        for (let j = 3; j < imageBuffer.length; j += 4) {
-          imageBuffer[j] = (imageBuffer[j] >= 1) ? imageBuffer[j] : 1
-        }
-      }
-      const imageData = new ImageData(imageBuffer, image.w, image.h)
-      this.bufferCanvasCtx.putImageData(imageData, 0, 0)
-      this.ctx.drawImage(this.bufferCanvas, image.x, image.y)
-    }
-    if (this.debug) {
-      const drawTime = performance.now() - beforeDrawTime
-      const blendTime = data.blendTime
-      if (typeof blendTime !== 'undefined') {
-        console.log('render: ' + Math.round(data.spentTime - blendTime) + ' ms, blend: ' + Math.round(blendTime) + ' ms, draw: ' + drawTime + ' ms; TOTAL=' + Math.round(data.spentTime + drawTime) + ' ms')
-      } else {
-        console.log({ length: data.canvases.length, sum: data.libassTime + data.decodeTime + drawTime, libassTime: data.libassTime, decodeTime: data.decodeTime, drawTime })
-      }
-      this.renderStart = performance.now()
-    }
-  }
-
-  renderFastFrames (data) {
-    const beforeDrawTime = performance.now()
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-    for (const image of data.bitmaps) {
-      this.ctx.drawImage(image.bitmap, image.x, image.y)
-    }
-    if (this.debug) {
-      const drawTime = performance.now() - beforeDrawTime
-      console.log({ length: data.bitmaps.length, sum: data.libassTime + data.decodeTime + drawTime, libassTime: data.libassTime, decodeTime: data.decodeTime, drawTime })
-      this.renderStart = performance.now()
-    }
-  }
-
-  _computeCanvasSize (width, height) {
-    if (this.prescaleTradeoff === null) {
-      if (height > this.hardHeightLimit) {
-        width = width * this.hardHeightLimit / height
-        height = this.hardHeightLimit
-      }
-    } else if (this.prescaleTradeoff > 1) {
-      if (height * this.prescaleTradeoff <= this.softHeightLimit) {
-        width *= this.prescaleTradeoff
-        height *= this.prescaleTradeoff
-      } else if (height < this.softHeightLimit) {
-        width = width * this.softHeightLimit / height
-        height = this.softHeightLimit
-      } else if (height >= this.hardHeightLimit) {
-        width = width * this.hardHeightLimit / height
-        height = this.hardHeightLimit
-      }
-    } else if (height >= this.softHeightLimit) {
-      if (height * this.prescaleTradeoff <= this.softHeightLimit) {
-        width = width * this.softHeightLimit / height
-        height = this.softHeightLimit
-      } else if (height * this.prescaleTradeoff <= this.hardHeightLimit) {
-        width *= this.prescaleTradeoff
-        height *= this.prescaleTradeoff
-      } else {
-        width = width * this.hardHeightLimit / height
-        height = this.hardHeightLimit
-      }
+      width *= newH / height
+      height = newH
     }
 
     return { width, height }
   }
 
-  resize (width = 0, height = 0, top = 0, left = 0) {
-    let videoSize = null
-    if ((!width || !height) && this.video) {
-      videoSize = this.getVideoPosition()
-      const newsize = this._computeCanvasSize(videoSize.width * (window.devicePixelRatio || 1), videoSize.height * (window.devicePixelRatio || 1))
-      width = newsize.width
-      height = newsize.height
-      const offset = this.canvasParent.getBoundingClientRect().top - this.video.getBoundingClientRect().top
-      top = videoSize.y - offset
-      left = videoSize.x
+  _timeupdate ({ type }) {
+    const eventmap = {
+      seeking: true,
+      waiting: true,
+      playing: false
     }
-
-    if (this.canvas.style.top !== top || this.canvas.style.left !== left) {
-      if (videoSize != null) {
-        this.canvasParent.style.position = 'relative'
-        this.canvas.style.display = 'block'
-        this.canvas.style.position = 'absolute'
-        this.canvas.style.top = top + 'px'
-        this.canvas.style.left = left + 'px'
-        this.canvas.style.pointerEvents = 'none'
-        this.canvas.style.width = videoSize.width + 'px'
-        this.canvas.style.height = videoSize.height + 'px'
-      }
-      if (!(this.canvas.width === width && this.canvas.height === height)) {
-        // only re-paint if dimensions actually changed
-        if (this.renderMode === 'offscreen' && this.initDone) {
-          this.canvasParent.remove()
-          this.canvasParent = undefined
-          this.createCanvas()
-        }
-        // dont spam re-paints like crazy when re-sizing with animations, but still update instantly without them
-        if (this.resizeTimeoutBuffer) {
-          clearTimeout(this.resizeTimeoutBuffer)
-          this.resizeTimeoutBuffer = setTimeout(() => {
-            this.resizeTimeoutBuffer = undefined
-            this.rePaint(width, height, top, left, videoSize)
-          }, 50)
-        } else {
-          this.rePaint(width, height, top, left, videoSize)
-          this.resizeTimeoutBuffer = setTimeout(() => {
-            this.resizeTimeoutBuffer = undefined
-          }, 50)
-        }
-      }
-    }
+    const playing = eventmap[type]
+    if (playing != null) this._playstate = playing
+    this.setCurrentTime(this._video.paused || this._playstate, this._video.currentTime + this.timeOffset)
   }
 
-  rePaint (width = 0, height = 0, top = 0, left = 0, videoSize) {
-    if (this.renderMode === 'offscreen' && this.canvasParent && this.initDone) {
-      this.canvasParent.remove()
-      this.canvasParent = undefined
-      this.createCanvas()
-    }
-    this.canvas.width = width
-    this.canvas.height = height
+  setVideo (video) {
+    if (video instanceof HTMLVideoElement) {
+      this._removeListeners()
+      this._video = video
+      if (this._onDemandRender !== true) {
+        this._playstate = video.paused
 
-    if (videoSize != null) {
-      this.canvasParent.style.position = 'relative'
-      this.canvas.style.display = 'block'
-      this.canvas.style.position = 'absolute'
-      this.canvas.style.top = top + 'px'
-      this.canvas.style.left = left + 'px'
-      this.canvas.style.pointerEvents = 'none'
-      this.canvas.style.width = videoSize.width + 'px'
-      this.canvas.style.height = videoSize.height + 'px'
-    }
-
-    if (this.renderMode === 'offscreen' && this.initDone) {
-      this.pushOffscreenCanvas()
-    }
-    this.worker.postMessage({
-      target: 'canvas',
-      width: this.canvas.width,
-      height: this.canvas.height
-    })
-    this.resetRenderAheadCache(true)
-  }
-
-  onWorkerMessage (event) {
-    if (!this.workerActive) {
-      this.workerActive = true
-      if (this.onReadyEvent) {
-        this.onReadyEvent()
+        video.addEventListener('timeupdate', e => this._timeupdate(e), false)
+        video.addEventListener('progress', e => this._timeupdate(e), false)
+        video.addEventListener('waiting', e => this._timeupdate(e), false)
+        video.addEventListener('seeking', e => this._timeupdate(e), false)
+        video.addEventListener('playing', e => this._timeupdate(e), false)
+        video.addEventListener('ratechange', e => this.setRate(e), false)
       }
-    }
-    const data = event.data
-    switch (data.target) {
-      case 'stdout': {
-        console.log(data.content)
-        break
+      if (video.videoWidth > 0) {
+        this.resize()
+      } else {
+        video.addEventListener('loadedmetadata', () => this.resize(0, 0, 0, 0), false)
       }
-      case 'stderr': {
-        console.error(data.content)
-        break
+      // Support Element Resize Observer
+      if (typeof ResizeObserver !== 'undefined') {
+        if (!this._ro) this._ro = new ResizeObserver(() => this.resize(0, 0, 0, 0))
+        this._ro.observe(video)
       }
-      case 'canvas': {
-        switch (data.op) {
-          case 'renderCanvas': {
-            if (this.lastRenderTime < data.time) {
-              this.lastRenderTime = data.time
-              window.requestAnimationFrame(this.renderFrames.bind(this, data))
-            }
-            break
-          }
-          case 'renderFastCanvas': {
-            if (this.lastRenderTime < data.time) {
-              this.lastRenderTime = data.time
-              window.requestAnimationFrame(this.renderFastFrames.bind(this, data))
-            }
-            break
-          }
-          case 'oneshot-result': {
-            this.processOneshot(data)
-            break
-          }
-          default:
-            throw data.target
-        }
-        break
-      }
-      case 'tick': {
-        this.frameId = data.id
-        this.worker.postMessage({
-          target: 'tock',
-          id: this.frameId
-        })
-        break
-      }
-      case 'custom': {
-        if (this.onCustomMessage) {
-          this.onCustomMessage(event)
-        } else {
-          console.error('Custom message received but client onCustomMessage not implemented.')
-        }
-        break
-      }
-      case 'ready': {
-        break
-      }
-      default:
-        console.log(data)
-        break
+    } else {
+      this._error('Video element invalid!')
     }
   }
 
   runBenchmark () {
-    this.worker.postMessage({
-      target: 'runBenchmark'
-    })
-  }
-
-  customMessage (data, options = {}) {
-    this.worker.postMessage({
-      target: 'custom',
-      userData: data,
-      preMain: options.preMain
-    })
-  }
-
-  setCurrentTime (isPaused, currentTime) {
-    this.worker.postMessage({
-      target: 'video',
-      isPaused: isPaused,
-      currentTime: currentTime
-    })
+    this.sendMessage('runBenchmark')
   }
 
   setTrackByUrl (url) {
-    this.worker.postMessage({
-      target: 'set-track-by-url',
-      url: url
-    })
-    this.resetRenderAheadCache(false)
+    this.sendMessage('setTrackByUrl', { url })
   }
 
   setTrack (content) {
-    this.worker.postMessage({
-      target: 'set-track',
-      content: content
-    })
-    this.resetRenderAheadCache(false)
+    this.sendMessage('setTrack', { content })
   }
 
   freeTrack () {
-    this.worker.postMessage({
-      target: 'free-track'
-    })
-    this.resetRenderAheadCache(false)
+    this.sendMessage('freeTrack')
   }
 
-  setRate () {
-    this.worker.postMessage({
-      target: 'video',
-      rate: this.video.playbackRate
-    })
+  setIsPaused (isPaused) {
+    this.sendMessage('video', { isPaused })
   }
 
-  destroy () {
-    this.worker.postMessage({
-      target: 'destroy'
-    })
+  setRate (rate) {
+    this.sendMessage('video', { rate })
+  }
 
-    this.worker.terminate()
-    this.workerActive = false
-    // Remove the canvas element to remove residual subtitles rendered on player
-    if (this.video) this.video.parentNode.removeChild(this.canvasParent)
+  setCurrentTime (isPaused, currentTime, rate) {
+    this.sendMessage('video', { isPaused, currentTime, rate })
   }
 
   createEvent (event) {
-    this.worker.postMessage({
-      target: 'create-event',
-      event: event
-    })
-  }
-
-  getEvents () {
-    this.worker.postMessage({
-      target: 'get-events'
-    })
+    this.sendMessage('createEvent', { event })
   }
 
   setEvent (event, index) {
-    this.worker.postMessage({
-      target: 'set-event',
-      event: event,
-      index: index
-    })
+    this.sendMessage('setEvent', { event, index })
   }
 
   removeEvent (index) {
-    this.worker.postMessage({
-      target: 'remove-event',
-      index: index
+    this.sendMessage('removeEvent', { index })
+  }
+
+  getEvents (onError, onSuccess) {
+    this._fetchFromWorker({
+      target: 'getEvents'
+    }, onError, ({ events }) => {
+      onSuccess(events)
     })
   }
 
   createStyle (style) {
-    this.worker.postMessage({
-      target: 'create-style',
-      style: style
-    })
+    this.sendMessage('createStyle', { style })
   }
 
-  getStyles () {
-    this.worker.postMessage({
-      target: 'get-styles'
-    })
-  }
-
-  setStyle (style, index) {
-    this.worker.postMessage({
-      target: 'set-style',
-      style: style,
-      index: index
-    })
+  setStyle (event, index) {
+    this.sendMessage('setStyle', { event, index })
   }
 
   removeStyle (index) {
-    this.worker.postMessage({
-      target: 'remove-style',
-      index: index
+    this.sendMessage('removeStyle', { index })
+  }
+
+  getStyles (onError, onSuccess) {
+    this._fetchFromWorker({
+      target: 'get-styles'
+    }, onError, ({ styles }) => {
+      onSuccess(styles)
     })
   }
+
+  _demandRender (now, metadata) {
+    if (this._destroyed) return null
+    this.sendMessage('demand', { time: metadata.mediaTime + this.timeOffset })
+    this._video.requestVideoFrameCallback(this._demandRender.bind(this))
+  }
+
+  _render (data) {
+    this._ctx.clearRect(0, 0, this._canvasctrl.width, this._canvasctrl.height)
+    for (const image of data.images) {
+      if (image.buffer) {
+        if (data.async) {
+          this._ctx.drawImage(image.buffer, image.x, image.y)
+        } else {
+          this._bufferCanvas.width = image.w
+          this._bufferCanvas.height = image.h
+          this._bufferCtx.putImageData(new ImageData(this._fixAlpha(new Uint8ClampedArray(image.buffer)), image.w, image.h), 0, 0)
+          this._ctx.drawImage(this._bufferCanvas, image.x, image.y)
+        }
+      }
+    }
+  }
+
+  _fixAlpha (uint8) {
+    if (this.hasAlphaBug) {
+      for (let j = 3; j < uint8.length; j += 4) {
+        uint8[j] = uint8[j] > 1 ? uint8[j] : 1
+      }
+    }
+    return uint8
+  }
+
+  _ready () {
+    this.dispatchEvent(new CustomEvent('ready'))
+  }
+
+  sendMessage (target, data = {}, transferable) {
+    if (transferable) {
+      this._worker.postMessage({
+        target,
+        transferable,
+        ...data
+      }, [...transferable])
+    } else {
+      this._worker.postMessage({
+        target,
+        ...data
+      })
+    }
+  }
+
+  _fetchFromWorker (workerOptions, onError, onSuccess) {
+    try {
+      const target = workerOptions.target
+
+      const timeout = setTimeout(() => {
+        reject(new Error('Error: Timeout while try to fetch ' + target))
+      }, 5000)
+
+      const resolve = ({ data }) => {
+        if (data.target === target) {
+          onSuccess(data)
+          this._worker.removeEventListener('message', resolve)
+          this._worker.removeEventListener('error', reject)
+          clearTimeout(timeout)
+        }
+      }
+
+      const reject = function (event) {
+        onError(event)
+        this._worker.removeEventListener('message', resolve)
+        this._worker.removeEventListener('error', reject)
+        clearTimeout(timeout)
+      }
+
+      this._worker.addEventListener('message', resolve)
+      this._worker.addEventListener('error', reject)
+
+      this._worker.postMessage(workerOptions)
+    } catch (error) {
+      this._error(error)
+    }
+  }
+
+  _console ({ content, command }) {
+    console[command].apply(console, JSON.parse(content))
+  }
+
+  _onmessage ({ data }) {
+    if (this['_' + data.target]) this['_' + data.target](data)
+  }
+
+  _error (err) {
+    this.dispatchEvent(new CustomEvent('error', { detail: err }))
+    throw err
+  }
+
+  _removeListeners () {
+    if (this._video) {
+      if (this._ro) this._ro.unobserve(this._video)
+      this._video.removeEventListener('timeupdate', this._timeupdate)
+      this._video.removeEventListener('progress', this._timeupdate)
+      this._video.removeEventListener('waiting', this._timeupdate)
+      this._video.removeEventListener('seeking', this._timeupdate)
+      this._video.removeEventListener('playing', this._timeupdate)
+      this._video.removeEventListener('ratechange', this.setRate)
+    }
+  }
+
+  destroy (err) {
+    if (err) this._error(err)
+    if (this._video) this._video.parentNode.removeChild(this._canvasParent)
+    this._destroyed = true
+    this._removeListeners()
+    this.sendMessage('destroy')
+    this._worker.terminate()
+  }
+}
+
+if (typeof exports !== 'undefined' && typeof module !== 'undefined' && module.exports) {
+  exports = module.exports = SubtitlesOctopus
 }

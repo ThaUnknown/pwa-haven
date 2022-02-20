@@ -94,18 +94,9 @@ export default class Subtitles {
     if (!this.renderer) {
       const options = {
         video: this.video,
-        targetFps: await this.video?.fps || 23.976,
         subContent: this.headers[this.current].header.slice(0, -1),
-        renderMode: 'offscreen',
         fonts: this.fonts,
-        fallbackFont: 'Roboto.ttf',
-        workerUrl: 'lib/subtitles-octopus-worker.js',
-        onReady: () => { // weird hack for laggy subtitles, this is some issue in SO
-          if (!this.video.paused) {
-            this.video.pause()
-            this.video.play()
-          }
-        }
+        workerUrl: 'lib/subtitles-octopus-worker.js'
       }
       if (!this.renderer) {
         this.renderer = new SubtitlesOctopus(options)
