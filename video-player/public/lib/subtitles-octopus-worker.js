@@ -227,15 +227,18 @@ self.decodeResultBitmap = ({ bitmap, stride, w, h, color, dst_x, dst_y }) => {
 }
 
 self.render = (time, force) => {
+  self.bussy = true
   const result = self.renderImageData(time, force)
   if (result.changed !== 0 || force) {
     self.processRender(result, self.paintImages)
+  } else {
+    self.bussy = false
   }
 }
 
 self.demand = data => {
   self.lastCurrentTime = data.time
-  self.render(data.time, true)
+  if (!self.bussy) self.render(data.time, true)
 }
 
 self.renderLoop = (force) => {
@@ -269,6 +272,7 @@ self.paintImages = ({ images, buffers }) => {
       images
     }, buffers)
   }
+  self.bussy = false
 }
 
 if (typeof SDL !== 'undefined') {
