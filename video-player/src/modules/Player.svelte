@@ -232,26 +232,29 @@
     if (video.readyState) {
       await video.fps
       if (!subs?.renderer) {
-        video !== document.pictureInPictureElement ? video.requestPictureInPicture() : document.exitPictureInPicture()
-        pip = !document.pictureInPictureElement
+        if (video !== document.pictureInPictureElement) {
+          video.requestPictureInPicture()
+          pip = true
+        } else {
+          document.exitPictureInPicture()
+          pip = false
+        }
       } else {
         if (document.pictureInPictureElement && !document.pictureInPictureElement.id) {
           // only exit if pip is the custom one, else overwrite existing pip with custom
           document.exitPictureInPicture()
-          pip = !!document.pictureInPictureElement
+          pip = false
         } else {
           const canvasVideo = document.createElement('video')
           const { stream, destroy } = await getBurnIn()
+          pip = true
           canvasVideo.srcObject = stream
           canvasVideo.onloadedmetadata = () => {
             canvasVideo.play()
             canvasVideo
               .requestPictureInPicture()
-              .then(() => {
-                pip = !!document.pictureInPictureElement
-              })
               .catch(e => {
-                pip = !!document.pictureInPictureElement
+                pip = false
                 console.warn('Failed To Burn In Subtitles ' + e)
                 destroy()
                 canvasVideo.remove()
@@ -260,7 +263,7 @@
           canvasVideo.onleavepictureinpicture = () => {
             destroy()
             canvasVideo.remove()
-            pip = !!document.pictureInPictureElement
+            pip = false
           }
         }
       }
@@ -334,16 +337,15 @@
 
   async function getBurnIn(noSubs) {
     const canvas = document.createElement('canvas')
-    const context = canvas.getContext('2d', { alpha: false, colorSpace: 'display-p3' })
+    const context = canvas.getContext('2d')
     let loop = null
     let destroy = null
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
-
     if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
-      const renderFrame = async () => {
+      const renderFrame = () => {
         context.drawImage(video, 0, 0)
-        if (!noSubs) context.drawImage(subs.renderer?.canvas, 0, 0, canvas.width, canvas.height)
+        if (!noSubs) context.drawImage(subs.renderer?._canvas, 0, 0, canvas.width, canvas.height)
         loop = video.requestVideoFrameCallback(renderFrame)
       }
       loop = video.requestVideoFrameCallback(renderFrame)
@@ -354,9 +356,9 @@
     } else {
       // for the firefox idiots
       const fps = await video.fps
-      const renderFrame = async () => {
+      const renderFrame = () => {
         context.drawImage(video, 0, 0)
-        if (!noSubs) context.drawImage(subs.renderer?.canvas, 0, 0, canvas.width, canvas.height)
+        if (!noSubs) context.drawImage(subs.renderer?._canvas, 0, 0, canvas.width, canvas.height)
         loop = requestTimeout(renderFrame, 500 / fps) // request x2 fps for smoothness
       }
       loop = requestAnimationFrame(renderFrame)
@@ -365,7 +367,7 @@
         canvas.remove()
       }
     }
-    return { stream: canvas.captureStream(await video.fps), destroy }
+    return { stream: canvas.captureStream(), destroy }
   }
 
   function initCast(event) {
@@ -906,7 +908,7 @@
       display: flex;
     }
     .middle .play-overlay {
-      display: none !important
+      display: none !important;
     }
   }
 
