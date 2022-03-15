@@ -28,7 +28,10 @@
   // this is clunky, but dataTransfer doesn't persist across async calls.... https://stackoverflow.com/questions/55658851
   export async function updateRecents(files) {
     if (supported && db && files?.length) {
-      const promises = files.map(file => (file instanceof FileSystemFileHandle ? file : file.getAsFileSystemHandle()))
+      const promises = files
+        .map(file => (file instanceof FileSystemFileHandle ? file : file.getAsFileSystemHandle()))
+        .filter(file => file instanceof FileSystemFileHandle || file instanceof File)
+      if (!promises.length) return null
       const newHandles = await Promise.all(promises)
       await setHandles()
       handles = await asyncFilter(handles, async handle => {

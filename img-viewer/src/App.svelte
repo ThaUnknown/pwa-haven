@@ -136,7 +136,8 @@
       handleFiles(await filePopup(['image']))
     }
   }
-  $: handleFiles(files)
+  let recentfile = null
+  $: handleFiles(recentfile)
   function handleFiles(newfiles) {
     if (newfiles?.length) {
       for (const file of newfiles) {
@@ -195,7 +196,7 @@
   <InstallPrompt />
 </div>
 {#if !files.length}
-  <RecentFiles bind:files {handlePopup} />
+  <RecentFiles bind:files={recentfile} {handlePopup} />
 {:else}
   <div
     class="w-full h-full overflow-hidden position-relative dragarea"
