@@ -28,9 +28,9 @@
   let cover = './512.png'
   let defaultCover = './512.png'
   $: navigator.mediaSession?.setPositionState({
-    duration: duration || 0,
+    duration: Math.max(0, duration || 0),
     playbackRate: 1,
-    position: currentTime || 0
+    position: Math.max(0, Math.min(duration || 0, currentTime || 0))
   })
   $: updateMedia(current, cover)
   function updateMedia(current, cover) {
