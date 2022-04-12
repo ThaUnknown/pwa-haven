@@ -21,7 +21,7 @@ const cacheList = {
     ]
   },
   'audio-player': {
-    version: '1.7.5',
+    version: '1.7.6',
     resources: [
       '../audio-player/public/build/bundle.js',
       '../audio-player/public/build/bundle.css',
@@ -34,7 +34,7 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '1.11.18',
+    version: '1.11.19',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.wasm',
