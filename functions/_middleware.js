@@ -11,6 +11,7 @@ export async function onRequest ({ request, next }) {
           if (elem.property === 'twitter:image' && url.pathname.startsWith('/img-viewer/')) element.setAttribute('content', search[0][1])
           if (elem.property === 'og:audio' && url.pathname.startsWith('/audio-player/')) element.setAttribute('content', search[0][1])
           if (elem.property === 'og:video' && url.pathname.startsWith('/video-player/')) element.setAttribute('content', search[0][1])
+          if (elem.property === 'og:image' && url.pathname.startsWith('/video-player/')) element.remove()
         }
       }).transform(res)
     }
