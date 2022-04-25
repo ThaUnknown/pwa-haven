@@ -15,6 +15,7 @@
     "build": "rollup -c ./configs/home.rollup.js",
     "dev": "rollup -w -c ./configs/home.rollup.js",
     "start": "sirv --no-clear",
+    "cf": "npx wrangler pages dev ./",
     "build-manga-reader": "rollup -c ./configs/manga-reader.rollup.js",
     "dev-manga-reader": "rollup -w -c ./configs/manga-reader.rollup.js",
     "build-img-viewer": "rollup -c ./configs/img-viewer.rollup.js",
@@ -47,7 +48,8 @@
     "svelte-loader": "^3.1.2",
     "webpack": "^5.67.0",
     "webpack-cli": "^4.9.1",
-    "webpack-dev-server": "^4.7.3"
+    "webpack-dev-server": "^4.7.3",
+    "wrangler": "^0.0.27"
   },
   "dependencies": {
     "end-of-stream": "^1.4.4",
