@@ -9,6 +9,7 @@ Style: Default, Roboto Medium,26,&H00FFFFFF,&H000000FF,&H00020713,&H00000000,0,0
 [Events]
 
 `
+const stylesRx = /^Style:[^,]*/gm
 export default class Subtitles {
   constructor (video, files, selected, onHeader) {
     this.video = video
@@ -16,6 +17,10 @@ export default class Subtitles {
     this.files = files || []
     this.headers = []
     this.tracks = []
+    this._tracksString = []
+    this._stylesMap = {
+      Default: 0
+    }
     this.fonts = ['Roboto.ttf']
     this.renderer = null
     this.parsed = false
@@ -28,19 +33,15 @@ export default class Subtitles {
     this.timeout = null
 
     if (this.selected.name.endsWith('.mkv') && this.selected.createReadStream) {
-      let lastStream = null
-      this.selected.onStream = ({ stream }) => { lastStream = stream }
-      this.initParser(this.selected).then(() => {
-        this.selected.onStream = ({ stream, file, req }, cb) => {
-          if (req.destination === 'video' && !this.parsed) {
-            this.stream = new SubtitleStream(this.stream)
-            this.handleSubtitleParser(this.stream, true)
-            stream.pipe(this.stream)
-            cb(this.stream)
-          }
+      this.parseFonts(this.selected)
+      this.selected.onStream = ({ stream, file, req }, cb) => {
+        if (req.destination === 'video' && !this.parsed) {
+          this.stream = new SubtitleStream(this.stream)
+          this.handleSubtitleParser(this.stream, true)
+          stream.pipe(this.stream)
+          cb(this.stream)
         }
-        lastStream?.destroy()
-      })
+      }
     }
     this.findSubtitleFiles(this.selected)
   }
@@ -92,16 +93,13 @@ export default class Subtitles {
 
   async initSubtitleRenderer () {
     if (!this.renderer) {
-      const options = {
+      this.renderer = new SubtitlesOctopus({
         video: this.video,
         subContent: this.headers[this.current].header.slice(0, -1),
         fonts: this.fonts,
         workerUrl: 'lib/subtitles-octopus-worker.js'
-      }
-      if (!this.renderer) {
-        this.renderer = new SubtitlesOctopus(options)
-        this.selectCaptions(this.current)
-      }
+      })
+      this.selectCaptions(this.current)
     }
   }
 
@@ -176,7 +174,7 @@ export default class Subtitles {
     })
   }
 
-  static constructSub (subtitle, isNotAss) {
+  constructSub (subtitle, isNotAss, index) {
     if (isNotAss === true) { // converts VTT or other to SSA
       const matches = subtitle.text.match(/<[^>]+>/g) // create array of all tags
       if (matches) {
@@ -191,17 +189,20 @@ export default class Subtitles {
       // replace all html special tags with normal ones
       subtitle.text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, '\\h')
     }
-    return 'Dialogue: ' +
-      (subtitle.layer || 0) + ',' +
-      toTS(subtitle.time / 1000, 1) + ',' +
-      toTS((subtitle.time + subtitle.duration) / 1000, 1) + ',' +
-      (subtitle.style || 'Default') + ',' +
-      (subtitle.name || '') + ',' +
-      (subtitle.marginL || '0') + ',' +
-      (subtitle.marginR || '0') + ',' +
-      (subtitle.marginV || '0') + ',' +
-      (subtitle.effect || '') + ',' +
-      subtitle.text || ''
+    return {
+      Start: subtitle.time,
+      Duration: subtitle.duration,
+      Style: this._stylesMap[subtitle.style || 'Default'] || 0,
+      Name: subtitle.name || '',
+      MarginL: Number(subtitle.marginL) || 0,
+      MarginR: Number(subtitle.marginR) || 0,
+      MarginV: Number(subtitle.marginV) || 0,
+      Effect: subtitle.effect || '',
+      Text: subtitle.text || '',
+      ReadOrder: 1,
+      Layer: Number(subtitle.layer) || 0,
+      _index: index
+    }
   }
 
   parseSubtitles () { // parse all existing subtitles for a file
@@ -213,8 +214,8 @@ export default class Subtitles {
           console.log('Sub parsing finished', toTS((performance.now() - t0) / 1000))
           this.parsed = true
           this.stream?.destroy()
-          fileStream?.destroy()
           this.parser?.destroy()
+          fileStream.destroy()
           this.stream = undefined
           this.parser = undefined
           this.selectCaptions(this.current)
@@ -235,27 +236,6 @@ export default class Subtitles {
     })
   }
 
-  initParser (file) {
-    return new Promise(resolve => {
-      this.stream = new SubtitleParser()
-      this.handleSubtitleParser(this.stream)
-      this.stream.once('tracks', tracks => {
-        if (!tracks.length) {
-          this.parsed = true
-          resolve()
-          this.stream.destroy()
-          fileStreamStream.destroy()
-        }
-      })
-      this.stream.once('subtitle', () => {
-        resolve()
-        fileStreamStream.destroy()
-      })
-      const fileStreamStream = file.createReadStream()
-      fileStreamStream.pipe(this.stream)
-    })
-  }
-
   handleSubtitleParser (parser, skipFile) {
     parser.once('tracks', tracks => {
       if (!tracks.length) {
@@ -269,18 +249,30 @@ export default class Subtitles {
             if (!this.current) {
               this.current = track.number
             }
-            this.tracks[track.number] = new Set()
+            this.tracks[track.number] = []
+            this._tracksString[track.number] = new Set()
             this.headers[track.number] = track
+            const styleMatches = track.header.match(stylesRx)
+            for (let i = 0; i < styleMatches.length; ++i) {
+              const style = styleMatches[i].replace('Style:', '').trim()
+              this._stylesMap[style] = i + 1
+            }
+
             this.onHeader()
           }
         }
       }
     })
-    parser.on('subtitle', (subtitle, trackNumber) => {
+    parser.on('subtitle', async (subtitle, trackNumber) => {
       if (!this.parsed) {
         if (!this.renderer) this.initSubtitleRenderer()
-        this.tracks[trackNumber].add(this.constructor.constructSub(subtitle, this.headers[trackNumber].type !== 'ass'))
-        if (this.current === trackNumber) this.selectCaptions(trackNumber) // yucky
+        const string = JSON.stringify(subtitle)
+        if (!this._tracksString[trackNumber].has(string)) {
+          this._tracksString[trackNumber].add(string)
+          const assSub = this.constructSub(subtitle, this.headers[trackNumber].type !== 'ass', this.tracks[trackNumber].length)
+          this.tracks[trackNumber].push(assSub)
+          if (this.current === trackNumber) this.renderer.createEvent(assSub)
+        }
       }
     })
     if (!skipFile) {
@@ -292,15 +284,39 @@ export default class Subtitles {
     }
   }
 
+  parseFonts (file) {
+    const stream = new SubtitleParser()
+    this.handleSubtitleParser(stream)
+    stream.once('tracks', tracks => {
+      if (!tracks.length) {
+        this.parsed = true
+        stream.destroy()
+        fileStreamStream.destroy()
+      }
+    })
+    stream.once('subtitle', () => {
+      fileStreamStream.destroy()
+      stream.destroy()
+      if (this.selected) {
+        this.renderer?.destroy()
+        this.renderer = null
+        this.initSubtitleRenderer()
+        // re-create renderer with fonts
+      }
+    })
+    const fileStreamStream = file.createReadStream()
+    fileStreamStream.pipe(stream)
+  }
+
   selectCaptions (trackNumber) {
     if (trackNumber !== undefined) {
       this.current = Number(trackNumber)
       this.onHeader()
-      if (!this.timeout) {
-        this.timeout = setTimeout(() => {
-          this.timeout = undefined
-          if (this.renderer && this.headers) this.renderer.setTrack(this.current !== -1 ? this.headers[this.current].header.slice(0, -1) + Array.from(this.tracks[this.current]).join('\n') : defaultHeader)
-        }, 1000)
+      if (this.renderer && this.headers) {
+        this.renderer.setTrack(this.current !== -1 ? this.headers[this.current].header.slice(0, -1) : defaultHeader)
+        if (this.tracks[this.current]) {
+          for (const subtitle of this.tracks[this.current]) this.renderer.createEvent(subtitle)
+        }
       }
     }
   }

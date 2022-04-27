@@ -34,7 +34,7 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '1.11.19',
+    version: '1.12.0',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.wasm',
@@ -182,7 +182,7 @@ async function serve ({ request }) {
       return new Promise(resolve => {
         port.onmessage = ({ data }) => {
           if (data) {
-            controller.enqueue(data) // event.data is Uint8Array
+            if (port.onmessage) controller.enqueue(data) // event.data is Uint8Array
           } else {
             clearTimeout(timeOut)
             controller.close() // event.data is null, means the stream ended
@@ -207,8 +207,9 @@ async function serve ({ request }) {
       })
     },
     cancel () {
-      // This event is never executed
+      clearTimeout(timeOut)
       port.postMessage(false) // send a cancel request
+      port.onmessage = null
     }
   }), data)
 }

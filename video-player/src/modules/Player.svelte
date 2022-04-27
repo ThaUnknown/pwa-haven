@@ -140,11 +140,14 @@
         fast = true
       }
       video?.load()
+      initSubs()
     }
   }
-  $: initSubs(current, video)
+  onMount(() => {
+    if (!subs) initSubs()
+  })
 
-  function initSubs(current, video) {
+  function initSubs() {
     if (current && video) {
       if (subs) subs.destroy()
       subs = new Subtitles(video, files, current, handleHeaders)
@@ -251,14 +254,12 @@
           canvasVideo.srcObject = stream
           canvasVideo.onloadedmetadata = () => {
             canvasVideo.play()
-            canvasVideo
-              .requestPictureInPicture()
-              .catch(e => {
-                pip = false
-                console.warn('Failed To Burn In Subtitles ' + e)
-                destroy()
-                canvasVideo.remove()
-              })
+            canvasVideo.requestPictureInPicture().catch(e => {
+              pip = false
+              console.warn('Failed To Burn In Subtitles ' + e)
+              destroy()
+              canvasVideo.remove()
+            })
           }
           canvasVideo.onleavepictureinpicture = () => {
             destroy()
@@ -348,7 +349,7 @@
         if (!noSubs) context.drawImage(subs.renderer?._canvas, 0, 0, canvas.width, canvas.height)
         loop = video.requestVideoFrameCallback(renderFrame)
       }
-      loop = video.requestVideoFrameCallback(renderFrame)
+      renderFrame()
       destroy = () => {
         video.cancelVideoFrameCallback(loop)
         canvas.remove()
@@ -361,7 +362,7 @@
         if (!noSubs) context.drawImage(subs.renderer?._canvas, 0, 0, canvas.width, canvas.height)
         loop = requestTimeout(renderFrame, 500 / fps) // request x2 fps for smoothness
       }
-      loop = requestAnimationFrame(renderFrame)
+      renderFrame()
       destroy = () => {
         cancelTimeout(loop)
         canvas.remove()
