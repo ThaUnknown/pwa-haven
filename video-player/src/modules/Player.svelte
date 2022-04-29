@@ -7,7 +7,7 @@
   import { toTS, videoRx, requestTimeout, cancelTimeout } from '../../../shared/util.js'
   import anitomyscript from 'anitomyscript'
   import { URLFile } from '../../../shared/URLFile.js'
-  import Keyboard from './Keyboard.svelte'
+  import Keybinds, { loadWithDefaults } from 'svelte-keybinds'
 
   $: updateFiles(files)
   export let files = []
@@ -271,70 +271,104 @@
     }
   }
   let showKeybinds = false
-  async function handleKeydown({ key }) {
-    switch (key) {
-      case 'r':
-        seek(-90)
-        break
-      case ',':
-        seek(-1 / (await video.fps) || 0)
-        break
-      case '.':
-        seek(1 / (await video.fps) || 0)
-        break
-      case 'i':
-        toggleStats()
-        break
-      case '`':
-        showKeybinds = !showKeybinds
-        break
-      case ' ':
-        playPause()
-        break
-      case 'n':
-        playNext()
-        break
-      case 'm':
-        muted = !muted
-        break
-      case 'p':
-        togglePopout()
-        break
-      case 'f':
-        toggleFullscreen()
-        break
-      case 's':
-        seek(85)
-        break
-      case 'd':
-        toggleCast()
-        break
-      case 'c':
-        cycleSubtitles()
-        break
-      case 'ArrowLeft':
-        rewind()
-        break
-      case 'ArrowRight':
-        forward()
-        break
-      case 'ArrowUp':
-        volume = Math.min(1, volume + 0.05)
-        break
-      case 'ArrowDown':
-        volume = Math.max(0, volume - 0.05)
-        break
-      case '[':
-        playbackRate -= 0.1
-        break
-      case ']':
-        playbackRate += 0.1
-        break
-      case '\\':
-        playbackRate = 1
-        break
+  loadWithDefaults({
+    KeyR: {
+      fn: () => seek(-90),
+      id: '-90'
+    },
+    Comma: {
+      fn: async () => seek(-1 / (await video.fps) || 0),
+      id: 'fast_rewind',
+      type: 'icon'
+    },
+    Period: {
+      fn: async () => seek(1 / (await video.fps) || 0),
+      id: 'fast_forward',
+      type: 'icon'
+    },
+    KeyI: {
+      fn: () => toggleStats(),
+      id: 'list',
+      type: 'icon'
+    },
+    Backquote: {
+      fn: () => (showKeybinds = !showKeybinds),
+      id: 'help_outline',
+      type: 'icon'
+    },
+    Space: {
+      fn: () => playPause(),
+      id: 'play_arrow',
+      type: 'icon'
+    },
+    KeyN: {
+      fn: () => playNext(),
+      id: 'skip_next',
+      type: 'icon'
+    },
+    KeyM: {
+      fn: () => (muted = !muted),
+      id: 'volume_off',
+      type: 'icon'
+    },
+    KeyP: {
+      fn: () => togglePopout(),
+      id: 'picture_in_picture',
+      type: 'icon'
+    },
+    KeyF: {
+      fn: () => toggleFullscreen(),
+      id: 'fullscreen',
+      type: 'icon'
+    },
+    KeyS: {
+      fn: () => seek(85),
+      id: '+90'
+    },
+    KeyD: {
+      fn: () => toggleCast(),
+      id: 'cast',
+      type: 'icon'
+    },
+    KeyC: {
+      fn: () => cycleSubtitles(),
+      id: 'subtitles',
+      type: 'icon'
+    },
+    ArrowLeft: {
+      fn: () => rewind(),
+      id: '-2'
+    },
+    ArrowRight: {
+      fn: () => forward(),
+      id: '+2'
+    },
+    ArrowUp: {
+      fn: () => (volume = Math.min(1, volume + 0.05)),
+      id: 'volume_up',
+      type: 'icon'
+    },
+    ArrowDown: {
+      fn: () => (volume = Math.max(0, volume - 0.05)),
+      id: 'volume_down',
+      type: 'icon'
+    },
+    BracketLeft: {
+      fn: () => (playbackRate -= 0.1),
+      id: 'history',
+      type: 'icon'
+    },
+    BracketRight: {
+      fn: () => (playbackRate += 0.1),
+      id: 'update',
+      type: 'icon'
+    },
+    Backslash: {
+      fn: () => (playbackRate = 1),
+      id: 'schedule',
+      type: 'icon'
     }
-  }
+  })
 
   async function getBurnIn(noSubs) {
     const canvas = document.createElement('canvas')
@@ -651,11 +685,13 @@
   }
 </script>
 
-<svelte:window on:keydown={handleKeydown} bind:innerWidth bind:innerHeight />
+<svelte:window bind:innerWidth bind:innerHeight />
 {#if showKeybinds}
-  <div class="position-absolute bg-tp w-full h-full z-50 p-20 d-flex align-items-center justify-content-center" on:click|self={() => (showKeybinds = false)}>
+  <div class="position-absolute bg-tp w-full h-full z-50 font-size-12 p-20 d-flex align-items-center justify-content-center" on:click|self={() => (showKeybinds = false)}>
     <button class="close" type="button" on:click={() => (showKeybinds = false)}><span>×</span></button>
-    <Keyboard />
+    <Keybinds let:prop={item} autosave={true} clickable={true}>
+      <div class:material-icons={item?.type} class="bind">{item?.id || ''}</div>
+    </Keybinds>
   </div>
 {/if}
 <!-- svelte-ignore a11y-media-has-caption -->
@@ -812,6 +848,21 @@
 </div>
 
 <style>
+  .bind {
+    font-size: 1.8rem;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+  .bind.material-icons {
+    font-size: 2.2rem !important;
+    font-weight: unset !important;
+  }
   .bg-tp {
     background: #000000bb;
     backdrop-filter: blur(10px);
