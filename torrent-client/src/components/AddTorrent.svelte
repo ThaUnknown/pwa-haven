@@ -1,13 +1,13 @@
 <script>
   import { Tabs, TabLabel, Tab } from '../modules/Tabination.js'
   import { fastPrettyBytes } from '../modules/util.js'
-  import { addTorrent, removeTorrent } from '../modules/client.js'
+  import { addTorrent, removeTorrent, current } from '../modules/client.js'
   let value = ''
   let torrent = null
   let files = []
   let fileInput
   const defaultData = {
-    announce: ['wss://tracker.openwebtorrent.com', 'wss://spacetradersapi-chatbox.herokuapp.com:443/announce', 'wss://peertube.cpy.re:443/tracker/socket'],
+    announce: ['wss://tracker.openwebtorrent.com', 'wss://spacetradersapi-chatbox.herokuapp.com:443/announce', 'wss://peertube.cpy.re:443/tracker/socket', 'wss://tracker.btorrent.xyz'],
     comment: 'Created With PWA Haven',
     createdBy: 'PWA Haven',
     name: ''
@@ -21,6 +21,7 @@
     createTorrent = Object.assign({}, defaultData)
     fileInput.files = null
     fileInput.value = null
+    $current = 'All'
   }
   function handleFileInput({ target }) {
     files = [...target.files]

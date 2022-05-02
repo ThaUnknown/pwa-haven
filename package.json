@@ -64,6 +64,6 @@
     "streamx": "^2.12.2",
     "svelte-keybinds": "^1.0.3",
     "unzipit": "^1.4.0",
-    "webtorrent": "^1.7.1"
+    "webtorrent": "^1.8.16"
   }
 }

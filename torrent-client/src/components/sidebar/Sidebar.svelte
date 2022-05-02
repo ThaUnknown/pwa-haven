@@ -31,7 +31,7 @@
     {/each}
   </div>
   <div>
-    <Button icon="add" value="Add Torrent" other={{ 'data-toggle': 'modal', 'data-target': 'modal-add' }} />
+    <Button icon="add" value="Add Torrent" />
     <Button icon="tune" value="Settings" />
   </div>
 </div>

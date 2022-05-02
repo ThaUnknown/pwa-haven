@@ -84,7 +84,7 @@
 <div class="sticky-alerts d-flex flex-column-reverse">
   <InstallPrompt />
 </div>
-<div class="modal" id="modal-add" tabIndex="-1" role="dialog" data-overlay-dismissal-disabled="true" bind:this={prompt}>
+<div class="modal" class:show={$current === 'Add Torrent'} id="modal-add" tabIndex="-1" role="dialog" data-overlay-dismissal-disabled="true" bind:this={prompt}>
   <AddTorrent bind:handleTorrent />
 </div>
 <div class="page-wrapper with-sidebar">
