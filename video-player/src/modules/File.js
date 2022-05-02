@@ -89,15 +89,15 @@ class ReadableURL extends Readable {
     if (endOffset >= this._length - 1) endOffset = this._length - 1
 
     if (startOffset === this._length) {
-      this.destroy()
       this.push(null)
-      cb()
+      cb(null)
       return
     }
     fetch(this._url, {
       headers: {
         'Content-Range': `bytes ${startOffset}-${endOffset}/${this._length}`,
-        range: `bytes=${startOffset}-${endOffset}/${this._length}`
+        range: `bytes=${startOffset}-${endOffset}/${this._length}`,
+        'Content-Length': `${endOffset - startOffset + 1}`
       }
     }).then(res => {
       res.arrayBuffer().then(ab => {

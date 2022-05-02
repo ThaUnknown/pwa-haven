@@ -35,7 +35,7 @@
     }
   }
   async function handleFiles(newfiles) {
-    await registration
+    // await registration
     if (newfiles?.length) {
       files = files.concat(
         await Promise.all(
