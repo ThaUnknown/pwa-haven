@@ -3,6 +3,7 @@
   import InstallPrompt from '../../shared/InstallPrompt.svelte'
   import { filePopup, handleItems, getSearchFiles, getLaunchFiles } from '../../shared/inputHandler.js'
   import { URLFile } from '../../shared/URLFile.js'
+  import { registration } from './modules/server.js'
   import RecentFiles, { initDb } from '../../shared/RecentFiles.svelte'
 
   initDb('video-player')
@@ -34,6 +35,7 @@
     }
   }
   async function handleFiles(newfiles) {
+    await registration
     if (newfiles?.length) {
       files = files.concat(
         await Promise.all(

@@ -12,8 +12,6 @@ export class URLFile {
       this.type = ''
     }
     this.ready = new Promise((resolve) => {
-      // force error to force direct URL when the source is a local served file
-      if (this.url.startsWith('/server/')) return resolve(new Error('Dummmy error!'))
       // I think no matter how many catches I have, this wont not error xd
       try {
         fetch(this.url, { method: 'HEAD' }).then(res => {

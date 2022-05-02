@@ -13,6 +13,9 @@ export function setFile (streamable) {
   speed = speedometer(5)
 }
 
+let registrationResolve = null
+export const registration = new Promise(resolve => { registrationResolve = resolve })
+
 const handleWorker = worker => {
   const checkState = worker => {
     return worker.state === 'activated' && loadWorker(worker)
@@ -95,4 +98,5 @@ function loadWorker (controller) {
     workerPortCount++
     port.postMessage(response)
   })
+  registrationResolve()
 }
