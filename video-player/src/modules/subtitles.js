@@ -34,7 +34,7 @@ export default class Subtitles {
 
     if (this.selected.name.endsWith('.mkv') && this.selected.createReadStream) {
       this.parseFonts(this.selected)
-      this.selected.onStream = ({ stream, file, req }, cb) => {
+      this.selected.onStream = ({ stream, req }, cb) => {
         if (req.destination === 'video' && !this.parsed) {
           this.stream = new SubtitleStream(this.stream)
           this.handleSubtitleParser(this.stream, true)
@@ -46,7 +46,7 @@ export default class Subtitles {
     this.findSubtitleFiles(this.selected)
   }
 
-  findSubtitleFiles (targetFile) {
+  async findSubtitleFiles (targetFile) {
     const videoName = targetFile.name.substring(0, targetFile.name.lastIndexOf('.')) || targetFile.name
     // array of subtitle files that match video name, or all subtitle files when only 1 vid file
     const subfiles = this.files.filter(file => {
@@ -74,13 +74,12 @@ export default class Subtitles {
         }
         this.onHeader()
         this.tracks[index] = []
-        this.constructor.convertSubFile(file, type, subtitles => { // why does .constructor work ;-;
-          if (type === 'ass') {
-            this.headers[index].header = subtitles
-          } else {
-            this.tracks[index] = subtitles
-          }
-        })
+        const subtitles = await Subtitles.convertSubFile(file, type)
+        if (type === 'ass') {
+          this.headers[index].header = subtitles
+        } else {
+          this.headers[index].header += subtitles.join('\n')
+        }
       }
       if (!this.current) {
         this.current = 0
@@ -103,7 +102,7 @@ export default class Subtitles {
     }
   }
 
-  static convertSubFile (file, type, callback) {
+  static async convertSubFile (file, type) {
     const srtRx = /(?:\d+\n)?(\S{9,12})\s?-->\s?(\S{9,12})(.*)\n([\s\S]*)$/i
     const srt = text => {
       const subtitles = []
@@ -144,7 +143,7 @@ export default class Subtitles {
           subtitles.push('Dialogue: 0,' + match[1].replace(',', '.') + ',' + match[2].replace(',', '.') + ',Default,,0,0,0,,' + match[4])
         }
       }
-      callback(subtitles)
+      return subtitles
     }
     const subRx = /[{[](\d+)[}\]][{[](\d+)[}\]](.+)/i
     const sub = text => {
@@ -156,22 +155,21 @@ export default class Subtitles {
         const match = split.match(subRx)
         if (match) subtitles.push('Dialogue: 0,' + toTS((match[1] * frames) / 1000, 1) + ',' + toTS((match[2] * frames) / 1000, 1) + ',Default,,0,0,0,,' + match[3].replace('|', '\n'))
       }
-      callback(subtitles)
+      return subtitles
     }
-    file.text().then(text => {
-      const subtitles = type === 'ass' ? text : []
-      if (type === 'ass') {
-        callback(subtitles)
-      } else if (type === 'srt' || type === 'vtt') {
-        srt(text)
-      } else if (type === 'sub') {
-        sub(text)
-      } else {
-        // subbers have a tendency to not set the extensions properly
-        if (srtRx.test(text)) srt(text)
-        if (subRx.test(text)) sub(text)
-      }
-    })
+    const text = await file.text()
+    const subtitles = type === 'ass' ? text : []
+    if (type === 'ass') {
+      return subtitles
+    } else if (type === 'srt' || type === 'vtt') {
+      return srt(text)
+    } else if (type === 'sub') {
+      return sub(text)
+    } else {
+      // subbers have a tendency to not set the extensions properly
+      if (srtRx.test(text)) return srt(text)
+      if (subRx.test(text)) return sub(text)
+    }
   }
 
   constructSub (subtitle, isNotAss, index) {
