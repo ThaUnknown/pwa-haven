@@ -1,5 +1,5 @@
 <script>
-  import InstallPrompt from './modules/InstallPrompt.svelte'
+  import InstallPrompt from '../../shared/InstallPrompt.svelte'
   import { fixDuration } from './lib/durationfix.js'
   import { createStore, get, set } from 'idb-keyval'
 

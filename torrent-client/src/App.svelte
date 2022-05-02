@@ -1,5 +1,5 @@
 <script>
-  import InstallPrompt from './components/InstallPrompt.svelte'
+  import InstallPrompt from '../../shared/InstallPrompt.svelte'
   import Sidebar from './components/sidebar/Sidebar.svelte'
   import TorrentList from './components/torrentlist/TorrentList.svelte'
   import TorrentInfo from './components/TorrentInfo.svelte'

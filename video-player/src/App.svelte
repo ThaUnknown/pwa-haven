@@ -1,6 +1,6 @@
 <script>
   import Player from './modules/Player.svelte'
-  import InstallPrompt from './modules/InstallPrompt.svelte'
+  import InstallPrompt from '../../shared/InstallPrompt.svelte'
   import { filePopup, handleItems, getSearchFiles, getLaunchFiles } from '../../shared/inputHandler.js'
   import { URLFile } from '../../shared/URLFile.js'
   import RecentFiles, { initDb } from '../../shared/RecentFiles.svelte'

@@ -1,5 +1,5 @@
 <script>
-  import InstallPrompt from './modules/InstallPrompt.svelte'
+  import InstallPrompt from '../../shared/InstallPrompt.svelte'
   import Player from './modules/Player.svelte'
   import { parseBlob } from 'music-metadata-browser'
   import { handleItems, getSearchFiles, getLaunchFiles, filePopup } from '../../shared/inputHandler.js'
