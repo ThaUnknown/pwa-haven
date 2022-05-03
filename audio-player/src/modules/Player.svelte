@@ -4,6 +4,7 @@
   import Peer from '../../../shared/Peer.js'
   import { URLFile } from '../../../shared/URLFile.js'
   import PopoutVisualizer from './PopoutVisualizer'
+  import { onMount } from 'svelte'
 
   export let name = ''
   let src = null
@@ -51,7 +52,11 @@
     }
   }
 
-  $: visualizer = 'pictureInPictureEnabled' in document && audio && new PopoutVisualizer(audio, playPause, current)
+  let visualizer = null
+
+  onMount(() => {
+    if ('pictureInPictureEnabled' in document) visualizer = new PopoutVisualizer(audio, playPause, current)
+  })
 
   $: visualizer?.setCurrent(current)
 
