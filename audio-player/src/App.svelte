@@ -32,6 +32,7 @@
   let songs = []
   $: handleFiles(files)
   async function handleFiles(files) {
+    console.log(files)
     if (files?.length) {
       const image = files.find(file => file.type.indexOf('image') === 0)
       const audio = files.filter(file => file.type.indexOf('audio') === 0)
@@ -44,7 +45,11 @@
           }
         }
         if (file instanceof File || file instanceof URLFile) {
-          const { common, format } = await parseBlob(file)
+          let parsed = {}
+          try {
+            parsed = await parseBlob(file)
+          } catch (e) {}
+          const { common, format } = parsed
           const name = common?.title || file.name.substring(0, file.name.lastIndexOf('.')) || file.name
           const cover = (common?.picture?.length && new Blob([common.picture[0].data], { type: common.picture[0].format })) || image
           return { file, name, artist: common?.artist, album: common?.album, cover, duration: format?.duration, number: common?.track?.no }
