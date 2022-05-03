@@ -3,6 +3,7 @@
   import SongList from './SongList.svelte'
   import Peer from '../../../shared/Peer.js'
   import { URLFile } from '../../../shared/URLFile.js'
+  import PopoutVisualizer from './PopoutVisualizer'
 
   export let name = ''
   let src = null
@@ -49,6 +50,10 @@
       })
     }
   }
+
+  $: visualizer = 'pictureInPictureEnabled' in document && audio && new PopoutVisualizer(audio, playPause, current)
+
+  $: visualizer?.setCurrent(current)
 
   if ('mediaSession' in navigator) {
     navigator.mediaSession.setActionHandler('play', playPause)
@@ -282,6 +287,12 @@
       <div class="text-truncate text-muted">{[current?.artist, current?.name].filter(c => c).join(' - ')}</div>
     </div>
     <div class="d-flex align-items-center">
+      <!-- svelte-ignore missing-declaration -->
+      {#if 'pictureInPictureEnabled' in document && (!current || current.file instanceof File || current.file instanceof URLFile)}
+        <span class="material-icons font-size-20 ctrl pointer" title="Popout Window [P]" data-name="togglePopout" on:click={() => visualizer.togglePopout()}>
+          picture_in_picture
+        </span>
+      {/if}
       <!-- svelte-ignore missing-declaration -->
       {#if 'PresentationRequest' in window && canCast && (!current || current.file instanceof File || current.file instanceof URLFile)}
         <span class="material-icons font-size-20 ctrl pointer" title="Cast Video [C]" data-name="toggleCast" on:click={toggleCast}>

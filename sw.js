@@ -21,7 +21,7 @@ const cacheList = {
     ]
   },
   'audio-player': {
-    version: '1.7.9',
+    version: '1.8.0',
     resources: [
       '../audio-player/public/build/bundle.js',
       '../audio-player/public/build/bundle.css',
