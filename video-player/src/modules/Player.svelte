@@ -4,10 +4,11 @@
   import Peer from '../../../shared/Peer.js'
   import './File.js'
   import Subtitles from './subtitles.js'
-  import { toTS, videoRx, requestTimeout, cancelTimeout } from '../../../shared/util.js'
+  import { toTS, videoRx } from '../../../shared/util.js'
   import anitomyscript from 'anitomyscript'
   import { URLFile } from '../../../shared/URLFile.js'
   import Keybinds, { loadWithDefaults } from 'svelte-keybinds'
+  import 'rvfc-polyfill'
 
   $: updateFiles(files)
   export let files = []
@@ -231,9 +232,8 @@
       }
     }
   }
-  async function togglePopout() {
+  function togglePopout() {
     if (video.readyState) {
-      await video.fps
       if (!subs?.renderer) {
         if (video !== document.pictureInPictureElement) {
           video.requestPictureInPicture()
@@ -249,7 +249,7 @@
           pip = false
         } else {
           const canvasVideo = document.createElement('video')
-          const { stream, destroy } = await getBurnIn()
+          const { stream, destroy } = getBurnIn()
           pip = true
           canvasVideo.srcObject = stream
           canvasVideo.onloadedmetadata = () => {
@@ -370,38 +370,23 @@
     }
   })
 
-  async function getBurnIn(noSubs) {
+  function getBurnIn(noSubs) {
     const canvas = document.createElement('canvas')
     const context = canvas.getContext('2d')
     let loop = null
-    let destroy = null
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
-    if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
-      const renderFrame = () => {
-        context.drawImage(video, 0, 0)
-        if (!noSubs) context.drawImage(subs.renderer?._canvas, 0, 0, canvas.width, canvas.height)
-        loop = video.requestVideoFrameCallback(renderFrame)
-      }
-      renderFrame()
-      destroy = () => {
-        video.cancelVideoFrameCallback(loop)
-        canvas.remove()
-      }
-    } else {
-      // for the firefox idiots
-      const fps = await video.fps
-      const renderFrame = () => {
-        context.drawImage(video, 0, 0)
-        if (!noSubs) context.drawImage(subs.renderer?._canvas, 0, 0, canvas.width, canvas.height)
-        loop = requestTimeout(renderFrame, 500 / fps) // request x2 fps for smoothness
-      }
-      renderFrame()
-      destroy = () => {
-        cancelTimeout(loop)
-        canvas.remove()
-      }
+    const renderFrame = () => {
+      context.drawImage(video, 0, 0)
+      if (!noSubs) context.drawImage(subs.renderer?._canvas, 0, 0, canvas.width, canvas.height)
+      loop = video.requestVideoFrameCallback(renderFrame)
     }
+    renderFrame()
+    const destroy = () => {
+      video.cancelVideoFrameCallback(loop)
+      canvas.remove()
+    }
+
     return { stream: canvas.captureStream(), destroy }
   }
 
@@ -442,13 +427,13 @@
       peer.signalingPort.postMessage(data)
     })
 
-    peer.dc.onopen = async () => {
+    peer.dc.onopen = () => {
       if (peer && presentationConnection) {
         const tracks = []
-        const videostream = video.captureStream(await video.fps)
+        const videostream = video.captureStream()
         if (true) {
           // TODO: check if cast supports codecs
-          const { stream, destroy } = await getBurnIn(!subs?.renderer)
+          const { stream, destroy } = getBurnIn(!subs?.renderer)
           tracks.push(stream.getVideoTracks()[0], videostream.getAudioTracks()[0])
           presentationConnection.addEventListener('terminate', destroy)
         } else {

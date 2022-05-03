@@ -32,7 +32,6 @@
   let songs = []
   $: handleFiles(files)
   async function handleFiles(files) {
-    console.log(files)
     if (files?.length) {
       const image = files.find(file => file.type.indexOf('image') === 0)
       const audio = files.filter(file => file.type.indexOf('audio') === 0)

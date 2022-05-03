@@ -36,24 +36,3 @@ export function toTS (sec, full) {
 }
 
 export const DOMPARSER = new DOMParser().parseFromString.bind(new DOMParser())
-
-export function requestTimeout (callback, delay) {
-  const startedAt = Date.now()
-  let animationFrame = requestAnimationFrame(tick)
-  function tick () {
-    if (Date.now() - startedAt >= delay) {
-      callback()
-    } else {
-      animationFrame = requestAnimationFrame(tick)
-    }
-  }
-  return {
-    clear: () => cancelAnimationFrame(animationFrame)
-  }
-}
-
-export function cancelTimeout (timeout) {
-  if (timeout) {
-    timeout.clear()
-  }
-}
