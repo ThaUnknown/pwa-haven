@@ -1,6 +1,6 @@
 export async function onRequest ({ request, next }) {
   const url = new URL(request.url)
-  if (url.pathname.includes('img-viewer/https://slow.pics/c/')) {
+  if (url.pathname.startsWith('/img-viewer/https:/slow.pics/c/')) {
     const res = await fetch(url.pathname.split('/img-viewer/')[1])
     const text = await res.text()
     const match = text.match(/var collection = (.*);\n/)
