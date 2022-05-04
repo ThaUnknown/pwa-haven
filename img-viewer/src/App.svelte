@@ -82,6 +82,16 @@
     const index = files.indexOf(current)
     current = files[index === 0 ? files.length - 1 : index - 1]
   }
+  function handleKey({ code }) {
+    if (code === 'ArrowRight') {
+      viewNext()
+    } else if (code === 'ArrowLeft') {
+      viewLast()
+    } else if (code.includes('Numpad')) {
+      const index = code.slice(6)
+      current = files[index % files.length]
+    }
+  }
 
   // zooming
   let pinching = false
@@ -246,7 +256,8 @@
   on:dragover|preventDefault
   on:dragstart|preventDefault
   on:dragleave|preventDefault
-  on:paste|preventDefault={handleInput} />
+  on:paste|preventDefault={handleInput}
+  on:keydown={handleKey} />
 
 <style>
   :global(body) {
