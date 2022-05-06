@@ -140,7 +140,7 @@ export default class Subtitles {
               }
             })
           }
-          subtitles.push('Dialogue: 0,' + match[1].replace(',', '.') + ',' + match[2].replace(',', '.') + ',Default,,0,0,0,,' + match[4])
+          subtitles.push('Dialogue: 0,' + match[1].replace(',', '.') + ',' + match[2].replace(',', '.') + ',Default,,0,0,0,,' + match[4].replace(/\n/g, '\\N'))
         }
       }
       return subtitles
@@ -153,7 +153,7 @@ export default class Subtitles {
       if (!frames || isNaN(frames)) frames = 41.708
       for (const split of replaced.split('\n')) {
         const match = split.match(subRx)
-        if (match) subtitles.push('Dialogue: 0,' + toTS((match[1] * frames) / 1000, 1) + ',' + toTS((match[2] * frames) / 1000, 1) + ',Default,,0,0,0,,' + match[3].replace('|', '\n'))
+        if (match) subtitles.push('Dialogue: 0,' + toTS((match[1] * frames) / 1000, 1) + ',' + toTS((match[2] * frames) / 1000, 1) + ',Default,,0,0,0,,' + match[3].replace('|', '\\N'))
       }
       return subtitles
     }
@@ -185,7 +185,7 @@ export default class Subtitles {
         })
       }
       // replace all html special tags with normal ones
-      subtitle.text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, '\\h')
+      subtitle.text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, '\\h').replace(/\n/g, '\\N')
     }
     return {
       Start: subtitle.time,
