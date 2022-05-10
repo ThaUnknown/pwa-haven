@@ -22,30 +22,51 @@ export default class PopoutVisualizer {
 
   async setCurrent (current) {
     if (current) {
-      const { ctx, canvas } = this.createCanvas()
-
-      ctx.fillStyle = '#111417'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-      const padding = 32
-
-      ctx.fillStyle = '#ffffffcc'
-      ctx.textBaseline = 'top'
-      ctx.font = 'bold 56px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"'
-      ctx.fillText(current.artist, padding * 1.3, padding)
-      ctx.font = '56px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"'
-      ctx.fillStyle = '#ffffff99'
-      ctx.fillText(current.name, padding * 1.3, padding * 2 + 56)
+      this.startTime = Date.now()
+      this.current = current
       const image = new Image()
       image.src = (current.cover && (current.cover?.url || URL.createObjectURL(current.cover))) || './512.png'
       await new Promise(resolve => { image.onload = resolve })
-      ctx.fillStyle = '#111417'
-      ctx.fillRect(canvas.width - canvas.height - padding * 1.3, 0, canvas.height - padding, canvas.height)
-
-      ctx.fillStyle = '#ffffffcc'
-      ctx.drawImage(image, canvas.width - canvas.height, 0, canvas.height, canvas.height)
-      this.background = ctx.getImageData(0, 0, canvas.width, canvas.height)
-      canvas.remove()
+      this.image = image
+      this.redraw()
     }
+  }
+
+  redraw () {
+    const current = this.current
+    if (!current) return
+
+    const { ctx, canvas } = this.createCanvas()
+
+    ctx.fillStyle = '#111417'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    const padding = 32
+
+    ctx.fillStyle = '#ffffffcc'
+    ctx.textBaseline = 'top'
+    ctx.font = 'bold 56px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"'
+    ctx.fillText(current.artist, padding * 1.3, padding)
+    ctx.font = '56px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"'
+    ctx.fillStyle = '#ffffff99'
+
+    const text = current.album ? `${current.name} \u2022 ${current.album}` : current.name
+    const textTimeSpan = (ctx.measureText(text).width) - (canvas.width - canvas.height - padding * 1.3)
+    let offset = 0
+    if (textTimeSpan > 0) {
+      offset = Math.floor((Date.now() - this.startTime) / 20) % (textTimeSpan + canvas.height + padding * 1.3) - 1000 / 20
+      if (offset < 0) offset = 0
+    }
+
+    ctx.fillText(text, padding * 1.3 - offset, padding * 2 + 56)
+
+    ctx.fillStyle = '#111417'
+    ctx.fillRect(0, 0, padding * 1.3, canvas.height)
+    ctx.fillRect(canvas.width - canvas.height - padding * 1.3, 0, canvas.height - padding, canvas.height)
+
+    ctx.fillStyle = '#ffffffcc'
+    ctx.drawImage(this.image, canvas.width - canvas.height, 0, canvas.height, canvas.height)
+    this.background = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    canvas.remove()
   }
 
   cleanup () {
@@ -64,6 +85,7 @@ export default class PopoutVisualizer {
       document.exitPictureInPicture()
     } else if (this.context) {
       const { ctx, canvas } = this.createCanvas()
+      this.startTime = Date.now()
       this.canvas = canvas
 
       this.analyser = this.context.createAnalyser()
@@ -112,6 +134,7 @@ export default class PopoutVisualizer {
 
         this.analyser.getByteFrequencyData(dataArray)
 
+        this.redraw()
         ctx.putImageData(this.background, 0, 0)
         ctx.fillStyle = gradient
         ctx.fillRect(0, 0, canvas.width * (this.audio.currentTime / this.audio.duration), 3)
