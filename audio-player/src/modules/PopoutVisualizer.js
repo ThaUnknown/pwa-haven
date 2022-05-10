@@ -22,51 +22,29 @@ export default class PopoutVisualizer {
 
   async setCurrent (current) {
     if (current) {
-      this.startTime = Date.now()
+      const { ctx, canvas } = this.createCanvas()
       this.current = current
+
+      this.startTime = Date.now()
+
+      ctx.fillStyle = '#111417'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      const padding = 32
+
+      ctx.fillStyle = '#ffffffcc'
+      ctx.textBaseline = 'top'
+      ctx.font = 'bold 56px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"'
+      ctx.fillText(current.artist, padding * 1.3, padding)
+
       const image = new Image()
       image.src = (current.cover && (current.cover?.url || URL.createObjectURL(current.cover))) || './512.png'
       await new Promise(resolve => { image.onload = resolve })
-      this.image = image
-      this.redraw()
+
+      ctx.fillStyle = '#ffffffcc'
+      ctx.drawImage(image, canvas.width - canvas.height, 0, canvas.height, canvas.height)
+      this.background = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      canvas.remove()
     }
-  }
-
-  redraw () {
-    const current = this.current
-    if (!current) return
-
-    const { ctx, canvas } = this.createCanvas()
-
-    ctx.fillStyle = '#111417'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-    const padding = 32
-
-    ctx.fillStyle = '#ffffffcc'
-    ctx.textBaseline = 'top'
-    ctx.font = 'bold 56px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"'
-    ctx.fillText(current.artist, padding * 1.3, padding)
-    ctx.font = '56px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"'
-    ctx.fillStyle = '#ffffff99'
-
-    const text = current.album ? `${current.name} \u2022 ${current.album}` : current.name
-    const textTimeSpan = (ctx.measureText(text).width) - (canvas.width - canvas.height - padding * 1.3)
-    let offset = 0
-    if (textTimeSpan > 0) {
-      offset = Math.floor((Date.now() - this.startTime) / 20) % (textTimeSpan + canvas.height + padding * 1.3) - 1000 / 20
-      if (offset < 0) offset = 0
-    }
-
-    ctx.fillText(text, padding * 1.3 - offset, padding * 2 + 56)
-
-    ctx.fillStyle = '#111417'
-    ctx.fillRect(0, 0, padding * 1.3, canvas.height)
-    ctx.fillRect(canvas.width - canvas.height - padding * 1.3, 0, canvas.height - padding, canvas.height)
-
-    ctx.fillStyle = '#ffffffcc'
-    ctx.drawImage(this.image, canvas.width - canvas.height, 0, canvas.height, canvas.height)
-    this.background = ctx.getImageData(0, 0, canvas.width, canvas.height)
-    canvas.remove()
   }
 
   cleanup () {
@@ -134,8 +112,29 @@ export default class PopoutVisualizer {
 
         this.analyser.getByteFrequencyData(dataArray)
 
-        this.redraw()
         ctx.putImageData(this.background, 0, 0)
+        const padding = 32
+
+        ctx.fillStyle = '#ffffff99'
+        ctx.textBaseline = 'top'
+        ctx.font = '56px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"'
+
+        const text = this.current.album ? `${this.current.name} \u2022 ${this.current.album}` : this.current.name
+        const textTimeSpan = (ctx.measureText(text).width) - (canvas.width - canvas.height - padding * 1.3)
+
+        let offset = 0
+        if (textTimeSpan > 0) {
+          offset = Math.floor((Date.now() - this.startTime) / 20) % (textTimeSpan + canvas.height + padding) - 1000 / 20
+          if (offset < 0) offset = 0
+        }
+
+        ctx.save()
+        ctx.beginPath()
+        ctx.rect(padding * 1.3, 0, canvas.width - canvas.height - padding * 2.6, canvas.height)
+        ctx.clip()
+        ctx.fillText(text, padding * 1.3 - offset, padding * 2 + 56)
+        ctx.restore()
+
         ctx.fillStyle = gradient
         ctx.fillRect(0, 0, canvas.width * (this.audio.currentTime / this.audio.duration), 3)
 
