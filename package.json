@@ -57,6 +57,7 @@
     "hybrid-chunk-store": "github:ThaUnknown/hybrid-chunk-store",
     "idb-keyval": "^6.1.0",
     "matroska-subtitles": "^3.3.2",
+    "mime": "^3.0.0",
     "music-metadata-browser": "^2.5.3",
     "range-parser": "^1.2.1",
     "rvfc-polyfill": "^1.0.0",

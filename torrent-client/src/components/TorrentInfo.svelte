@@ -2,6 +2,7 @@
   import { fastPrettyBytes, fastToTS } from '../modules/util.js'
   import { Tabs, TabLabel, Tab } from '../modules/Tabination.js'
   import { onMount, onDestroy } from 'svelte'
+  import { mime } from 'mime'
 
   export let selected = null
 
@@ -23,7 +24,7 @@
     image: 'img-viewer'
   }
   function viewFile(file) {
-    const mime = file._getMimeType()
+    const mime = mime.getType(file.name)
     const type = mime.substring(0, mime.indexOf('/'))
     if (map[type]) {
       const url = `/server/${file._torrent.infoHash}/${encodeURI(file.path)}`
