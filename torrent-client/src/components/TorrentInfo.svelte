@@ -2,7 +2,7 @@
   import { fastPrettyBytes, fastToTS } from '../modules/util.js'
   import { Tabs, TabLabel, Tab } from '../modules/Tabination.js'
   import { onMount, onDestroy } from 'svelte'
-  import { mime } from 'mime'
+  import mime from 'mime'
 
   export let selected = null
 
