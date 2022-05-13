@@ -16,7 +16,7 @@ Haven is a collection of small, fast, simple and powerful Progressive Web Apps w
 - and more to come!
 
 ## What's the point of this?
-The main goal is to replace oversized native apps, with simple, lightweight browser based apps, which don't create copies of processes, but instead share one environment, which likely was already in-use by the user, for for example browsing the web or reading articles, eliminating those duplicate processes. Additionally they don't create any new background processes or services when not in use.
+The main goal is to replace oversized native apps, with simple, lightweight browser based apps, which don't create copies of processes, but instead share one environment, which likely was already in-use by the user, for example browsing the web or reading articles, eliminating those duplicate processes. Additionally they don't create any new background processes or services when not in use.
 
 ## What are the features?
 You can see the list of features [here!](docs/features.md)
