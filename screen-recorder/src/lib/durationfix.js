@@ -362,7 +362,7 @@ class WebmContainer extends WebmBase {
       const section = new Ctr(info.name, info.type)
       section.setSource(data)
       this.data.push({
-        id: id,
+        id,
         idHex: id.toString(16),
         data: section
       })

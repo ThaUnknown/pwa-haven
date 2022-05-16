@@ -1,4 +1,3 @@
-/* eslint-env browser */
 import rangeParser from 'range-parser'
 import eos from 'end-of-stream'
 import { URLFile } from '../../../shared/URLFile.js'

@@ -31,7 +31,7 @@
   })
 
   $: set('settings', settings, customStore)
-  async function pickFolder() {
+  async function pickFolder () {
     const handle = await window.showDirectoryPicker()
     await handle.requestPermission({ mode: 'readwrite' })
     settings.folder = handle
@@ -45,7 +45,7 @@
   let audioContext = null
   const handleRecord = async stream => {
     // to collect stream chunks
-    let recordedChunks = []
+    const recordedChunks = []
     mediaRecorder = new MediaRecorder(stream, {
       audioBitsPerSecond: settings.audrate * 1000,
       videoBitsPerSecond: settings.vidrate * 1000000,
@@ -90,8 +90,8 @@
 
     mediaRecorder.start(200) // 200ms interval
   }
-  let tracks = []
-  function cleanup() {
+  const tracks = []
+  function cleanup () {
     for (const track of tracks) {
       track.stop()
     }
@@ -102,7 +102,7 @@
     mediaRecorder?.stop()
     mediaRecorder = null
   }
-  async function record() {
+  async function record () {
     if ('showDirectoryPicker' in window && !settings.folder) {
       await pickFolder()
     } else if (settings.folder) {

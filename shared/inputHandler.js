@@ -1,4 +1,3 @@
-/* eslint-env browser */
 import { audioRx, videoRx, imageRx, subRx, bookRx, audioExtensions, videoExtensions, imageExtensions, subtitleExtensions, bookExtensions, DOMPARSER } from './util'
 import { updateRecents } from './RecentFiles.svelte'
 
@@ -140,7 +139,6 @@ export function getSearchFiles (types) {
   return files
 }
 export async function getLaunchFiles () {
-  /* global launchQueue */
   return new Promise(resolve => {
     launchQueue.setConsumer(async launchParams => {
       if (!launchParams.files.length) {

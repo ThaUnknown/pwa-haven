@@ -1,10 +1,11 @@
 <script>
+  /* eslint-disable no-labels */
   import { onDestroy } from 'svelte'
 
   export let file = null
   $: updateFile(file)
 
-  async function getCropped(blob, opts) {
+  async function getCropped (blob, opts) {
     const img = new Image()
     img.src = URL.createObjectURL(blob)
     const canvas = document.createElement('canvas')
@@ -25,7 +26,7 @@
     return [canvas.toDataURL('image/png'), ctx.getImageData(0, 0, canvas.width, canvas.height)]
   }
 
-  function getBorders(imgData, options = {}) {
+  function getBorders (imgData, options = {}) {
     if (!imgData) return null
     const { threshold = 15, margin = 2, padding = 5 } = options
     const { data, width, height } = imgData
@@ -39,7 +40,7 @@
     }
   }
 
-  function topBorder({ whitethreshold, blackthreshold, margin, data, height, width }) {
+  function topBorder ({ whitethreshold, blackthreshold, margin, data, height, width }) {
     let white = margin
     let black = margin
     bbwl: for (; white < height - margin * 2; ++white) {
@@ -59,7 +60,7 @@
     return Math.max(black, white)
   }
 
-  function bottomBorder({ whitethreshold, blackthreshold, margin, data, height, width }) {
+  function bottomBorder ({ whitethreshold, blackthreshold, margin, data, height, width }) {
     let white = height - 1 - margin
     let black = height - 1 - margin
     tbwl: for (; white >= margin; --white) {
@@ -80,7 +81,7 @@
     return height - Math.min(white, black) - 1
   }
 
-  function leftBorder({ whitethreshold, blackthreshold, margin, data, height, width }) {
+  function leftBorder ({ whitethreshold, blackthreshold, margin, data, height, width }) {
     let white = margin
     let black = margin
     lbwl: for (; white < width - margin * 2; ++white) {
@@ -98,7 +99,7 @@
     return Math.max(white, black)
   }
 
-  function rightBorder({ whitethreshold, blackthreshold, margin, data, height, width }) {
+  function rightBorder ({ whitethreshold, blackthreshold, margin, data, height, width }) {
     let white = width - 1 - margin
     let black = width - 1 - margin
 
@@ -118,17 +119,18 @@
     return width - Math.min(white, black) - 1
   }
 
-  function updateFile(file) {
+  function updateFile (file) {
     if (!blob && file) {
       blob = file.blob()
     }
   }
   let blob = null
   let oldopts = null
+  export let options = {}
   $: setSource(blob, options)
-  async function setSource(blob, options) {
+  async function setSource (blob, options) {
     if (blob && oldopts !== options.crop) {
-      oldopts == options.crop
+      oldopts = options.crop
       if (options.crop) {
         src = (await getCropped(await blob, { padding: 2 }))[0]
       } else {
@@ -140,7 +142,6 @@
     URL.revokeObjectURL(src)
   })
 
-  export let options = {}
   $: resetPos(options)
   let image = null
   let src = null
@@ -152,7 +153,7 @@
   let disPos = initial
   const dimensions = { x: null, y: null }
   // dragging around
-  function dragStart(e) {
+  function dragStart (e) {
     if (options.mode === 'fit') {
       transition = false
       initial.x = e.clientX
@@ -161,7 +162,7 @@
       if (e.pointerId) image.setPointerCapture(e.pointerId)
     }
   }
-  function dragEnd(e) {
+  function dragEnd (e) {
     if (image.onpointermove) {
       transition = true
       image.onpointermove = null
@@ -175,7 +176,7 @@
       }
     }
   }
-  function handleDrag(e) {
+  function handleDrag (e) {
     if (!pinching) {
       position.x = old.x + e.clientX - initial.x
       position.y = old.y + e.clientY - initial.y
@@ -184,7 +185,7 @@
   }
   // zooming
   let pinching = false
-  function checkPinch({ touches }) {
+  function checkPinch ({ touches }) {
     if (options.mode === 'fit') {
       if (touches.length === 2) {
         pinching = true
@@ -194,7 +195,7 @@
   }
   let lasthypot = 0
   let hypotdelta = 0
-  function handlePinch({ touches }) {
+  function handlePinch ({ touches }) {
     if (touches.length === 2 && pinching === true) {
       const last = lasthypot
       lasthypot = Math.hypot(touches[0].pageX - touches[1].pageX, touches[0].pageY - touches[1].pageY)
@@ -206,7 +207,7 @@
     }
   }
   let zoom = 1
-  function handleZoom({ deltaY }) {
+  function handleZoom ({ deltaY }) {
     if (options.mode === 'fit') {
       const diff = deltaY * -0.01
       if (diff < 0) {
@@ -223,21 +224,21 @@
     }
   }
 
-  function resetPos() {
+  function resetPos () {
     old.x = 0
     old.y = 0
     scale = 0
     zoom = 1
     disPos = old
   }
-  function handleStyle({ disPos, zoom }) {
+  function handleStyle ({ disPos, zoom }) {
     image?.style.setProperty('transform', `scale(${zoom})`)
     image?.style.setProperty('--left', disPos.x + 'px')
     image?.style.setProperty('--top', disPos.y + 'px')
   }
   $: handleStyle({ disPos, zoom })
 
-  function handleImage(image) {
+  function handleImage (image) {
     dimensions.x = image.naturalWidth
     dimensions.y = image.naturalHeight
   }

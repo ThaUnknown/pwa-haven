@@ -13,15 +13,15 @@
   let prompt = null
 
   // loading files
-  function handleDrop({ dataTransfer }) {
+  function handleDrop ({ dataTransfer }) {
     handleItems([...dataTransfer.items])
   }
 
-  function handlePaste({ clipboardData }) {
+  function handlePaste ({ clipboardData }) {
     handleItems([...clipboardData.items])
   }
 
-  async function handleItems(items) {
+  async function handleItems (items) {
     const promises = items.map(item => {
       if (item.kind === 'file') {
         return item.getAsFile()
@@ -42,7 +42,7 @@
         }
       }
       if (!item.type) {
-        let entry = item.webkitGetAsEntry()
+        const entry = item.webkitGetAsEntry()
         if (entry?.isDirectory) {
           return new Promise(resolve => {
             folder.createReader().readEntries(async entries => {
@@ -53,9 +53,7 @@
         } else if (entry && !entry.isDirectory) {
           return new Promise(resolve => entry.file(resolve))
         }
-        return
       }
-      return
     })
     handleTorrent((await Promise.all(promises)).flat().filter(i => i))
     prompt?.classList.add('show')

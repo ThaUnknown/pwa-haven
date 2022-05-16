@@ -11,11 +11,8 @@
   let audio = null
   let volume = localStorage.getItem('volume') || 1
   $: localStorage.setItem('volume', volume)
-  $: progress = currentTime / duration
-  $: targetTime = (!paused && currentTime) || targetTime
   let current = null
-  $: setCurrent(songs)
-  function setCurrent(songs) {
+  function setCurrent (songs) {
     if (!current && songs.length) current = songs[0]
   }
   $: setSource(current)
@@ -27,15 +24,20 @@
   let loop = false
   let wasPaused = true
   let shuffle = false
+  
+  $: setCurrent(songs)
+  $: progress = currentTime / duration
+  $: targetTime = (!paused && currentTime) || targetTime
+
   let cover = './512.png'
-  let defaultCover = './512.png'
+  const defaultCover = './512.png'
   $: navigator.mediaSession?.setPositionState({
     duration: Math.max(0, duration || 0),
     playbackRate: 1,
     position: Math.max(0, Math.min(duration || 0, currentTime || 0))
   })
   $: updateMedia(current, cover)
-  function updateMedia(current, cover) {
+  function updateMedia (current, cover) {
     if ('mediaSession' in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: current?.name || 'Audio Player',
@@ -74,7 +76,7 @@
 
   $: updateCastTime(currentTime)
 
-  function updateCastTime(currentTime) {
+  function updateCastTime (currentTime) {
     if (presentationPort?.readyState === 'open') {
       presentationPort.send(JSON.stringify({ current: currentTime }))
     }
@@ -93,7 +95,7 @@
     })
   }
 
-  function toggleCast() {
+  function toggleCast () {
     if (audio.readyState) {
       if (presentationConnection) {
         presentationConnection?.terminate()
@@ -104,7 +106,7 @@
   }
   let peer = null
   $: updateCastState(audio?.readyState && current)
-  async function updateCastState(current) {
+  async function updateCastState (current) {
     if (current && presentationPort?.readyState === 'open') {
       const stream = audio.captureStream()
       peer.pc.addTrack(stream.getAudioTracks()[0], stream)
@@ -128,7 +130,7 @@
       }
     }
   }
-  function initCast(event) {
+  function initCast (event) {
     peer = new Peer({ polite: true })
 
     presentationConnection = event.connection
@@ -152,7 +154,7 @@
     }
   }
 
-  function setSource(song) {
+  function setSource (song) {
     if (src) URL.revokeObjectURL(src)
     if (song) {
       src = song.file.url || URL.createObjectURL(song.file)
@@ -163,7 +165,7 @@
       name = ''
     }
   }
-  function setCover(file) {
+  function setCover (file) {
     if (cover) URL.revokeObjectURL(cover)
     if (file) {
       cover = file.url || URL.createObjectURL(file)
@@ -172,36 +174,36 @@
     }
   }
 
-  function handleMouseDown({ target }) {
+  function handleMouseDown ({ target }) {
     wasPaused = paused
     paused = true
     targetTime = target.value * duration
   }
-  function handleMouseUp() {
+  function handleMouseUp () {
     paused = wasPaused
     currentTime = targetTime
   }
-  function handleProgress({ target }) {
+  function handleProgress ({ target }) {
     targetTime = target.value * duration
   }
 
-  function playPause() {
+  function playPause () {
     paused = !paused
   }
-  function toggleMute() {
+  function toggleMute () {
     muted = !muted
   }
-  function toggleLoop() {
+  function toggleLoop () {
     loop = !loop
   }
-  function playNext() {
+  function playNext () {
     current = songs[(songs.indexOf(current) + 1) % songs.length]
   }
-  function playLast() {
+  function playLast () {
     const index = songs.indexOf(current)
     current = songs[index === 0 ? songs.length - 1 : index - 1]
   }
-  function toggleShuffle() {
+  function toggleShuffle () {
     shuffle = !shuffle
     if (shuffle) {
       songs = songs.sort(() => 0.5 - Math.random())
@@ -210,7 +212,7 @@
     }
   }
 
-  function handleKeydown({ key }) {
+  function handleKeydown ({ key }) {
     switch (key) {
       case ' ':
         playPause()

@@ -6,7 +6,7 @@
 
   export let selected = null
 
-  function close() {
+  function close () {
     selected = null
   }
   let interval
@@ -23,9 +23,9 @@
     audio: 'audio-player',
     image: 'img-viewer'
   }
-  function viewFile(file) {
-    const mime = mime.getType(file.name)
-    const type = mime.substring(0, mime.indexOf('/'))
+  function viewFile (file) {
+    const mimestr = mime.getType(file.name)
+    const type = mimestr.substring(0, mimestr.indexOf('/'))
     if (map[type]) {
       const url = `/server/${file._torrent.infoHash}/${encodeURI(file.path)}`
       window.open(`/${map[type]}/public/?file=${url}`)

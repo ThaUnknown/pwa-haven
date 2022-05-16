@@ -1,4 +1,3 @@
-/* eslint-env serviceworker, browser */
 const cacheList = {
   shared: {
     version: '1.0.5',

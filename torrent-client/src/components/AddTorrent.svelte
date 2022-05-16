@@ -2,6 +2,7 @@
   import { Tabs, TabLabel, Tab } from '../modules/Tabination.js'
   import { fastPrettyBytes } from '../modules/util.js'
   import { addTorrent, removeTorrent, current } from '../modules/client.js'
+
   let value = ''
   let torrent = null
   let files = []
@@ -13,7 +14,7 @@
     name: ''
   }
   let createTorrent = Object.assign({}, defaultData)
-  function handleClose(success) {
+  function handleClose (success) {
     if (!(success === true)) torrent?.destroy({ destroyStore: true })
     files = []
     torrent = null
@@ -23,16 +24,16 @@
     fileInput.value = null
     $current = 'All'
   }
-  function handleFileInput({ target }) {
+  function handleFileInput ({ target }) {
     files = [...target.files]
     handleTorrent(files, true)
   }
-  function handleTextInput({ target }) {
+  function handleTextInput ({ target }) {
     handleTorrent([target.value], true)
   }
   const torrentRx = /(^magnet:)|(^[A-F\d]{8,40}$)|(\.torrent$)/i
   let peers = []
-  export function handleTorrent(fileList, skip) {
+  export function handleTorrent (fileList, skip) {
     console.log(fileList)
     if (!skip) files = fileList
     const initTorrent = async () => {
@@ -68,7 +69,7 @@
       initTorrent()
     }
   }
-  function handleAddTorrent() {
+  function handleAddTorrent () {
     if (torrent) {
       torrent.resume()
       for (const peer of peers) {
@@ -83,10 +84,10 @@
     }
     handleClose(true)
   }
-  function setPriority(value, file) {
+  function setPriority (value, file) {
     torrent.files.filter(item => item === file)[0].select(value)
   }
-  function handleTracker({ target }) {
+  function handleTracker ({ target }) {
     if (torrent) {
       torrent.announce = target.value.split('\n')
     } else {

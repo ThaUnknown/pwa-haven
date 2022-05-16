@@ -2,12 +2,13 @@
   let scrollContainer = {}
   export let items = []
 
+  export let currentIndex = 0
+  let displaying = 1
+  
   $: currentItems = items.slice(currentIndex, currentIndex + displaying).map(item => {
     return { index: items.indexOf(item), item }
   })
 
-  export let currentIndex = 0
-  let displaying = 1
   const observer = new IntersectionObserver(entries => {
     const nodes = [...scrollContainer.children]
     for (const entry of entries) {
@@ -29,10 +30,10 @@
       }
     }
   })
-  function infiniteScrolling(node) {
+  function infiniteScrolling (node) {
     observer.observe(node)
     return {
-      destroy() {
+      destroy () {
         observer.unobserve(node)
       }
     }

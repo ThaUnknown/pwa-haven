@@ -1,13 +1,14 @@
 <script context="module">
   import { get, set, createStore } from 'idb-keyval'
   import { writable } from 'svelte/store'
+  import { onMount } from 'svelte'
   const customStore = createStore('torrent-client-settings', 'settings')
   get('settings', customStore).then(async obj => {
     if (obj) {
       settingsObj = obj
       if (obj.folder) {
         await new Promise(resolve => {
-          async function handleClick() {
+          async function handleClick () {
             await obj.folder.requestPermission({ mode: 'readwrite' })
             document.removeEventListener('click', handleClick)
             resolve()
@@ -28,13 +29,12 @@
 </script>
 
 <script>
-  import { onMount } from 'svelte'
-  function saveSettings() {
+  function saveSettings () {
     set('settings', settingsObj, customStore)
     settings.set(settingsObj)
   }
   let folderName
-  async function pickFolder() {
+  async function pickFolder () {
     const handle = await window.showDirectoryPicker()
     await handle.requestPermission({ mode: 'readwrite' })
     settingsObj.folder = handle

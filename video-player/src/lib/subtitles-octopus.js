@@ -949,7 +949,6 @@
 //     Ty Coon, President of Vice
 //   .
 //   That's all there is to it!
-/* eslint-env browser */
 
 // test ImageData constructor
 ; (() => {

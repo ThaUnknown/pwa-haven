@@ -1,4 +1,3 @@
-/* eslint-env browser */
 import speedometer from 'speedometer'
 const worker = navigator.serviceWorker.controller
 const keepAliveTime = 20000

@@ -11,7 +11,7 @@
 
   let name = 'Manga Reader'
   let pages = []
-  let options = {
+  const options = {
     mode: 'cover',
     crop: true,
     pad: false
@@ -20,7 +20,7 @@
   navigator.serviceWorker.register('/sw.js')
 
   // loading files
-  async function handleInput({ dataTransfer, clipboardData }) {
+  async function handleInput ({ dataTransfer, clipboardData }) {
     const items = clipboardData?.items || dataTransfer?.items
     if (items) {
       handleFiles(await handleItems(items, ['book']))
@@ -30,14 +30,14 @@
   if ('launchQueue' in window) {
     getLaunchFiles().then(handleFiles)
   }
-  async function handlePopup() {
+  async function handlePopup () {
     if (!pages.length) {
       handleFiles(await filePopup(['book']))
     }
   }
   let files = []
   $: handleFiles(files)
-  async function handleFiles(newfiles) {
+  async function handleFiles (newfiles) {
     if (newfiles?.length) {
       pages = Object.values((await unzip(newfiles[0])).entries).filter(page => !page.isDirectory)
       name = newfiles[0].name.match(/([^-–]+)/)[0].trim()
@@ -48,12 +48,12 @@
   let immersed = false
   let immerseTimeout = null
 
-  function immerseReader() {
+  function immerseReader () {
     immersed = true
     immerseTimeout = undefined
   }
 
-  function resetImmerse() {
+  function resetImmerse () {
     if (immerseTimeout) {
       clearTimeout(immerseTimeout)
     } else {
@@ -68,11 +68,11 @@
     isFullscreen = !!document.fullscreenElement
   })
 
-  function toggleFullscreen() {
+  function toggleFullscreen () {
     document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()
   }
 
-  async function handleKeydown({ key }) {
+  async function handleKeydown ({ key }) {
     switch (key) {
       case 'ArrowLeft':
         gotoNext()

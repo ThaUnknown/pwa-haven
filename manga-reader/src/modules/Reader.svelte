@@ -7,7 +7,7 @@
   let prev = false
   let next = false
 
-  export function gotoNext() {
+  export function gotoNext () {
     if (!next && !prev && currentIndex < length) {
       next = true
       setTimeout(() => {
@@ -17,7 +17,7 @@
     }
   }
 
-  export function gotoPrev() {
+  export function gotoPrev () {
     if (!next && !prev && currentIndex > 0) {
       prev = true
       setTimeout(() => {
@@ -26,9 +26,9 @@
       }, 200)
     }
   }
-  function autoFocus(node) {
+  function autoFocus (node) {
     return {
-      update(current) {
+      update (current) {
         if (current) node.focus()
       }
     }

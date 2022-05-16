@@ -14,7 +14,7 @@
   navigator.serviceWorker.register('/sw.js')
 
   // loading files
-  async function handleInput({ dataTransfer, clipboardData }) {
+  async function handleInput ({ dataTransfer, clipboardData }) {
     const items = clipboardData?.items || dataTransfer?.items
     if (items) {
       handleFiles(await handleItems(items, ['audio', 'image']))
@@ -24,14 +24,14 @@
   if ('launchQueue' in window) {
     getLaunchFiles().then(handleFiles)
   }
-  async function handlePopup() {
+  async function handlePopup () {
     if (!songs.length) {
       handleFiles(await filePopup(['audio', 'image']))
     }
   }
   let songs = []
   $: handleFiles(files)
-  async function handleFiles(files) {
+  async function handleFiles (files) {
     if (files?.length) {
       const image = files.find(file => file.type.indexOf('image') === 0)
       const audio = files.filter(file => file.type.indexOf('audio') === 0)

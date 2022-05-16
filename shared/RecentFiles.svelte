@@ -16,17 +16,17 @@
   }
 
   let db = null
-  async function setHandles() {
+  async function setHandles () {
     handles = (await get('recents', db)) || []
   }
-  export function initDb(appName) {
+  export function initDb (appName) {
     db = createStore(appName, 'recents')
   }
 
   let handles = []
 
   // this is clunky, but dataTransfer doesn't persist across async calls.... https://stackoverflow.com/questions/55658851
-  export async function updateRecents(files) {
+  export async function updateRecents (files) {
     if (supported && db && files?.length) {
       const promises = files
         .map(file => (file instanceof FileSystemFileHandle ? file : file.getAsFileSystemHandle()))
@@ -50,7 +50,7 @@
   setHandles().then(() => {
     recents = handles
   })
-  async function selectFile(handle) {
+  async function selectFile (handle) {
     updateRecents([handle])
     await handle.requestPermission({ mode: 'read' })
     files = [await handle.getFile()]

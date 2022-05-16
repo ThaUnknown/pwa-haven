@@ -1,4 +1,3 @@
-/* eslint-env browser */
 import WebTorrent from 'webtorrent'
 import { writable } from 'svelte/store'
 import HybridChunkStore from 'hybrid-chunk-store'

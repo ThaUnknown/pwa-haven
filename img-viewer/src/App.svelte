@@ -22,14 +22,14 @@
 
   navigator.serviceWorker.register('/sw.js')
 
-  function prettyBytes(num) {
+  function prettyBytes (num) {
     if (isNaN(num) || num == null) return ''
     if (num < 1) return num + ' B'
     const exponent = Math.min(Math.floor(Math.log(num) / Math.log(1000)), units.length - 1)
     return Number((num / Math.pow(1000, exponent)).toFixed(2)) + units[exponent]
   }
 
-  function setSource(target) {
+  function setSource (target) {
     if (target) {
       if (target.constructor === String) {
         const startIndex = Math.max(target.lastIndexOf('\\'), target.lastIndexOf('/')) + 1
@@ -47,14 +47,14 @@
 
   let transition = true
   // dragging around
-  function dragStart(e) {
+  function dragStart (e) {
     transition = false
     initial.x = e.clientX
     initial.y = e.clientY
     image.onpointermove = handleDrag
     if (e.pointerId) image.setPointerCapture(e.pointerId)
   }
-  function dragEnd(e) {
+  function dragEnd (e) {
     if (image.onpointermove) {
       transition = true
       image.onpointermove = null
@@ -68,21 +68,21 @@
       }
     }
   }
-  function handleDrag(e) {
+  function handleDrag (e) {
     if (!pinching) {
       position.x = old.x + e.clientX - initial.x
       position.y = old.y + e.clientY - initial.y
       disPos = position
     }
   }
-  function viewNext() {
+  function viewNext () {
     current = files[(files.indexOf(current) + 1) % files.length]
   }
-  function viewLast() {
+  function viewLast () {
     const index = files.indexOf(current)
     current = files[index === 0 ? files.length - 1 : index - 1]
   }
-  function handleKey({ code }) {
+  function handleKey ({ code }) {
     if (code === 'ArrowRight') {
       viewNext()
     } else if (code === 'ArrowLeft') {
@@ -95,7 +95,7 @@
 
   // zooming
   let pinching = false
-  function checkPinch({ touches }) {
+  function checkPinch ({ touches }) {
     if (touches.length === 2) {
       pinching = true
       transition = true
@@ -103,7 +103,7 @@
   }
   let lasthypot = 0
   let hypotdelta = 0
-  function handlePinch({ touches }) {
+  function handlePinch ({ touches }) {
     if (touches.length === 2 && pinching === true) {
       const last = lasthypot
       lasthypot = Math.hypot(touches[0].pageX - touches[1].pageX, touches[0].pageY - touches[1].pageY)
@@ -115,7 +115,7 @@
     }
   }
   let zoom = 1
-  function handleZoom({ deltaY }) {
+  function handleZoom ({ deltaY }) {
     const diff = deltaY * -0.01
     if (diff < 0) {
       if (!(scale < -4)) scale -= 0.5
@@ -131,7 +131,7 @@
   }
 
   // loading files
-  async function handleInput({ dataTransfer, clipboardData }) {
+  async function handleInput ({ dataTransfer, clipboardData }) {
     const items = clipboardData?.items || dataTransfer?.items
     if (items) {
       handleFiles(await handleItems(items, ['image']))
@@ -141,14 +141,14 @@
   if ('launchQueue' in window) {
     getLaunchFiles().then(handleFiles)
   }
-  async function handlePopup() {
+  async function handlePopup () {
     if (!files.length) {
       handleFiles(await filePopup(['image']))
     }
   }
   let recentfile = null
   $: handleFiles(recentfile)
-  function handleFiles(newfiles) {
+  function handleFiles (newfiles) {
     if (newfiles?.length) {
       for (const file of newfiles) {
         // this is both bad and good, makes 2nd load instant, but uses extra ram
@@ -161,38 +161,38 @@
   handleFiles(getSearchFiles(['image']))
 
   // UI
-  function toggleBlur() {
+  function toggleBlur () {
     isBlurred = !isBlurred
     image.style.setProperty('--pixel', isBlurred ? 'crisp-edges' : 'pixelated')
   }
-  function resetPos() {
+  function resetPos () {
     old.x = 0
     old.y = 0
     scale = 0
     zoom = 1
     disPos = old
   }
-  function handleImage() {
+  function handleImage () {
     dimensions.x = image.naturalWidth
     dimensions.y = image.naturalHeight
   }
   let rotation = 0
   // this is bad, but %360 causes css animation bug :(
-  function rotateL() {
+  function rotateL () {
     rotation -= 90
   }
-  function rotateR() {
+  function rotateR () {
     rotation += 90
   }
   let flip = false
-  function toggleFlip() {
+  function toggleFlip () {
     flip = !flip
   }
   let mirror = false
-  function toggleMirror() {
+  function toggleMirror () {
     mirror = !mirror
   }
-  function handleStyle({ disPos, mirror, flip, rotation, zoom }) {
+  function handleStyle ({ disPos, mirror, flip, rotation, zoom }) {
     image?.style.setProperty('transform', `rotate(${rotation}deg) ` + `scaleX(${mirror ? -1 : 1}) ` + `scaleY(${flip ? -1 : 1}) ` + `scale(${zoom})`)
     image?.style.setProperty('--left', disPos.x + 'px')
     image?.style.setProperty('--top', disPos.y + 'px')

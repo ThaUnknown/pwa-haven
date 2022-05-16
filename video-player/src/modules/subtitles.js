@@ -1,4 +1,3 @@
-/* eslint-env browser */
 import { SubtitleParser, SubtitleStream } from 'matroska-subtitles'
 import SubtitlesOctopus from '../lib/subtitles-octopus.js'
 import { toTS, videoRx, subRx } from '../../../shared/util.js'

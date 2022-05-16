@@ -7,7 +7,7 @@
 
   let status
 
-  function getTorrentStatus() {
+  function getTorrentStatus () {
     if (torrent.destroyed) return 'destroyed'
     if (torrent.paused) return 'paused'
     if (torrent.progress === 1) {
@@ -17,12 +17,12 @@
     if (torrent.infoHash && torrent.timeRemaining !== Infinity) return 'downloading'
     return 'syncing'
   }
-  function updateStatus(skip) {
+  function updateStatus (skip) {
     status = getTorrentStatus()
     if (!skip) updateTorrents()
   }
   let progress = 0
-  function updateProgress() {
+  function updateProgress () {
     progress = torrent.progress.toFixed(5)
   }
   torrent.once('metadata', updateStatus)
@@ -40,10 +40,10 @@
     torrent.removeListener('download', updateProgress)
   })
 
-  function select() {
+  function select () {
     selected = torrent
   }
-  function handlePauseResume() {
+  function handlePauseResume () {
     if (torrent.paused) {
       torrent.resume()
     } else {
@@ -51,7 +51,7 @@
     }
     updateStatus()
   }
-  function handleRemove() {
+  function handleRemove () {
     removeTorrent(torrent, () => {
       updateTorrents()
       if (selected === torrent) selected = null
@@ -59,17 +59,17 @@
     updateStatus()
   }
 
-  function handleDelete() {
+  function handleDelete () {
     removeTorrent(torrent, { destroyStore: true }, () => {
       updateTorrents()
       if (selected === torrent) selected = null
     })
     updateStatus()
   }
-  function copyMagnet() {
+  function copyMagnet () {
     navigator.clipboard.writeText(torrent.magnetURI)
   }
-  function saveTorrent() {
+  function saveTorrent () {
     const file = new Blob(torrent.torrentFile, { type: 'application/x-bittorrent' })
     const a = document.createElement('a')
     const url = URL.createObjectURL(file)

@@ -5,14 +5,14 @@
     e.preventDefault()
     deferredPrompt = e
   })
-  async function promptInstall() {
+  async function promptInstall () {
     deferredPrompt.prompt()
     const { outcome } = await deferredPrompt.userChoice
     if (outcome === 'accepted') {
       deferredPrompt = null
     }
   }
-  function dismiss() {
+  function dismiss () {
     deferredPrompt = null
   }
 </script>

@@ -1,4 +1,3 @@
-/* eslint-env browser */
 // File object, but for URL xD
 export class URLFile {
   constructor (url) {

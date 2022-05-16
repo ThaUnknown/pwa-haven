@@ -1,4 +1,3 @@
-/* eslint-env browser */
 function waitToCompleteIceGathering (pc, state = pc.iceGatheringState) {
   return state !== 'complete' && new Promise(resolve => {
     pc.addEventListener('icegatheringstatechange', () => (pc.iceGatheringState === 'complete') && resolve())

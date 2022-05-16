@@ -3,7 +3,7 @@
 
   export let current
   export let songs
-  function select(song) {
+  function select (song) {
     if (song !== current) current = song
   }
 </script>
