@@ -100,7 +100,7 @@
                         <td>{fastPrettyBytes(file.length)}</td>
                         <td>{fastPrettyBytes(file.downloaded)}</td>
                         <td>{parseInt(file.progress * 100)}%</td>
-                        {#if file._getMimeType()}
+                        {#if mime.getType(file.name)}
                           <td class="pointer" on:click={() => viewFile(file)}>View File</td>
                         {/if}
                       </tr>
