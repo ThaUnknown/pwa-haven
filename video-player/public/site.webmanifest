@@ -1,5 +1,5 @@
 {
-  "name": "Video Player",
+  "name": "Haven Video Player",
   "short_name": "Videos",
   "start_url": ".",
   "display": "fullscreen",
@@ -8,7 +8,7 @@
   "background_color": "#191c20",
   "theme_color": "#000",
   "scope": "/video-player/public/",
-  "description": "Simple and Powerful Video Player",
+  "description": "Fast and powerful video player which can stream any local or remote video files, render all known subtitle formats, even in PiP or while Casting, allow for rapid and simple rebinding of keybinds, all in a simple to navigate interface, which has anything you'd expect from a video player and more, like seek preview thumbnails.",
   "icons": [
     {
       "src": "./128.png",

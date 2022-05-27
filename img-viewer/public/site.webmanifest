@@ -1,5 +1,5 @@
 {
-  "name": "Image Viewer",
+  "name": "Haven Image Viewer",
   "short_name": "Images",
   "start_url": ".",
   "display": "fullscreen",
@@ -8,7 +8,7 @@
   "background_color": "#191c20",
   "theme_color": "#191c20",
   "scope": "/img-viewer/public/",
-  "description": "Simple and Fast Image Viewer",
+  "description": "Simple image viewer with built-in support for comparisons of images of variable resolutions. Features a toggle nearest neighbor scaling and no scaling for either very accurate image comparisons, or non-blurry pixel art viewing. Features basic image manipulation, like translation, rotation and transforms.",
   "icons": [
     {
       "src": "./128.png",

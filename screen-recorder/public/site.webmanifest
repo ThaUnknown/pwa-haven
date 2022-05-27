@@ -1,5 +1,5 @@
 {
-  "name": "Screen Recorder",
+  "name": "Haven Screen Recorder",
   "short_name": "Record",
   "start_url": ".",
   "display": "fullscreen",
@@ -8,7 +8,7 @@
   "background_color": "#191c20",
   "theme_color": "#191c20",
   "scope": "/screen-recorder/public/",
-  "description": "Simple and Powerful Screen Recorder",
+  "description": "Fully fledged media recording app, which allows you to save video as it's being recorded directly to your drive, and change every little option of said recording process, be that bitrate, codecs or audio recording.",
   "icons": [
     {
       "src": "./128.png",

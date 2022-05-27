@@ -1,5 +1,5 @@
 {
-  "name": "Torrent Client",
+  "name": "Haven Torrent Client",
   "short_name": "Torrents",
   "start_url": ".",
   "display": "fullscreen",
@@ -8,7 +8,7 @@
   "background_color": "#191c20",
   "theme_color": "#191c20",
   "scope": "/torrent-client/public/",
-  "description": "Simple and Fast Torrent Client",
+  "description": "Very powerful BitTorrent client which allows you to download existing or create new torrents directly to/from your drive, and stream them real-time to other Haven apps while they are still being downloaded, even across multiple sessions without loosing any download progress.",
   "icons": [
     {
       "src": "./128.png",

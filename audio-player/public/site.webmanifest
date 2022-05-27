@@ -1,5 +1,5 @@
 {
-  "name": "Audio Player",
+  "name": "Haven Audio Player",
   "short_name": "Music",
   "start_url": ".",
   "display": "fullscreen",
@@ -8,7 +8,7 @@
   "background_color": "#191c20",
   "theme_color": "#191c20",
   "scope": "/audio-player/public/",
-  "description": "Simple and Fast Audio Player",
+  "description": "Powerful audio player which can play any local or remote audio files, parse their metadata and display it all in a simple to use interface. Supports Casting, MediaSession, ID3 tags and much more.",
   "icons": [
     {
       "src": "./128.png",

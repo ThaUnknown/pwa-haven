@@ -45,7 +45,7 @@
           let lastmeta = null
           let count = 0
 
-          function handleFrames(now, metadata) {
+          function handleFrames (now, metadata) {
             if (count) {
               // resolve on 2nd frame, 1st frame might be a cut-off
               if (lastmeta) {
@@ -96,16 +96,16 @@
     })
   }
 
-  //document.fullscreenElement isn't reactive
+  // document.fullscreenElement isn't reactive
   document.addEventListener('fullscreenchange', () => {
     isFullscreen = !!document.fullscreenElement
   })
 
-  function handleHeaders() {
+  function handleHeaders () {
     subHeaders = subs?.headers
   }
 
-  function updateFiles(files) {
+  function updateFiles (files) {
     if (files && files.length) {
       videos = files.filter(file => videoRx.test(file.name))
       if (videos?.length) {
@@ -121,7 +121,7 @@
     }
   }
 
-  async function handleCurrent(file) {
+  async function handleCurrent (file) {
     if (file) {
       if (thumbnailData.video?.src) URL.revokeObjectURL(video?.src)
       Object.assign(thumbnailData, {
@@ -148,13 +148,13 @@
     if (!subs) initSubs()
   })
 
-  function initSubs() {
+  function initSubs () {
     if (current && video) {
       if (subs) subs.destroy()
       subs = new Subtitles(video, files, current, handleHeaders)
     }
   }
-  function cycleSubtitles() {
+  function cycleSubtitles () {
     if (current && subs?.headers) {
       const tracks = subs.headers.filter(header => header)
       const index = tracks.indexOf(subs.headers[subs.current]) + 1
@@ -164,43 +164,43 @@
 
   let subDelay = 0
   $: updateDelay(subDelay)
-  function updateDelay(delay) {
+  function updateDelay (delay) {
     if (subs?.renderer) subs.renderer.timeOffset = delay
   }
 
   let currentTime = 0
   $: progress = currentTime / duration
   $: targetTime = (!paused && currentTime) || targetTime
-  function handleMouseDown({ target }) {
+  function handleMouseDown ({ target }) {
     wasPaused = paused
     paused = true
     targetTime = target.value * duration
   }
-  function handleMouseUp() {
+  function handleMouseUp () {
     paused = wasPaused
     currentTime = targetTime
   }
-  function handleProgress({ target }) {
+  function handleProgress ({ target }) {
     targetTime = target.value * duration
   }
 
-  function playPause() {
+  function playPause () {
     paused = !paused
   }
-  function toggleMute() {
+  function toggleMute () {
     muted = !muted
   }
-  function playNext() {
+  function playNext () {
     handleCurrent(videos[(videos.indexOf(current) + 1) % videos.length])
   }
-  function playLast() {
+  function playLast () {
     const index = videos.indexOf(current)
     handleCurrent(videos[index === 0 ? videos.length - 1 : index - 1])
   }
-  function toggleFullscreen() {
+  function toggleFullscreen () {
     document.fullscreenElement ? document.exitFullscreen() : container.requestFullscreen()
   }
-  function seek(time) {
+  function seek (time) {
     if (time === 85 && currentTime < 10) {
       targetTime = currentTime = 90
     } else if (time === 85 && duration - currentTime < 90) {
@@ -209,13 +209,13 @@
       targetTime = currentTime += time
     }
   }
-  function forward() {
+  function forward () {
     seek(2)
   }
-  function rewind() {
+  function rewind () {
     seek(-2)
   }
-  function selectAudio(id) {
+  function selectAudio (id) {
     if (id !== undefined) {
       for (const track of video.audioTracks) {
         track.enabled = track.id === id
@@ -223,7 +223,7 @@
       seek(-0.5) // stupid fix because video freezes up when chaging tracks
     }
   }
-  function toggleCast() {
+  function toggleCast () {
     if (video.readyState) {
       if (presentationConnection) {
         presentationConnection?.terminate()
@@ -232,7 +232,7 @@
       }
     }
   }
-  function togglePopout() {
+  function togglePopout () {
     if (video.readyState) {
       if (!subs?.renderer) {
         if (video !== document.pictureInPictureElement) {
@@ -370,7 +370,7 @@
     }
   })
 
-  function getBurnIn(noSubs) {
+  function getBurnIn (noSubs) {
     const canvas = document.createElement('canvas')
     const context = canvas.getContext('2d')
     let loop = null
@@ -390,7 +390,7 @@
     return { stream: canvas.captureStream(), destroy }
   }
 
-  function initCast(event) {
+  function initCast (event) {
     // these quality settings are likely to make cast overheat, oh noes!
     let peer = new Peer({
       polite: true,
@@ -447,12 +447,12 @@
     }
   }
 
-  function immersePlayer() {
+  function immersePlayer () {
     immersed = true
     immerseTimeout = undefined
   }
 
-  function resetImmerse() {
+  function resetImmerse () {
     if (immerseTimeout) {
       clearTimeout(immerseTimeout)
     } else {
@@ -461,7 +461,7 @@
     immerseTimeout = setTimeout(immersePlayer, 8 * 1000)
   }
 
-  function hideBuffering() {
+  function hideBuffering () {
     if (bufferTimeout) {
       clearTimeout(bufferTimeout)
       bufferTimeout = null
@@ -469,7 +469,7 @@
     }
   }
 
-  function showBuffering() {
+  function showBuffering () {
     bufferTimeout = setTimeout(() => {
       buffering = true
       resetImmerse()
@@ -480,7 +480,7 @@
     playbackRate: 1,
     position: Math.max(0, Math.min(duration || 0, currentTime || 0))
   })
-  async function mediaChange(current, image) {
+  async function mediaChange (current, image) {
     if (current) {
       const { release_group, anime_title, episode_number, episode_title } = await anitomyscript(current.name)
       // honestly, this is made for anime, but works fantastic for everything else.
@@ -488,18 +488,18 @@
       if ('mediaSession' in navigator) {
         const metadata = image
           ? new MediaMetadata({
-              title: name || 'Video Player',
-              artwork: [
-                {
-                  src: image,
-                  sizes: '256x256',
-                  type: 'image/jpg'
-                }
-              ]
-            })
+            title: name || 'Video Player',
+            artwork: [
+              {
+                src: image,
+                sizes: '256x256',
+                type: 'image/jpg'
+              }
+            ]
+          })
           : new MediaMetadata({
-              title: name || 'Video Player'
-            })
+            title: name || 'Video Player'
+          })
         if (release_group) metadata.artist = release_group
         navigator.mediaSession.metadata = metadata
       }
@@ -517,7 +517,7 @@
   }
   let stats = null
   let requestCallback = null
-  function toggleStats() {
+  function toggleStats () {
     if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
       if (requestCallback) {
         stats = null
@@ -531,7 +531,7 @@
       }
     }
   }
-  async function handleStats(now, metadata) {
+  async function handleStats (now, metadata) {
     if (stats) {
       stats = {
         fps: await video.fps,
@@ -545,8 +545,8 @@
       setTimeout(() => video.requestVideoFrameCallback(handleStats), 200)
     }
   }
-  function getBufferHealth(time) {
-    for (let index = video.buffered.length; index--; ) {
+  function getBufferHealth (time) {
+    for (let index = video.buffered.length; index--;) {
       if (time < video.buffered.end(index) && time > video.buffered.start(index)) {
         return parseInt(video.buffered.end(index) - time)
       }
@@ -554,7 +554,7 @@
   }
   let fast = false
   let successCount = 0
-  async function checkSpeed() {
+  async function checkSpeed () {
     if (!fast && (current instanceof File || current instanceof URLFile) && duration) {
       const byterate = current.size / duration
       const currBps = speed()
@@ -584,13 +584,13 @@
   let hover = null
   let hoverTime = 0
   let hoverOffset = 0
-  function handleHover({ offsetX, target }) {
+  function handleHover ({ offsetX, target }) {
     hoverOffset = offsetX / target.clientWidth
     hoverTime = duration * hoverOffset
     hover.style.setProperty('left', hoverOffset * 100 + '%')
     thumbnail = thumbnailData.thumbnails[Math.floor(hoverTime / thumbnailData.interval)] || ' '
   }
-  function createThumbnail(vid = video) {
+  function createThumbnail (vid = video) {
     if (vid?.readyState >= 2 && (current instanceof File || current instanceof URLFile)) {
       const index = Math.floor(vid.currentTime / thumbnailData.interval)
       if (!thumbnailData.thumbnails[index]) {
@@ -602,14 +602,14 @@
     }
   }
   $: initThumbnails(200 / (videoWidth / videoHeight))
-  function initThumbnails(height) {
+  function initThumbnails (height) {
     if (!isNaN(height)) {
       thumbnailData.interval = duration / 300 < 5 ? 5 : duration / 300
       thumbnailData.canvas.height = height
     }
   }
 
-  function finishThumbnails() {
+  function finishThumbnails () {
     const t0 = performance.now()
     const video = document.createElement('video')
     let index = 0
@@ -650,7 +650,7 @@
   let innerWidth, innerHeight, videoWidth, videoHeight
   let menubarOffset = 0
   $: calcMenubarOffset(innerWidth, innerHeight, videoWidth, videoHeight, isStandalone)
-  function calcMenubarOffset(innerWidth, innerHeight, videoWidth, videoHeight, isStandalone) {
+  function calcMenubarOffset (innerWidth, innerHeight, videoWidth, videoHeight, isStandalone) {
     // outerheight resize and innerheight resize is mutual, additionally update on metadata and app state change
     if (isStandalone && videoWidth && videoHeight) {
       // so windows is very dumb, and calculates windowed mode as if it was window XP, with the old bars, but not when maximised
