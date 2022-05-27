@@ -78,8 +78,8 @@
         await fileStream.write({ type: 'write', position: 0, data: fixed })
         fileStream.close()
       } else {
-        const file = await fixDuration(blob.slice(0, 78), duration)
-        const patched = new Blob([file, blob.slice(78)])
+        const file = await fixDuration(blob.slice(0, 82), duration)
+        const patched = new Blob([file, blob.slice(82)])
         const downloadLink = document.createElement('a')
         downloadLink.href = URL.createObjectURL(patched)
         downloadLink.download = `${startTime}.${settings.container}`
