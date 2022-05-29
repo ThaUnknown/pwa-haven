@@ -228,6 +228,7 @@
       for (const track of video.videoTracks) {
         track.selected = track.id === id
       }
+      setTimeout(() => subs.renderer?.resize(), 200) // stupid fix because video metadata doesnt update for multiple frames
     }
   }
   function toggleCast () {
@@ -784,7 +785,7 @@
       </span>
       <div class="dropdown-menu dropdown-menu-left ctrl custom-radio p-10 pb-5 text-capitalize" aria-labelledby="bvideo" data-name="selectVideo">
         {#each video.videoTracks as track}
-          <input name="video-radio-set" type="radio" id="video-{track.id}-radio" value={track.id} checked={track.enabled} />
+          <input name="video-radio-set" type="radio" id="video-{track.id}-radio" value={track.id} checked={track.selected} />
           <label for="video-{track.id}-radio" on:click={() => selectVideo(track.id)} class="text-truncate pb-5">
             {(track.language || (!Object.values(video.videoTracks).some(track => track.language === 'eng' || track.language === 'en') ? 'eng' : track.label)) +
               (track.label ? ' - ' + track.label : '')}</label>
