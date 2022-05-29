@@ -93,6 +93,7 @@ export default class Subtitles {
     if (!this.renderer) {
       this.renderer = new SubtitlesOctopus({
         video: this.video,
+        blendMode: 'js',
         subContent: this.headers[this.current].header.slice(0, -1),
         fonts: this.fonts,
         workerUrl: 'lib/subtitles-octopus-worker.js'
