@@ -64,6 +64,9 @@ RAM usage <70MB per instance `[note: this can sometimes exceed 0.5GB based on th
   - Softcoded/embedded subtitles, fonts and glyphs `[for URLs/remote playback, the media must be CORS enabled]`
 - Basic playback controls `[play, pause, last, next, progress, volume, mute, cast, pip, fullscreen]`
 - Keybinds `[space, n, m, p, f, s c, leftarr, rightarr, uparr, downarr]`
+- Multi-sub support
+- Multi-audio support `[Requires about://flags/#enable-experimental-web-platform-features to be enabled]`
+- Multi-video support `[Requires about://flags/#enable-experimental-web-platform-features to be enabled]`
 - Seek preview thumbnails
 - Media Session support `[metadata based on parsed file name]`
 - Media Controls support
