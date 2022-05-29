@@ -211,11 +211,11 @@ export default class Subtitles {
         const finish = () => {
           console.log('Sub parsing finished', toTS((performance.now() - t0) / 1000))
           this.parsed = true
-          this.stream?.destroy()
           this.parser?.destroy()
-          fileStream.destroy()
-          this.stream = undefined
           this.parser = undefined
+          fileStream.destroy()
+          this.stream?.destroy() // this throws an error, but performance...
+          this.stream = undefined
           this.selectCaptions(this.current)
           parser = undefined
           resolve()
@@ -275,7 +275,7 @@ export default class Subtitles {
     })
     if (!skipFile) {
       parser.on('file', file => {
-        if (file.mimetype === 'application/x-truetype-font' || file.mimetype === 'application/font-woff' || file.mimetype === 'application/vnd.ms-opentype') {
+        if (file.mimetype === 'application/x-truetype-font' || file.mimetype === 'application/font-woff' || file.mimetype === 'application/vnd.ms-opentype' || file.mimetype === 'font/sfnt' || file.mimetype.startsWith('font/') || file.filename.toLowerCase().endsWith('.ttf')) {
           this.fonts.push(URL.createObjectURL(new Blob([file.data], { type: file.mimetype })))
         }
       })

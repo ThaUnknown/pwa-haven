@@ -220,7 +220,14 @@
       for (const track of video.audioTracks) {
         track.enabled = track.id === id
       }
-      seek(-0.5) // stupid fix because video freezes up when chaging tracks
+      seek(-0.2) // stupid fix because video freezes up when chaging tracks
+    }
+  }
+  function selectVideo (id) {
+    if (id !== undefined) {
+      for (const track of video.videoTracks) {
+        track.selected = track.id === id
+      }
     }
   }
   function toggleCast () {
@@ -755,7 +762,7 @@
     </div>
     <!-- svelte-ignore missing-declaration -->
     {#if 'audioTracks' in HTMLVideoElement.prototype && video?.audioTracks?.length > 1}
-      <div class="audio-tracks dropdown dropup with-arrow">
+      <div class="dropdown dropup with-arrow">
         <span class="material-icons ctrl" title="Audio Tracks" id="baudio" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-name="audioButton">
           queue_music
         </span>
@@ -769,6 +776,22 @@
         </div>
       </div>
     {/if}
+    <!-- svelte-ignore missing-declaration -->
+    {#if 'videoTracks' in HTMLVideoElement.prototype && video?.videoTracks?.length > 1}
+    <div class="dropdown dropup with-arrow">
+      <span class="material-icons ctrl" title="Video Tracks" id="bvideo" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-name="videoButton">
+        playlist_play
+      </span>
+      <div class="dropdown-menu dropdown-menu-left ctrl custom-radio p-10 pb-5 text-capitalize" aria-labelledby="bvideo" data-name="selectVideo">
+        {#each video.videoTracks as track}
+          <input name="video-radio-set" type="radio" id="video-{track.id}-radio" value={track.id} checked={track.enabled} />
+          <label for="video-{track.id}-radio" on:click={() => selectVideo(track.id)} class="text-truncate pb-5">
+            {(track.language || (!Object.values(video.videoTracks).some(track => track.language === 'eng' || track.language === 'en') ? 'eng' : track.label)) +
+              (track.label ? ' - ' + track.label : '')}</label>
+        {/each}
+      </div>
+    </div>
+  {/if}
     <div class="w-full d-flex align-items-center" data-name="progressWrapper">
       <div class="ts">{toTS(targetTime, duration > 3600 ? 2 : 3)}</div>
       <div class="w-full h-full position-relative">

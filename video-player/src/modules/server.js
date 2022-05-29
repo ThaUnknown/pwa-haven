@@ -1,15 +1,15 @@
-import speedometer from 'speedometer'
+import throughput from 'throughput'
 const worker = navigator.serviceWorker.controller
 const keepAliveTime = 20000
 
 let workerPortCount = 0
 let workerKeepAliveInterval = null
 let file = null
-export let speed = speedometer(5)
+export let speed = throughput(5)
 
 export function setFile (streamable) {
   file = streamable
-  speed = speedometer(5)
+  speed = throughput(5)
 }
 
 const handleWorker = worker => {
