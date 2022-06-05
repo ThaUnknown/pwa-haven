@@ -280,22 +280,25 @@
         } else {
           const canvasVideo = document.createElement('video')
           const { stream, destroy } = getBurnIn()
+          const cleanup = () => {
+            pip = false
+            destroy()
+            canvasVideo.remove()
+          }
           pip = true
           canvasVideo.srcObject = stream
           canvasVideo.onloadedmetadata = () => {
             canvasVideo.play()
-            canvasVideo.requestPictureInPicture().catch(e => {
-              pip = false
-              console.warn('Failed To Burn In Subtitles ' + e)
-              destroy()
-              canvasVideo.remove()
-            })
+            if (pip) {
+              canvasVideo.requestPictureInPicture().catch(e => {
+                cleanup()
+                console.warn('Failed To Burn In Subtitles ' + e)
+              })
+            } else {
+              cleanup()
+            }
           }
-          canvasVideo.onleavepictureinpicture = () => {
-            destroy()
-            canvasVideo.remove()
-            pip = false
-          }
+          canvasVideo.onleavepictureinpicture = cleanup
         }
       }
     }
@@ -563,23 +566,26 @@
       } else {
         requestCallback = video.requestVideoFrameCallback((a, b) => {
           stats = {}
-          handleStats(a, b)
+          handleStats(a, b, b)
         })
       }
     }
   }
-  async function handleStats (now, metadata) {
+  async function handleStats (now, metadata, lastmeta) {
     if (stats) {
+      const msbf = (metadata.mediaTime - lastmeta.mediaTime) / (metadata.presentedFrames - lastmeta.presentedFrames)
+      const fps = (1 / msbf).toFixed(3)
       stats = {
-        fps: await video.fps,
+        fps,
         presented: metadata.presentedFrames,
         dropped: video.getVideoPlaybackQuality()?.droppedVideoFrames,
         processing: metadata.processingDuration + ' ms',
         viewport: video.clientWidth + 'x' + video.clientHeight,
         resolution: videoWidth + 'x' + videoHeight,
-        buffer: getBufferHealth(metadata.mediaTime) + ' s'
+        buffer: getBufferHealth(metadata.mediaTime) + ' s',
+        speed: video.playbackRate || 1
       }
-      setTimeout(() => video.requestVideoFrameCallback(handleStats), 200)
+      setTimeout(() => video.requestVideoFrameCallback((n, m) => handleStats(n, m, metadata)), 200)
     }
   }
   function getBufferHealth (time) {
@@ -588,6 +594,7 @@
         return parseInt(video.buffered.end(index) - time)
       }
     }
+    return 0
   }
   let fast = false
   let successCount = 0
@@ -761,7 +768,8 @@
       Frame time: {stats.processing}<br />
       Viewport: {stats.viewport}<br />
       Resolution: {stats.resolution}<br />
-      Buffer health: {stats.buffer || 0}
+      Buffer health: {stats.buffer}<br />
+      Playback speed: x{stats.speed?.toFixed(1)}
     </div>
   {/if}
   <div class="top z-40 d-flex flex-row-reverse">
@@ -992,6 +1000,10 @@
     margin: 2rem;
     z-index: 3;
     display: none;
+  }
+
+  :fullscreen {
+    background: #000 !important;
   }
 
   @media (pointer: none), (pointer: coarse) {
