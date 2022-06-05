@@ -40,7 +40,8 @@ RAM usage <40MB per instance
 - Support for a lot of metadata tags `[ape, asf, exif, id3, riff/info]`
 - Support for external cover files
 - Basic playback controls `[play, pause, last, next, progress, volume, mute, loop one, shuffle, cast, playback speed]`
-- Keybinds `[space, n, m, c, leftarr, rightarr, uparr, downarr, [, ], \]`
+- Keybinds `[space, n, m, c, leftarr, rightarr, uparr, downarr, [, ], \]` [view all keybinds with `]
+- Screenshot current frame `[with subtitles, default bind: X]`
 - Media Session support, with audio metadata
 - Media Controls support, with audio metadata
 - Popout visualizer
