@@ -10,8 +10,8 @@
   import Keybinds, { loadWithDefaults } from 'svelte-keybinds'
   import 'rvfc-polyfill'
 
-  $: updateFiles(files)
   export let files = []
+  $: updateFiles(files)
   export let name = null
   let src = null
   let video = null
@@ -240,6 +240,28 @@
       }
     }
   }
+  async function screenshot () {
+    if ('clipboard' in navigator) {
+      const canvas = document.createElement('canvas')
+      const context = canvas.getContext('2d')
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+      context.drawImage(video, 0, 0)
+      if (subs?.renderer) {
+        subs.renderer.resize(video.videoWidth, video.videoHeight)
+        await new Promise(resolve => setTimeout(resolve, 1000)) // this is hacky, but TLDR wait for canvas to update and re-render, in practice this will take at MOST 100ms, but just to be safe
+        context.drawImage(subs.renderer._canvas, 0, 0, canvas.width, canvas.height)
+        subs.renderer.resize(0, 0, 0, 0) // undo resize
+      }
+      const blob = await new Promise(resolve => canvas.toBlob(resolve))
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          [blob.type]: blob
+        })
+      ])
+      canvas.remove()
+    }
+  }
   function togglePopout () {
     if (video.readyState) {
       if (!subs?.renderer) {
@@ -280,6 +302,11 @@
   }
   let showKeybinds = false
   loadWithDefaults({
+    KeyX: {
+      fn: () => screenshot(),
+      id: 'screenshot_monitor',
+      type: 'icon'
+    },
     KeyR: {
       fn: () => seek(-90),
       id: '-90'
@@ -384,6 +411,7 @@
     let loop = null
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
+    if (!noSubs) subs.renderer.resize(video.videoWidth, video.videoHeight)
     const renderFrame = () => {
       context.drawImage(video, 0, 0)
       if (!noSubs) context.drawImage(subs.renderer?._canvas, 0, 0, canvas.width, canvas.height)
@@ -391,6 +419,7 @@
     }
     renderFrame()
     const destroy = () => {
+      if (!noSubs) subs.renderer.resize()
       video.cancelVideoFrameCallback(loop)
       canvas.remove()
     }
@@ -609,6 +638,7 @@
       }
     }
   }
+  let videoWidth, videoHeight
   $: initThumbnails(200 / (videoWidth / videoHeight))
   function initThumbnails (height) {
     if (!isNaN(height)) {
@@ -655,7 +685,7 @@
     isStandalone = matches
   })
   const isWindows = navigator.appVersion.includes('Windows')
-  let innerWidth, innerHeight, videoWidth, videoHeight
+  let innerWidth, innerHeight
   let menubarOffset = 0
   $: calcMenubarOffset(innerWidth, innerHeight, videoWidth, videoHeight, isStandalone)
   function calcMenubarOffset (innerWidth, innerHeight, videoWidth, videoHeight, isStandalone) {

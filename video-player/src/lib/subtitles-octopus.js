@@ -169,32 +169,30 @@ export default class SubtitlesOctopus extends EventTarget {
       left = videoSize.x
     }
 
-    if (this._canvas.style.top !== top + 'px' || this._canvas.style.left !== left + 'px') {
-      if (videoSize != null) {
-        this._canvas.style.top = top + 'px'
-        this._canvas.style.left = left + 'px'
-        this._canvas.style.width = videoSize.width + 'px'
-        this._canvas.style.height = videoSize.height + 'px'
-      }
-      if (!(this._canvasctrl.width === width && this._canvasctrl.height === height)) {
-        // only re-paint if dimensions actually changed
-        // dont spam re-paints like crazy when re-sizing with animations, but still update instantly without them
-        if (this._resizeTimeoutBuffer) {
-          clearTimeout(this._resizeTimeoutBuffer)
-          this._resizeTimeoutBuffer = setTimeout(() => {
-            this._resizeTimeoutBuffer = undefined
-            this._canvasctrl.width = width
-            this._canvasctrl.height = height
-            this.sendMessage('canvas', { width, height })
-          }, 100)
-        } else {
+    if (videoSize != null) {
+      this._canvas.style.top = top + 'px'
+      this._canvas.style.left = left + 'px'
+      this._canvas.style.width = videoSize.width + 'px'
+      this._canvas.style.height = videoSize.height + 'px'
+    }
+    if (!(this._canvasctrl.width === width && this._canvasctrl.height === height)) {
+      // only re-paint if dimensions actually changed
+      // dont spam re-paints like crazy when re-sizing with animations, but still update instantly without them
+      if (this._resizeTimeoutBuffer) {
+        clearTimeout(this._resizeTimeoutBuffer)
+        this._resizeTimeoutBuffer = setTimeout(() => {
+          this._resizeTimeoutBuffer = undefined
           this._canvasctrl.width = width
           this._canvasctrl.height = height
           this.sendMessage('canvas', { width, height })
-          this._resizeTimeoutBuffer = setTimeout(() => {
-            this._resizeTimeoutBuffer = undefined
-          }, 100)
-        }
+        }, 100)
+      } else {
+        this._canvasctrl.width = width
+        this._canvasctrl.height = height
+        this.sendMessage('canvas', { width, height })
+        this._resizeTimeoutBuffer = setTimeout(() => {
+          this._resizeTimeoutBuffer = undefined
+        }, 100)
       }
     }
   }
