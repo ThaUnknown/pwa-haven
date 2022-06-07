@@ -11,14 +11,14 @@
     folder: null,
     vidrate: 25,
     audrate: 128,
-    mic: true,
+    mic: false,
     supression: true,
-    cancellation: true,
+    cancellation: false,
     channels: 2,
     samplesize: 24,
     samplerate: 48,
-    codec: 'vp9',
-    container: 'mkv',
+    codec: 'vp8',
+    container: 'webm',
     cursor: 'never'
   }
   let folderName = null
@@ -51,38 +51,41 @@
       videoBitsPerSecond: settings.vidrate * 1000000,
       mimeType: `video/${settings.container === 'mkv' ? 'x-matroska' : 'webm'};codecs=${settings.codec}`
     })
-    startTime = Date.now()
-    const fileHandle = await settings.folder?.getFileHandle(`${startTime}.${settings.container}`, { create: true })
+    startTime = new Date()
+    const fileHandle = await settings.folder?.getFileHandle(`${dateString(startTime)}.${settings.container}`, { create: true })
     const fileStream = await fileHandle?.createWritable()
     let metadata = null
     mediaRecorder.ondataavailable = ({ data }) => {
       if (data.size > 0) {
         if (fileStream) {
           if (!metadata) {
-            fileStream.seek(4)
-            metadata = data.slice(0, 78)
+            fileStream.seek(data.size + 1)
+            metadata = data
+          } else {
+            fileStream.write(data)
           }
-          fileStream.write(data)
         } else {
-          recordedChunks.push(data)
+          if (!metadata) {
+            metadata = data
+          } else {
+            recordedChunks.push(data)
+          }
         }
       }
     }
     mediaRecorder.onstop = async () => {
-      console.log('stopped')
       const duration = Date.now() - startTime
-      const blob = new Blob(recordedChunks)
       cleanup()
       if (fileStream) {
         const fixed = await fixDuration(metadata, duration)
         await fileStream.write({ type: 'write', position: 0, data: fixed })
         fileStream.close()
       } else {
-        const file = await fixDuration(blob.slice(0, 82), duration)
-        const patched = new Blob([file, blob.slice(82)])
+        const fixed = await fixDuration(metadata, duration)
+        const patched = new Blob([fixed, ...recordedChunks])
         const downloadLink = document.createElement('a')
         downloadLink.href = URL.createObjectURL(patched)
-        downloadLink.download = `${startTime}.${settings.container}`
+        downloadLink.download = `${dateString(startTime)}.${settings.container}`
         downloadLink.click()
         URL.revokeObjectURL(patched)
       }
@@ -142,6 +145,9 @@
       handleRecord(new MediaStream(displayTracks))
     }
   }
+  function dateString (date) {
+    return new Intl.DateTimeFormat('en-GB', { dateStyle: 'short', timeStyle: 'medium' }).format(date).replace(/[:/]/g, '.')
+  }
 </script>
 
 <div class="sticky-alerts d-flex flex-column-reverse">
@@ -149,112 +155,116 @@
 </div>
 <div class="w-full h-full overflow-hidden position-relative dragarea d-flex align-items-center justify-content-center overflow-auto">
   <div class="content flex-row flex-wrap mw-600">
-    {#if 'showDirectoryPicker' in window}
-      <div class="input-group mb-10 w-300" on:click={pickFolder}>
-        <div class="input-group-prepend">
-          <button class="btn btn-primary w-150" type="button">Choose Folder</button>
+    {#if 'getDisplayMedia' in navigator.mediaDevices}
+      {#if 'showDirectoryPicker' in window}
+        <div class="input-group mb-10 w-300" on:click={pickFolder}>
+          <div class="input-group-prepend">
+            <button class="btn btn-primary w-150" type="button">Choose Folder</button>
+          </div>
+          <input type="text" class="form-control pl-10" placeholder="Folder" value={folderName} />
         </div>
-        <input type="text" class="form-control pl-10" placeholder="Folder" value={folderName} />
+      {/if}
+      <div class="input-group mb-10 w-300">
+        <div class="input-group-prepend">
+          <span class="input-group-text w-150 justify-content-center">Cursor Display</span>
+        </div>
+        <select class="form-control" bind:value={settings.cursor}>
+          <option value="never">Never</option>
+          <option value="always">Always</option>
+          <option value="motion">Motion</option>
+        </select>
       </div>
-    {/if}
-    <div class="input-group mb-10 w-300">
-      <div class="input-group-prepend">
-        <span class="input-group-text w-150 justify-content-center">Cursor Display</span>
+      <div class="input-group mb-10 w-300">
+        <div class="input-group-prepend">
+          <span class="input-group-text w-150 justify-content-center">Video Container</span>
+        </div>
+        <select class="form-control" bind:value={settings.container}>
+          <option value="mkv">mkv</option>
+          <option value="webm">webm</option>
+        </select>
       </div>
-      <select class="form-control" bind:value={settings.cursor}>
-        <option value="never">Never</option>
-        <option value="always">Always</option>
-        <option value="motion">Motion</option>
-      </select>
-    </div>
-    <div class="input-group mb-10 w-300">
-      <div class="input-group-prepend">
-        <span class="input-group-text w-150 justify-content-center">Video Container</span>
+      <div class="input-group mb-10 w-300">
+        <div class="input-group-prepend">
+          <span class="input-group-text w-150 justify-content-center">Video Codec</span>
+        </div>
+        <select class="form-control" bind:value={settings.codec}>
+          <option value="vp9">vp9</option>
+          <option value="vp8">vp8</option>
+          <option value="h264">h264</option>
+          <option value="avc1">avc1</option>
+        </select>
       </div>
-      <select class="form-control" bind:value={settings.container}>
-        <option value="mkv">mkv</option>
-        <option value="webm">webm</option>
-      </select>
-    </div>
-    <div class="input-group mb-10 w-300">
-      <div class="input-group-prepend">
-        <span class="input-group-text w-150 justify-content-center">Video Codec</span>
+      <div class="input-group w-300 mb-10">
+        <div class="input-group-prepend">
+          <span class="input-group-text w-150 justify-content-center">Video Framerate</span>
+        </div>
+        <input type="number" bind:value={settings.fps} min="0" max="120" class="form-control" />
+        <div class="input-group-append">
+          <span class="input-group-text w-50">FPS</span>
+        </div>
       </div>
-      <select class="form-control" bind:value={settings.codec}>
-        <option value="vp9">vp9</option>
-        <option value="vp8">vp8</option>
-        <option value="h264">h264</option>
-        <option value="avc1">avc1</option>
-      </select>
-    </div>
-    <div class="input-group w-300 mb-10">
-      <div class="input-group-prepend">
-        <span class="input-group-text w-150 justify-content-center">Video Framerate</span>
+      <div class="input-group w-300 mb-10">
+        <div class="input-group-prepend">
+          <span class="input-group-text w-150 justify-content-center">Video Bitrate</span>
+        </div>
+        <input type="number" bind:value={settings.vidrate} min="0" max="50" class="form-control" />
+        <div class="input-group-append">
+          <span class="input-group-text w-50">MB/s</span>
+        </div>
       </div>
-      <input type="number" bind:value={settings.fps} min="0" max="120" class="form-control" />
-      <div class="input-group-append">
-        <span class="input-group-text w-50">FPS</span>
+      <div class="input-group w-300 mb-10">
+        <div class="input-group-prepend">
+          <span class="input-group-text w-150 justify-content-center">Audio Bitrate</span>
+        </div>
+        <input type="number" bind:value={settings.audrate} min="0" max="128" class="form-control" />
+        <div class="input-group-append">
+          <span class="input-group-text w-50">KB/s</span>
+        </div>
       </div>
-    </div>
-    <div class="input-group w-300 mb-10">
-      <div class="input-group-prepend">
-        <span class="input-group-text w-150 justify-content-center">Video Bitrate</span>
+      <div class="input-group w-300 mb-10">
+        <div class="input-group-prepend">
+          <span class="input-group-text w-150 justify-content-center">Sample Rate</span>
+        </div>
+        <input type="number" bind:value={settings.samplerate} min="22" max="192" class="form-control" />
+        <div class="input-group-append">
+          <span class="input-group-text w-50">KHz</span>
+        </div>
       </div>
-      <input type="number" bind:value={settings.vidrate} min="0" max="50" class="form-control" />
-      <div class="input-group-append">
-        <span class="input-group-text w-50">MB/s</span>
+      <div class="input-group w-300 mb-10">
+        <div class="input-group-prepend">
+          <span class="input-group-text w-150 justify-content-center">Sample Size</span>
+        </div>
+        <input type="number" bind:value={settings.samplesize} min="8" max="32" class="form-control" />
+        <div class="input-group-append">
+          <span class="input-group-text w-50">bits</span>
+        </div>
       </div>
-    </div>
-    <div class="input-group w-300 mb-10">
-      <div class="input-group-prepend">
-        <span class="input-group-text w-150 justify-content-center">Audio Bitrate</span>
+      <div class="input-group w-300 mb-10">
+        <div class="input-group-prepend">
+          <span class="input-group-text w-150 justify-content-center">Audio Channels</span>
+        </div>
+        <input type="number" bind:value={settings.channels} min="1" max="8" class="form-control" />
+        <div class="input-group-append">
+          <span class="input-group-text">Channels</span>
+        </div>
       </div>
-      <input type="number" bind:value={settings.audrate} min="0" max="128" class="form-control" />
-      <div class="input-group-append">
-        <span class="input-group-text w-50">KB/s</span>
+      <div class="custom-switch mb-10 font-size-16 w-300">
+        <input type="checkbox" id="compact" bind:checked={settings.mic} />
+        <label for="compact">Record Microphone</label>
       </div>
-    </div>
-    <div class="input-group w-300 mb-10">
-      <div class="input-group-prepend">
-        <span class="input-group-text w-150 justify-content-center">Sample Rate</span>
+      <div class="custom-switch mb-10 font-size-16 w-300">
+        <input type="checkbox" id="mic" bind:checked={settings.supression} />
+        <label for="mic">Noise Suppression</label>
       </div>
-      <input type="number" bind:value={settings.samplerate} min="22" max="192" class="form-control" />
-      <div class="input-group-append">
-        <span class="input-group-text w-50">KHz</span>
+      <div class="custom-switch mb-10 font-size-16 w-300">
+        <input type="checkbox" id="cancel" bind:checked={settings.cancellation} />
+        <label for="cancel">Echo Cancellation</label>
       </div>
-    </div>
-    <div class="input-group w-300 mb-10">
-      <div class="input-group-prepend">
-        <span class="input-group-text w-150 justify-content-center">Sample Size</span>
-      </div>
-      <input type="number" bind:value={settings.samplesize} min="8" max="32" class="form-control" />
-      <div class="input-group-append">
-        <span class="input-group-text w-50">bits</span>
-      </div>
-    </div>
-    <div class="input-group w-300 mb-10">
-      <div class="input-group-prepend">
-        <span class="input-group-text w-150 justify-content-center">Audio Channels</span>
-      </div>
-      <input type="number" bind:value={settings.channels} min="1" max="8" class="form-control" />
-      <div class="input-group-append">
-        <span class="input-group-text">Channels</span>
-      </div>
-    </div>
-    <div class="custom-switch mb-10 font-size-16 w-300">
-      <input type="checkbox" id="compact" bind:checked={settings.mic} />
-      <label for="compact">Record Microphone</label>
-    </div>
-    <div class="custom-switch mb-10 font-size-16 w-300">
-      <input type="checkbox" id="mic" bind:checked={settings.supression} />
-      <label for="mic">Noise Suppression</label>
-    </div>
-    <div class="custom-switch mb-10 font-size-16 w-300">
-      <input type="checkbox" id="cancel" bind:checked={settings.cancellation} />
-      <label for="cancel">Echo Cancellation</label>
-    </div>
 
-    <button class="btn mt-10" on:click={record}>{mediaRecorder ? 'Stop Recording' : 'Start Recording'}</button>
+      <button class="btn mt-10" on:click={record}>{mediaRecorder ? 'Stop Recording' : 'Start Recording'}</button>
+    {:else}
+      <h1 class="font-weight-bold">Media Recording Unsupported!</h1>
+    {/if}
   </div>
 </div>
 

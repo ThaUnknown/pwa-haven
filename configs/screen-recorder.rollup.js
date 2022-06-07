@@ -17,7 +17,7 @@ function serve () {
   return {
     writeBundle () {
       if (server) return
-      server = require('child_process').spawn('sirv', ['screen-recorder/public'], {
+      server = require('child_process').spawn('sirv', ['./screen-recorder/public', ['-D']], {
         stdio: ['ignore', 'inherit', 'inherit'],
         shell: true
       })
@@ -29,12 +29,12 @@ function serve () {
 }
 
 export default {
-  input: 'screen-recorder/src/main.js',
+  input: './screen-recorder/src/main.js',
   output: {
     sourcemap: true,
     format: 'iife',
     name: 'app',
-    file: 'screen-recorder/public/build/bundle.js'
+    file: './screen-recorder/public/build/bundle.js'
   },
   plugins: [
     svelte({
@@ -64,7 +64,7 @@ export default {
 
     // Watch the `public` directory and refresh the
     // browser on changes when not in production
-    !production && livereload('public'),
+    !production && livereload('./screen-recorder/public'),
 
     // If we're building for production (npm run build
     // instead of npm run dev), minify
