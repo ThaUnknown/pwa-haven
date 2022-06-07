@@ -37,6 +37,8 @@
   let ended = false
   let volume = localStorage.getItem('volume') || 1
   let playbackRate = 1
+  let currentTime = 0
+  $: safeduration = (isFinite(duration) ? duration : currentTime) || 0
   $: localStorage.setItem('volume', volume)
   onMount(() => {
     if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
@@ -167,21 +169,19 @@
   function updateDelay (delay) {
     if (subs?.renderer) subs.renderer.timeOffset = delay
   }
-
-  let currentTime = 0
-  $: progress = currentTime / duration
+  $: progress = currentTime / safeduration
   $: targetTime = (!paused && currentTime) || targetTime
   function handleMouseDown ({ target }) {
     wasPaused = paused
     paused = true
-    targetTime = target.value * duration
+    targetTime = target.value * safeduration
   }
   function handleMouseUp () {
     paused = wasPaused
     currentTime = targetTime
   }
   function handleProgress ({ target }) {
-    targetTime = target.value * duration
+    targetTime = target.value * safeduration
   }
 
   function playPause () {
@@ -203,8 +203,8 @@
   function seek (time) {
     if (time === 85 && currentTime < 10) {
       targetTime = currentTime = 90
-    } else if (time === 85 && duration - currentTime < 90) {
-      targetTime = currentTime = duration
+    } else if (time === 85 && safeduration - currentTime < 90) {
+      targetTime = currentTime = safeduration
     } else {
       targetTime = currentTime += time
     }
@@ -516,10 +516,11 @@
     }, 150)
   }
   $: navigator.mediaSession?.setPositionState({
-    duration: Math.max(0, (isFinite(duration) ? duration : currentTime) || 0),
+    duration: Math.max(0, safeduration),
     playbackRate: 1,
-    position: Math.max(0, Math.min(duration || 0, currentTime || 0))
+    position: Math.max(0, Math.min(safeduration, currentTime || 0))
   })
+  
   async function mediaChange (current, image) {
     if (current) {
       const { release_group, anime_title, episode_number, episode_title } = await anitomyscript(current.name)
@@ -599,8 +600,8 @@
   let fast = false
   let successCount = 0
   async function checkSpeed () {
-    if (!fast && (current instanceof File || current instanceof URLFile) && duration) {
-      const byterate = current.size / duration
+    if (!fast && (current instanceof File || current instanceof URLFile) && safeduration) {
+      const byterate = current.size / safeduration
       const currBps = speed()
       if (currBps > 5 * byterate) {
         ++successCount
@@ -630,7 +631,7 @@
   let hoverOffset = 0
   function handleHover ({ offsetX, target }) {
     hoverOffset = offsetX / target.clientWidth
-    hoverTime = duration * hoverOffset
+    hoverTime = safeduration * hoverOffset
     hover.style.setProperty('left', hoverOffset * 100 + '%')
     thumbnail = thumbnailData.thumbnails[Math.floor(hoverTime / thumbnailData.interval)] || ' '
   }
@@ -649,7 +650,7 @@
   $: initThumbnails(200 / (videoWidth / videoHeight))
   function initThumbnails (height) {
     if (!isNaN(height)) {
-      thumbnailData.interval = duration / 300 < 5 ? 5 : duration / 300
+      thumbnailData.interval = safeduration / 300 < 5 ? 5 : safeduration / 300
       thumbnailData.canvas.height = height
     }
   }
@@ -668,11 +669,11 @@
     })
     thumbnailData.video = video
     const loadTime = () => {
-      while (thumbnailData.thumbnails[index] && index <= Math.floor(thumbnailData.video.duration / thumbnailData.interval)) {
+      while (thumbnailData.thumbnails[index] && index <= Math.floor(thumbnailData.video.safeduration / thumbnailData.interval)) {
         // only create thumbnails that are missing
         index++
       }
-      if (thumbnailData.video?.currentTime !== thumbnailData.video?.duration && thumbnailData.video) {
+      if (thumbnailData.video?.currentTime !== thumbnailData.video?.safeduration && thumbnailData.video) {
         thumbnailData.video.currentTime = index * thumbnailData.interval
       } else {
         thumbnailData.video?.removeAttribute('src')
@@ -832,7 +833,7 @@
     </div>
   {/if}
     <div class="w-full d-flex align-items-center" data-name="progressWrapper">
-      <div class="ts">{toTS(targetTime, duration > 3600 ? 2 : 3)}</div>
+      <div class="ts">{toTS(targetTime, safeduration > 3600 ? 2 : 3)}</div>
       <div class="w-full h-full position-relative">
         <input
           class="ctrl w-full h-full"
@@ -854,7 +855,7 @@
           <div class="ts">{toTS(hoverTime)}</div>
         </div>
       </div>
-      <div class="ts">{toTS(duration - targetTime, duration > 3600 ? 2 : 3)}</div>
+      <div class="ts">{toTS(safeduration - targetTime, safeduration > 3600 ? 2 : 3)}</div>
     </div>
     {#if subHeaders?.length}
       <div class="subtitles dropdown dropup with-arrow">
