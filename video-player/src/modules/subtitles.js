@@ -1,5 +1,5 @@
 import { SubtitleParser, SubtitleStream } from 'matroska-subtitles'
-import SubtitlesOctopus from '../lib/subtitles-octopus.js'
+import JASSUB from 'jassub'
 import { toTS, videoRx, subRx } from '../../../shared/util.js'
 
 const defaultHeader = `[V4+ Styles]
@@ -91,12 +91,12 @@ export default class Subtitles {
 
   async initSubtitleRenderer () {
     if (!this.renderer) {
-      this.renderer = new SubtitlesOctopus({
+      this.renderer = new JASSUB({
         video: this.video,
-        blendMode: 'js',
         subContent: this.headers[this.current].header.slice(0, -1),
         fonts: this.fonts,
-        workerUrl: 'lib/subtitles-octopus-worker.js'
+        fallbackFont: 'Roboto.ttf',
+        workerUrl: 'lib/jassub-worker.js'
       })
       this.selectCaptions(this.current)
     }
@@ -276,7 +276,7 @@ export default class Subtitles {
     if (!skipFile) {
       parser.on('file', file => {
         if (file.mimetype === 'application/x-truetype-font' || file.mimetype === 'application/font-woff' || file.mimetype === 'application/vnd.ms-opentype' || file.mimetype === 'font/sfnt' || file.mimetype.startsWith('font/') || file.filename.toLowerCase().endsWith('.ttf')) {
-          this.fonts.push(URL.createObjectURL(new Blob([file.data], { type: file.mimetype })))
+          this.fonts.push(file.data)
         }
       })
     }
@@ -329,6 +329,5 @@ export default class Subtitles {
     this.tracks = null
     this.headers = null
     this.onHeader()
-    this.fonts?.forEach(file => URL.revokeObjectURL(file))
   }
 }

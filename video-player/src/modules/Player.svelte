@@ -8,7 +8,6 @@
   import anitomyscript from 'anitomyscript'
   import { URLFile } from '../../../shared/URLFile.js'
   import Keybinds, { loadWithDefaults } from 'svelte-keybinds'
-  import 'rvfc-polyfill'
 
   export let files = []
   $: updateFiles(files)
@@ -669,11 +668,11 @@
     })
     thumbnailData.video = video
     const loadTime = () => {
-      while (thumbnailData.thumbnails[index] && index <= Math.floor(thumbnailData.video.safeduration / thumbnailData.interval)) {
+      while (thumbnailData.thumbnails[index] && index <= Math.floor(safeduration / thumbnailData.interval)) {
         // only create thumbnails that are missing
         index++
       }
-      if (thumbnailData.video?.currentTime !== thumbnailData.video?.safeduration && thumbnailData.video) {
+      if (thumbnailData.video?.currentTime !== safeduration && thumbnailData.video) {
         thumbnailData.video.currentTime = index * thumbnailData.interval
       } else {
         thumbnailData.video?.removeAttribute('src')
