@@ -22,7 +22,7 @@ module.exports = {
     extensions: ['.mjs', '.js', '.svelte'],
     mainFields: ['svelte', 'browser', 'module', 'main'],
     fallback: {
-      zlib: require.resolve('pako')
+      zlib: path.resolve(__dirname, '../video-player/src/modules/inflateSync.js')
     }
   },
   output: {
