@@ -227,7 +227,6 @@
       for (const track of video.videoTracks) {
         track.selected = track.id === id
       }
-      setTimeout(() => subs.renderer?.resize(), 200) // stupid fix because video metadata doesnt update for multiple frames
     }
   }
   function toggleCast () {
