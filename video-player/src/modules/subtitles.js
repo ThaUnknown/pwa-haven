@@ -82,21 +82,25 @@ export default class Subtitles {
       }
       if (!this.current) {
         this.current = 0
-        if (!this.renderer) this.initSubtitleRenderer()
+        this.initSubtitleRenderer()
         this.selectCaptions(this.current)
         this.onHeader()
       }
     }
   }
 
-  async initSubtitleRenderer () {
+  initSubtitleRenderer () {
     if (!this.renderer) {
       this.renderer = new JASSUB({
         video: this.video,
         subContent: this.headers[this.current].header.slice(0, -1),
         fonts: this.fonts,
-        fallbackFont: 'Roboto.ttf',
-        workerUrl: 'lib/jassub-worker.js'
+        fallbackFont: 'roboto medium',
+        availableFonts: {
+          'roboto medium': 'Roboto.ttf'
+        },
+        useLocalFonts: true,
+        workerUrl: new URL('jassub/dist/jassub-worker.js', import.meta.url)
       })
       this.selectCaptions(this.current)
     }
@@ -259,11 +263,11 @@ export default class Subtitles {
             this.onHeader()
           }
         }
+        this.initSubtitleRenderer()
       }
     })
     parser.on('subtitle', async (subtitle, trackNumber) => {
       if (!this.parsed) {
-        if (!this.renderer) this.initSubtitleRenderer()
         const string = JSON.stringify(subtitle)
         if (!this._tracksString[trackNumber].has(string)) {
           this._tracksString[trackNumber].add(string)
@@ -277,6 +281,7 @@ export default class Subtitles {
       parser.on('file', file => {
         if (file.mimetype === 'application/x-truetype-font' || file.mimetype === 'application/font-woff' || file.mimetype === 'application/vnd.ms-opentype' || file.mimetype === 'font/sfnt' || file.mimetype.startsWith('font/') || file.filename.toLowerCase().endsWith('.ttf')) {
           this.fonts.push(file.data)
+          this.renderer.addFont(file.data)
         }
       })
     }
@@ -295,12 +300,6 @@ export default class Subtitles {
     stream.once('subtitle', () => {
       fileStreamStream.destroy()
       stream.destroy()
-      if (this.selected) {
-        this.renderer?.destroy()
-        this.renderer = null
-        this.initSubtitleRenderer()
-        // re-create renderer with fonts
-      }
     })
     const fileStreamStream = file.createReadStream()
     fileStreamStream.pipe(stream)
