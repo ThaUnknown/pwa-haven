@@ -220,7 +220,6 @@ export default class Subtitles {
           fileStream.destroy()
           this.stream?.destroy() // this throws an error, but performance...
           this.stream = undefined
-          this.selectCaptions(this.current)
           parser = undefined
           resolve()
         }
