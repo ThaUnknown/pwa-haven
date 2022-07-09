@@ -55,7 +55,7 @@
     "fast-blob-stream": "github:ThaUnknown/fast-blob-stream",
     "hybrid-chunk-store": "github:ThaUnknown/hybrid-chunk-store",
     "idb-keyval": "^6.1.0",
-    "jassub": "^1.1.7",
+    "jassub": "^1.1.8",
     "matroska-subtitles": "^3.3.2",
     "mime": "^3.0.0",
     "music-metadata-browser": "^2.5.3",

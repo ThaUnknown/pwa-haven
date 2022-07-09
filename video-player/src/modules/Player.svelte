@@ -621,7 +621,7 @@
     thumbnails: [],
     canvas: thumbCanvas,
     context: thumbCanvas.getContext('2d'),
-    interval: null,
+    interval: Number.MAX_VALUE,
     video: null
   }
   let hover = null
@@ -672,7 +672,7 @@
         index++
       }
       if (thumbnailData.video?.currentTime !== safeduration && thumbnailData.video) {
-        thumbnailData.video.currentTime = index * thumbnailData.interval
+        thumbnailData.video.currentTime = index * thumbnailData.interval || Number.MAX_VALUE
       } else {
         thumbnailData.video?.removeAttribute('src')
         thumbnailData.video?.load()
