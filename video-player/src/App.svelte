@@ -18,7 +18,7 @@
   }
 
   // loading files
-  async function handleInput({ dataTransfer, clipboardData }) {
+  async function handleInput ({ dataTransfer, clipboardData }) {
     const items = clipboardData?.items || dataTransfer?.items
     if (items) {
       handleFiles(await handleItems(items, ['video', 'subtitle']))
@@ -28,12 +28,12 @@
   if ('launchQueue' in window) {
     getLaunchFiles().then(handleFiles)
   }
-  async function handlePopup() {
+  async function handlePopup () {
     if (!files.length) {
       handleFiles(await filePopup(['video', 'subtitle']))
     }
   }
-  async function handleFiles(newfiles) {
+  async function handleFiles (newfiles) {
     if (newfiles?.length) {
       files = files.concat(
         await Promise.all(
@@ -52,10 +52,10 @@
   handleFiles(getSearchFiles(['video', 'subtitle']))
 </script>
 
-<div class="sticky-alerts d-flex flex-column-reverse">
+<div class='sticky-alerts d-flex flex-column-reverse'>
   <InstallPrompt />
 </div>
-<div class="page-wrapper">
+<div class='page-wrapper'>
   {#if !files.length}
     <RecentFiles bind:files {handlePopup} />
   {:else}

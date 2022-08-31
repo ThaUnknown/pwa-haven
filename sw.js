@@ -2,10 +2,9 @@ const cacheList = {
   shared: {
     version: '1.0.5',
     resources: [
-      'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/css/halfmoon-variables.min.css',
-      'https://cdn.jsdelivr.net/npm/halfmoon@1.1.1/js/halfmoon.min.js',
+      'https://cdn.jsdelivr.net/npm/quartermoon@latest/css/quartermoon-variables.min.css',
       'https://fonts.googleapis.com/icon?family=Material+Icons',
-      'https://fonts.gstatic.com/s/materialicons/v114/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2'
+      'https://fonts.gstatic.com/s/materialicons/v134/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2'
     ]
   },
   'img-viewer': {
@@ -33,12 +32,12 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '1.16.1',
+    version: '2.0.0',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.wasm',
-      '../video-player/public/lib/subtitles-octopus-worker.js',
-      '../video-player/public/lib/subtitles-octopus-worker.wasm',
+      '../video-player/public/lib/jassub-worker.js',
+      '../video-player/public/lib/jassub-worker.wasm',
       '../video-player/public/lib/Roboto.ttf',
       '../video-player/public/build/bundle.js',
       '../video-player/public/build/bundle.css',

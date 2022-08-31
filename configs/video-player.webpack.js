@@ -28,7 +28,8 @@ module.exports = {
   output: {
     path: process.cwd() + '/video-player/public',
     filename: '[name].js',
-    chunkFilename: '[name].[id].js'
+    chunkFilename: '[name].[id].js',
+    assetModuleFilename: '[name][ext]'
   },
   module: {
     rules: [

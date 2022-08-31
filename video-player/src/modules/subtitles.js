@@ -20,7 +20,7 @@ export default class Subtitles {
     this._stylesMap = {
       Default: 0
     }
-    this.fonts = ['Roboto.ttf']
+    this.fonts = ['/Roboto.ttf']
     this.renderer = null
     this.parsed = false
     this.stream = null
@@ -97,7 +97,7 @@ export default class Subtitles {
         fonts: this.fonts,
         fallbackFont: 'roboto medium',
         availableFonts: {
-          'roboto medium': 'Roboto.ttf'
+          'roboto medium': './Roboto.ttf'
         },
         useLocalFonts: true,
         workerUrl: new URL('jassub/dist/jassub-worker.js', import.meta.url)

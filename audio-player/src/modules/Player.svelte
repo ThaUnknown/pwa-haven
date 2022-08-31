@@ -24,7 +24,7 @@
   let loop = false
   let wasPaused = true
   let shuffle = false
-  
+
   $: setCurrent(songs)
   $: progress = currentTime / duration
   $: targetTime = (!paused && currentTime) || targetTime
@@ -244,7 +244,6 @@
 
 <svelte:window on:keydown={handleKeydown} />
 
-<!-- svelte-ignore a11y-media-has-caption -->
 <audio
   {src}
   bind:this={audio}
@@ -257,63 +256,61 @@
   {loop}
   on:ended={() => !loop && playNext()}
   on:loadedmetadata={updateCastState} />
-<div class="content-wrapper row overflow-hidden">
-  <div class="col-md-7 p-20 center h-half h-md-full bg-dark">
-    <img src={cover} alt="cover" class="shadow-lg pointer" on:click={playPause} />
+<div class='content-wrapper row overflow-hidden'>
+  <div class='col-md-7 p-20 center h-half h-md-full bg-dark'>
+    <img src={cover} alt='cover' class='shadow-lg pointer' on:click={playPause} />
   </div>
   <SongList {songs} bind:current />
 </div>
-<nav class="navbar navbar-fixed-bottom p-0 d-flex flex-column border-0 shadow-lg bg-dark-light">
-  <div class="d-flex w-full prog">
+<nav class='navbar navbar-fixed-bottom p-0 d-flex flex-column border-0 shadow-lg bg-dark-light'>
+  <div class='d-flex w-full prog'>
     <input
-      class="w-full top-0"
-      type="range"
-      min="0"
-      max="1"
+      class='w-full top-0'
+      type='range'
+      min='0'
+      max='1'
       bind:value={progress}
       on:mousedown={handleMouseDown}
       on:mouseup={handleMouseUp}
       on:input={handleProgress}
       on:touchstart={handleMouseDown}
       on:touchend={handleMouseUp}
-      step="any"
-      style="--value: {progress * 100}%" />
+      step='any'
+      style='--value: {progress * 100}%' />
   </div>
-  <div class="d-flex w-full flex-grow-1 px-20 justify-content-between">
-    <div class="d-flex align-items-center">
-      <span class="material-icons font-size-20 ctrl pointer" type="button" on:click={playLast}> skip_previous </span>
-      <span class="material-icons font-size-24 ctrl pointer" type="button" on:click={playPause}>
+  <div class='d-flex w-full flex-grow-1 px-20 justify-content-between'>
+    <div class='d-flex align-items-center'>
+      <span class='material-icons font-size-20 ctrl pointer' type='button' on:click={playLast}> skip_previous </span>
+      <span class='material-icons font-size-24 ctrl pointer' type='button' on:click={playPause}>
         {paused ? 'play_arrow' : 'pause'}
       </span>
-      <span class="material-icons font-size-20 ctrl pointer" type="button" on:click={playNext}> skip_next </span>
-      <div class="text-muted center ml-10 text-nowrap">
+      <span class='material-icons font-size-20 ctrl pointer' type='button' on:click={playNext}> skip_next </span>
+      <div class='text-muted center ml-10 text-nowrap'>
         {toTS(targetTime, 3)} / {toTS(duration, 3)}
       </div>
     </div>
-    <div class="center px-20 mw-0">
-      <div class="text-truncate text-muted">{[current?.artist, current?.name].filter(c => c).join(' - ')}</div>
+    <div class='center px-20 mw-0'>
+      <div class='text-truncate text-muted'>{[current?.artist, current?.name].filter(c => c).join(' - ')}</div>
     </div>
-    <div class="d-flex align-items-center">
-      <!-- svelte-ignore missing-declaration -->
+    <div class='d-flex align-items-center'>
       {#if 'pictureInPictureEnabled' in document && (!current || current.file instanceof File || current.file instanceof URLFile)}
-        <span class="material-icons font-size-20 ctrl pointer" title="Popout Window [P]" data-name="togglePopout" on:click={() => visualizer.togglePopout()}>
+        <span class='material-icons font-size-20 ctrl pointer' title='Popout Window [P]' data-name='togglePopout' on:click={() => visualizer.togglePopout()}>
           picture_in_picture
         </span>
       {/if}
-      <!-- svelte-ignore missing-declaration -->
       {#if 'PresentationRequest' in window && canCast && (!current || current.file instanceof File || current.file instanceof URLFile)}
-        <span class="material-icons font-size-20 ctrl pointer" title="Cast Video [C]" data-name="toggleCast" on:click={toggleCast}>
+        <span class='material-icons font-size-20 ctrl pointer' title='Cast Video [C]' data-name='toggleCast' on:click={toggleCast}>
           {presentationConnection ? 'cast_connected' : 'cast'}
         </span>
       {/if}
-      <span class="material-icons font-size-20 ctrl pointer" type="button" on:click={toggleMute}>
+      <span class='material-icons font-size-20 ctrl pointer' type='button' on:click={toggleMute}>
         {muted ? 'volume_off' : 'volume_up'}
       </span>
-      <input class="ml-auto px-5 h-half" type="range" min="0" max="1" bind:value={volume} step="any" style="--value: {volume * 100}%" />
-      <span class="material-icons font-size-20 ctrl pointer" type="button" on:click={toggleLoop}>
+      <input class='ml-auto px-5 h-half' type='range' min='0' max='1' bind:value={volume} step='any' style='--value: {volume * 100}%' />
+      <span class='material-icons font-size-20 ctrl pointer' type='button' on:click={toggleLoop}>
         {loop ? 'repeat_one' : 'repeat'}
       </span>
-      <span class="material-icons font-size-20 ctrl pointer" type="button" on:click={toggleShuffle}>
+      <span class='material-icons font-size-20 ctrl pointer' type='button' on:click={toggleShuffle}>
         {shuffle ? 'shuffle' : 'sort'}
       </span>
     </div>
