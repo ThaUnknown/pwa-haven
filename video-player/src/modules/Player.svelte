@@ -775,7 +775,8 @@
   }
 
   .bottom {
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6) 25%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.1) 75%, transparent);
+    padding-top: 3rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6) 25%, rgba(0, 0, 0, 0.4) 65%, rgba(0, 0, 0, 0.1) 90%, transparent);
     transition: 0.5s opacity ease;
   }
   .top {

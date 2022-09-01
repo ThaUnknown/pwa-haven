@@ -3,6 +3,7 @@
   "short_name": "Videos",
   "start_url": ".",
   "display": "fullscreen",
+  "display_override": ["window-controls-overlay"],
   "lang": "en-US",
   "orientation": "landscape",
   "background_color": "#191c20",

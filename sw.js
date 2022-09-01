@@ -8,7 +8,7 @@ const cacheList = {
     ]
   },
   'img-viewer': {
-    version: '1.4.0',
+    version: '1.4.1',
     resources: [
       '../img-viewer/public/build/bundle.js',
       '../img-viewer/public/build/bundle.css',
@@ -19,7 +19,7 @@ const cacheList = {
     ]
   },
   'audio-player': {
-    version: '1.8.2',
+    version: '1.8.3',
     resources: [
       '../audio-player/public/build/bundle.js',
       '../audio-player/public/build/bundle.css',
@@ -32,7 +32,7 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '2.0.0',
+    version: '2.0.1',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.wasm',
@@ -50,7 +50,7 @@ const cacheList = {
     ]
   },
   'torrent-client': {
-    version: '1.2.8',
+    version: '1.2.9',
     resources: [
       '../torrent-client/public/build/bundle.js',
       '../torrent-client/public/build/bundle.css',
@@ -61,7 +61,7 @@ const cacheList = {
     ]
   },
   'screen-recorder': {
-    version: '1.1.0',
+    version: '1.1.1',
     resources: [
       '../screen-recorder/public/build/bundle.js',
       '../screen-recorder/public/build/bundle.css',
