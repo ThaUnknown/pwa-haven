@@ -470,22 +470,15 @@ class WebmFile extends WebmContainer {
   }
 }
 
-export function fixDuration (blob, duration, callback) {
-  return new Promise(resolve => {
-    try {
-      blob.arrayBuffer().then(buffer => {
-        try {
-          const file = new WebmFile(new Uint8Array(buffer))
-          if (file.fixDuration(duration)) {
-            blob = file.toBlob(blob.type)
-          }
-        } catch (ex) {
-        // ignore
-        }
-        resolve(blob)
-      })
-    } catch (ex) {
-      resolve(blob)
+export async function fixDuration (blob, duration) {
+  try {
+    const buffer = await blob.arrayBuffer()
+    const file = new WebmFile(new Uint8Array(buffer))
+    if (file.fixDuration(duration)) {
+      blob = file.toBlob(blob.type)
     }
-  })
+    return blob
+  } catch (ex) {
+    return blob
+  }
 }
