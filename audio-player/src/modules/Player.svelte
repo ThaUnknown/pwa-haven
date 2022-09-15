@@ -256,7 +256,7 @@
   {loop}
   on:ended={() => !loop && playNext()}
   on:loadedmetadata={updateCastState} />
-<div class='content-wrapper row overflow-hidden'>
+<div class='content-wrapper bottom-0 row overflow-hidden'>
   <div class='col-md-7 p-20 center h-half h-md-full bg-dark'>
     <img src={cover} alt='cover' class='shadow-lg pointer' on:click={playPause} />
   </div>

@@ -75,10 +75,10 @@
   handleFiles(getSearchFiles(['audio', 'image']))
 </script>
 
-<div class="sticky-alerts d-flex flex-column-reverse">
+<div class='sticky-alerts d-flex flex-column-reverse'>
   <InstallPrompt />
 </div>
-<div class="page-wrapper with-navbar-fixed-bottom">
+<div class='page-wrapper with-navbar-fixed-bottom'>
   {#if !songs.length}
     <RecentFiles bind:files {handlePopup} />
   {:else}
