@@ -1,0 +1,34 @@
+{
+  "name": "Haven File Explorer",
+  "short_name": "Files",
+  "start_url": ".",
+  "display": "fullscreen",
+  "lang": "en-US",
+  "background_color": "#191c20",
+  "theme_color": "#191c20",
+  "scope": "/file-explorer/public/",
+  "description": "",
+  "icons": [
+    {
+      "src": "./128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "./512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "intent_filters": {
+    "scope_url_scheme": "https",
+    "scope_url_host": "haven.pages.dev/file-explorer/public/",
+    "scope_url_path": "/"
+  },
+  "capture_links": "new-client",
+  "url_handlers": [
+    {
+      "origin": "https://haven.pages.dev/file-explorer/public/"
+    }
+  ]
+}
