@@ -61,7 +61,7 @@ const cacheList = {
     ]
   },
   'screen-recorder': {
-    version: '1.1.2',
+    version: '1.2.0',
     resources: [
       '../screen-recorder/public/build/bundle.js',
       '../screen-recorder/public/build/bundle.css',
