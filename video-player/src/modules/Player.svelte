@@ -545,7 +545,6 @@
   on:mouseleave={immersePlayer}>
   <!-- eslint-disable-next-line svelte/valid-compile -->
   <video
-    crossorigin='anonymous'
     class='position-absolute h-full w-full'
     style={`margin-top: ${menubarOffset}px`}
     autoplay
