@@ -600,7 +600,7 @@
         <span class='material-icons ctrl' title='Mute [M]' data-name='toggleMute' on:click={toggleMute}> {muted ? 'volume_off' : 'volume_up'} </span>
         <input class='ctrl' type='range' min='0' max='1' step='any' data-name='setVolume' bind:value={volume} style='--value: {volume * 100}%' />
       </div>
-      <div class='ts mr-auto'>{toTS(targetTime, duration > 3600 ? 2 : 3)} / {toTS(duration - targetTime, duration > 3600 ? 2 : 3)}</div>
+      <div class='ts mr-auto'>{toTS(targetTime, safeduration > 3600 ? 2 : 3)} / {toTS(safeduration - targetTime, safeduration > 3600 ? 2 : 3)}</div>
       <TrackControls {video} {subs} {subHeaders} />
       <CastControls {video} {subs} bind:paused bind:toggleCast {container} />
       <PopoutControls {video} {subs} bind:pip {container} />
