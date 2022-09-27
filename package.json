@@ -59,6 +59,6 @@
     "svelte-keybinds": "^1.0.3",
     "throughput": "^1.0.1",
     "unzipit": "^1.4.0",
-    "webtorrent": "^1.8.16"
+    "webtorrent": "^1.8.30"
   }
 }
