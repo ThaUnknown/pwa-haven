@@ -7,10 +7,10 @@
 </script>
 
 {#if $settings?.compact}
-  <table class="table table-striped">
+  <table class='table table-striped'>
     <thead>
       <tr>
-        <th class="w-50">#</th>
+        <th class='w-50'>#</th>
         <th>Name</th>
         <th>Status</th>
         <th>Progress</th>
@@ -21,7 +21,7 @@
         <th>Up Speed</th>
         <th>ETA</th>
         <th>Ratio</th>
-        <th class="w-150">Options</th>
+        <th class='w-150'>Options</th>
       </tr>
     </thead>
     <tbody>

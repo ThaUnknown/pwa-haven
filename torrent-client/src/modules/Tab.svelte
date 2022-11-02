@@ -15,8 +15,8 @@
 <style>
   slot {
     margin-bottom: 10px;
-		padding: 40px;
-		border: 1px solid #dee2e6;
+    padding: 40px;
+    border: 1px solid #dee2e6;
     border-radius: 0 0 .5rem .5rem;
     border-top: 0;
   }

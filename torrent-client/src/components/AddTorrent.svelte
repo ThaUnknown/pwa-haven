@@ -32,7 +32,6 @@
     handleTorrent([target.value], true)
   }
   const torrentRx = /(^magnet:)|(^[A-F\d]{8,40}$)|(\.torrent$)/i
-  let peers = []
   export function handleTorrent (fileList, skip) {
     console.log(fileList)
     if (!skip) files = fileList
@@ -48,12 +47,7 @@
       if (id) {
         torrent = await addTorrent(id)
         torrent.once('ready', () => {
-          torrent.pause()
-          files = torrent.files
-          peers = Object.values(torrent._peers).map(peer => ({ type: peer.type, addr: peer.addr }))
-          for (const id in torrent._peers) {
-            torrent.removePeer(id)
-          }
+          torrent.client.throttleDownload(0)
           torrent = torrent
         })
       }
@@ -61,7 +55,6 @@
     }
 
     if (torrent) {
-      peers = []
       removeTorrent(torrent, { destroyStore: true }, initTorrent)
       torrent = null
       files = []
@@ -71,14 +64,7 @@
   }
   function handleAddTorrent () {
     if (torrent) {
-      torrent.resume()
-      for (const peer of peers) {
-        if (peer.type === 'webSeed') {
-          torrent.addWebSeed(peer.addr)
-        } else if (peer.type !== 'webrtc') {
-          torrent.addPeer(peer.addr)
-        }
-      }
+      torrent.client.throttleDownload(-1)
     } else {
       addTorrent(files, createTorrent)
     }
@@ -96,31 +82,31 @@
   }
 </script>
 
-<div class="modal-dialog" role="document">
-  <div class="modal-content w-three-quarter mh-three-quarter d-flex flex-column justify-content-between bg-very-dark-dm bg-light-lm p-0">
-    <div class="content">
-      <button class="close" data-dismiss="modal" type="button" aria-label="Close" on:click={handleClose}>
-        <span aria-hidden="true">&times;</span>
+<div class='modal-dialog' role='document'>
+  <div class='modal-content w-three-quarter mh-three-quarter d-flex flex-column justify-content-between bg-very-dark-dm bg-light-lm p-0'>
+    <div class='content'>
+      <button class='close' data-dismiss='modal' type='button' aria-label='Close' on:click={handleClose}>
+        <span aria-hidden='true'>&times;</span>
       </button>
-      <h5 class="modal-title font-weight-bold">Add Torrent</h5>
-      <div class="text-right mt-20">
-        <div class="input-group">
-          <div class="input-group-prepend">
-            <input type="file" class="d-none" id="torrent-file-input" bind:this={fileInput} on:input={handleFileInput} multiple />
-            <label for="torrent-file-input" class="btn btn-primary">Select File</label>
+      <h5 class='modal-title font-weight-bold'>Add Torrent</h5>
+      <div class='text-right mt-20'>
+        <div class='input-group'>
+          <div class='input-group-prepend'>
+            <input type='file' class='d-none' id='torrent-file-input' bind:this={fileInput} on:input={handleFileInput} multiple />
+            <label for='torrent-file-input' class='btn btn-primary'>Select File</label>
           </div>
-          <input type="text" class="form-control" placeholder="File, Magnet or InfoHash" {value} on:input={handleTextInput} />
-          <div class="input-group-append" on:click={handleAddTorrent}>
-            <button class="btn btn-success font-weight-bold" type="button" data-dismiss="modal" aria-label="Close">Add</button>
+          <input type='text' class='form-control' placeholder='File, Magnet or InfoHash' {value} on:input={handleTextInput} />
+          <div class='input-group-append' on:click={handleAddTorrent}>
+            <button class='btn btn-success font-weight-bold' type='button' data-dismiss='modal' aria-label='Close'>Add</button>
           </div>
         </div>
       </div>
     </div>
     {#if files?.length}
       <Tabs>
-        <div class="d-flex flex-column w-full overflow-hidden flex-grow-1">
-          <div class="d-flex flex-row px-20 pt-5">
-            <div class="d-flex flex-row">
+        <div class='d-flex flex-column w-full overflow-hidden flex-grow-1'>
+          <div class='d-flex flex-row px-20 pt-5'>
+            <div class='d-flex flex-row'>
               <TabLabel>Information</TabLabel>
               <TabLabel>
                 Files {files?.length}
@@ -130,56 +116,56 @@
               </TabLabel>
             </div>
           </div>
-          <div class="bg-dark-dm bg-white-lm overflow-y-scroll flex-grow-1">
+          <div class='bg-dark-dm bg-white-lm overflow-y-scroll flex-grow-1'>
             <Tab>
-              <div class="content my-20">
-                <div class="input-group my-5">
-                  <div class="input-group-prepend">
-                    <span class="input-group-text w-100 flex-row-reverse">Name</span>
+              <div class='content my-20'>
+                <div class='input-group my-5'>
+                  <div class='input-group-prepend'>
+                    <span class='input-group-text w-100 flex-row-reverse'>Name</span>
                   </div>
                   {#if torrent}
-                    <input type="text" class="form-control" placeholder="Torrent Name" value={torrent.name || ''} name="name" readonly />
+                    <input type='text' class='form-control' placeholder='Torrent Name' value={torrent.name || ''} name='name' readonly />
                   {:else}
-                    <input type="text" class="form-control" placeholder="Torrent Name" bind:value={createTorrent.name} name="name" />
+                    <input type='text' class='form-control' placeholder='Torrent Name' bind:value={createTorrent.name} name='name' />
                   {/if}
                 </div>
-                <div class="input-group my-5">
-                  <div class="input-group-prepend">
-                    <span class="input-group-text w-100 flex-row-reverse">Comment</span>
+                <div class='input-group my-5'>
+                  <div class='input-group-prepend'>
+                    <span class='input-group-text w-100 flex-row-reverse'>Comment</span>
                   </div>
                   {#if torrent}
-                    <input type="text" class="form-control" placeholder="Created With wTorrent" value={torrent.comment || ''} name="comment" readonly />
+                    <input type='text' class='form-control' placeholder='Created With wTorrent' value={torrent.comment || ''} name='comment' readonly />
                   {:else}
-                    <input type="text" class="form-control" placeholder="Created With wTorrent" bind:value={createTorrent.comment} name="comment" />
+                    <input type='text' class='form-control' placeholder='Created With wTorrent' bind:value={createTorrent.comment} name='comment' />
                   {/if}
                 </div>
-                <div class="input-group my-5">
-                  <div class="input-group-prepend">
-                    <span class="input-group-text w-100 flex-row-reverse">Author</span>
+                <div class='input-group my-5'>
+                  <div class='input-group-prepend'>
+                    <span class='input-group-text w-100 flex-row-reverse'>Author</span>
                   </div>
                   {#if torrent}
-                    <input type="text" class="form-control" placeholder="wTorrent" value={torrent.createdBy || ''} name="createdBy" readonly />
+                    <input type='text' class='form-control' placeholder='wTorrent' value={torrent.createdBy || ''} name='createdBy' readonly />
                   {:else}
-                    <input type="text" class="form-control" placeholder="wTorrent" bind:value={createTorrent.createdBy} name="createdBy" />
+                    <input type='text' class='form-control' placeholder='wTorrent' bind:value={createTorrent.createdBy} name='createdBy' />
                   {/if}
                 </div>
-                <div class="input-group my-5">
-                  <div class="input-group-prepend">
-                    <span class="input-group-text w-100 flex-row-reverse">File Size</span>
+                <div class='input-group my-5'>
+                  <div class='input-group-prepend'>
+                    <span class='input-group-text w-100 flex-row-reverse'>File Size</span>
                   </div>
-                  <input type="text" class="form-control" value={fastPrettyBytes(torrent?.length || files.reduce((sum, { size }) => sum + size, 0))} readonly />
+                  <input type='text' class='form-control' value={fastPrettyBytes(torrent?.length || files.reduce((sum, { size }) => sum + size, 0))} readonly />
                 </div>
               </div>
             </Tab>
             <Tab>
-              <div class="content my-5">
-                <table class="table">
+              <div class='content my-5'>
+                <table class='table'>
                   <thead>
                     <tr>
                       <th>Name</th>
                       <th>Filesize</th>
                       {#if torrent}
-                        <th class="w-100">Priority</th>
+                        <th class='w-100'>Priority</th>
                       {/if}
                     </tr>
                   </thead>
@@ -189,7 +175,7 @@
                         <td>{file.name}</td>
                         <td>{(file.length && fastPrettyBytes(file.length)) || (file.size && fastPrettyBytes(file.size)) || '?'}</td>
                         {#if torrent}
-                          <td><input type="number" placeholder="0" class="form-control" on:input={value => setPriority(value, file)} /></td>
+                          <td><input type='number' placeholder='0' class='form-control' on:input={value => setPriority(value, file)} /></td>
                         {/if}
                       </tr>
                     {/each}
@@ -198,10 +184,10 @@
               </div>
             </Tab>
             <Tab>
-              <div class="content my-5">
+              <div class='content my-5'>
                 <textarea
-                  class="form-control w-full h-350 my-20 form-control-md"
-                  placeholder="wss://exampletracker.xyz:port"
+                  class='form-control w-full h-350 my-20 form-control-md'
+                  placeholder='wss://exampletracker.xyz:port'
                   value={(torrent?.announce || createTorrent.announce).join('\n')}
                   on:input={handleTracker} />
               </div>

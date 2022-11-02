@@ -46,7 +46,7 @@
   "dependencies": {
     "end-of-stream": "^1.4.4",
     "fast-blob-stream": "github:ThaUnknown/fast-blob-stream",
-    "hybrid-chunk-store": "github:ThaUnknown/hybrid-chunk-store",
+    "hybrid-chunk-store": "^1.1.0",
     "idb-keyval": "^6.1.0",
     "jassub": "^1.1.11",
     "matroska-subtitles": "^3.3.2",

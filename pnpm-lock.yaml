@@ -7,7 +7,7 @@ specifiers:
   css-loader: ^6.5.1
   end-of-stream: ^1.4.4
   fast-blob-stream: github:ThaUnknown/fast-blob-stream
-  hybrid-chunk-store: github:ThaUnknown/hybrid-chunk-store
+  hybrid-chunk-store: ^1.1.0
   idb-keyval: ^6.1.0
   jassub: ^1.1.11
   matroska-subtitles: ^3.3.2
@@ -39,7 +39,7 @@ specifiers:
 dependencies:
   end-of-stream: 1.4.4
   fast-blob-stream: github.com/ThaUnknown/fast-blob-stream/25873ffa833e162401350f81e58bc4cc944b91bb
-  hybrid-chunk-store: github.com/ThaUnknown/hybrid-chunk-store/e472879f51b3626f0603768919d1e76b43112b20
+  hybrid-chunk-store: 1.1.0
   idb-keyval: 6.2.0
   jassub: 1.1.11
   matroska-subtitles: 3.3.2
@@ -2079,10 +2079,8 @@ packages:
   /fs.realpath/1.0.0:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
 
-  /fsa-chunk-store/1.0.0:
-    resolution: {integrity: sha512-oHZGIccMxuat6+YXgyQX6QIVVl7DmQ7PBeMhwOs18RPy0/7DDIP89bJRYrVH9RzlPdiD2Pwn8xYCfhkohIxrLg==}
-    dependencies:
-      idb-keyval: 6.2.0
+  /fsa-chunk-store/1.1.0:
+    resolution: {integrity: sha512-FYVAY2BbE2Z+rH3Oa9BaG6WVRn5cGbvS3kPZkLk9quyMF3rk3sozpHk/+4zcEn0nldznu9E1Hzj8/3OD0WKMrA==}
     dev: false
 
   /fsevents/2.3.2:
@@ -2330,6 +2328,15 @@ packages:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
     engines: {node: '>=10.17.0'}
     dev: true
+
+  /hybrid-chunk-store/1.1.0:
+    resolution: {integrity: sha512-OTwQEW5urPY4XdSGIJZZ7nFt6ghMUMzmGImH1oTNbIug8NKwATUbW8SNs2qbn64JlOnn8C8rXz4qUXc3QTfj5A==}
+    dependencies:
+      cache-chunk-store: 3.2.2
+      fsa-chunk-store: 1.1.0
+      idb-chunk-store: 1.0.1
+      memory-chunk-store: 1.3.5
+    dev: false
 
   /iconv-lite/0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
@@ -4926,15 +4933,4 @@ packages:
     dependencies:
       fast-readable-async-iterator: 1.1.1
       streamx: 2.12.5
-    dev: false
-
-  github.com/ThaUnknown/hybrid-chunk-store/e472879f51b3626f0603768919d1e76b43112b20:
-    resolution: {tarball: https://codeload.github.com/ThaUnknown/hybrid-chunk-store/tar.gz/e472879f51b3626f0603768919d1e76b43112b20}
-    name: hybrid-chunk-store
-    version: 1.0.2
-    dependencies:
-      cache-chunk-store: 3.2.2
-      fsa-chunk-store: 1.0.0
-      idb-chunk-store: 1.0.1
-      memory-chunk-store: 1.3.5
     dev: false

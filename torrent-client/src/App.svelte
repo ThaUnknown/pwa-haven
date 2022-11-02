@@ -79,17 +79,17 @@
   })
 </script>
 
-<div class="sticky-alerts d-flex flex-column-reverse">
+<div class='sticky-alerts d-flex flex-column-reverse'>
   <InstallPrompt />
 </div>
-<div class="modal" class:show={$current === 'Add Torrent'} id="modal-add" tabIndex="-1" role="dialog" data-overlay-dismissal-disabled="true" bind:this={prompt}>
+<div class='modal' class:show={$current === 'Add Torrent'} id='modal-add' tabIndex='-1' role='dialog' data-overlay-dismissal-disabled='true' bind:this={prompt}>
   <AddTorrent bind:handleTorrent />
 </div>
-<div class="page-wrapper with-sidebar">
+<div class='page-wrapper with-sidebar'>
   <Sidebar />
-  <div class="content-wrapper d-flex flex-column justify-content-between">
+  <div class='content-wrapper d-flex flex-column justify-content-between'>
     {#if $current !== 'Settings'}
-      <div class="overflow-x-auto overflow-y-scroll flex-grow-1">
+      <div class='overflow-x-auto overflow-y-scroll flex-grow-1'>
         <TorrentList bind:selected />
       </div>
       <TorrentInfo bind:selected />

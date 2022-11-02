@@ -84,7 +84,7 @@
 <tr>
   <th>1</th>
   <td>{torrent.name}</td>
-  <td class="text-capitalize">{status}</td>
+  <td class='text-capitalize'>{status}</td>
   <td>{parseInt(progress * 100)}%</td>
   <td>{fastPrettyBytes(torrent.length)}</td>
   <td>{torrent.files.length}</td>
@@ -93,15 +93,15 @@
   <td>{fastPrettyBytes(torrent.uploadSpeed)}</td>
   <td>{fastToTS(parseInt(torrent.timeRemaining / 1000))}</td>
   <td>{torrent.ratio.toFixed(2) || 0}</td>
-  <td class="d-flex flex-row align-items-center">
-    <span class="material-icons font-size-20" on:click={handlePauseResume}>
+  <td class='d-flex flex-row align-items-center'>
+    <span class='material-icons font-size-20' on:click={handlePauseResume}>
       {torrent.paused ? 'play_arrow' : 'pause'}
     </span>
-    <span class="material-icons font-size-20" on:click={handleRemove}>remove</span>
-    <span class="material-icons font-size-20" on:click={handleDelete}>delete</span>
-    <span class="material-icons font-size-20" on:click={copyMagnet}>content_copy</span>
-    <span class="material-icons font-size-20" on:click={saveTorrent}>file_copy</span>
-    <span class="material-icons font-size-20" on:click={select}>info</span>
+    <span class='material-icons font-size-20' on:click={handleRemove}>remove</span>
+    <span class='material-icons font-size-20' on:click={handleDelete}>delete</span>
+    <span class='material-icons font-size-20' on:click={copyMagnet}>content_copy</span>
+    <span class='material-icons font-size-20' on:click={saveTorrent}>file_copy</span>
+    <span class='material-icons font-size-20' on:click={select}>info</span>
   </td>
 </tr>
 

@@ -34,10 +34,10 @@
 </script>
 
 {#if selected}
-  <div class="height">
+  <div class='height'>
     <Tabs>
-      <div class="d-flex flex-column h-full">
-        <div class="d-flex flex-row px-20 pt-5">
+      <div class='d-flex flex-column h-full'>
+        <div class='d-flex flex-row px-20 pt-5'>
           <TabLabel>Stats</TabLabel>
           <TabLabel>
             Files {selected.files?.length || ''}
@@ -45,12 +45,12 @@
           <TabLabel>
             Peers {selected.numPeers || ''}
           </TabLabel>
-          <div on:click={close} class="pointer px-10 py-5 mx-5 ml-auto sidebar-link bg-dark-dm bg-white-lm">Close</div>
+          <div on:click={close} class='pointer px-10 py-5 mx-5 ml-auto sidebar-link bg-dark-dm bg-white-lm'>Close</div>
         </div>
-        <div class="bg-dark-dm bg-white-lm h-full overflow-y-scroll">
+        <div class='bg-dark-dm bg-white-lm h-full overflow-y-scroll'>
           <Tab>
-            <div class="content my-5 d-flex flex-column">
-              <table class="table">
+            <div class='content my-5 d-flex flex-column'>
+              <table class='table'>
                 <tbody>
                   <tr>
                     <th>Upload Speed</th>
@@ -81,8 +81,8 @@
             </div>
           </Tab>
           <Tab>
-            <div class="content my-5">
-              <table class="table table-auto">
+            <div class='content my-5'>
+              <table class='table table-auto'>
                 <thead>
                   <tr>
                     <th>Name</th>
@@ -101,7 +101,7 @@
                         <td>{fastPrettyBytes(file.downloaded)}</td>
                         <td>{parseInt(file.progress * 100)}%</td>
                         {#if mime.getType(file.name)}
-                          <td class="pointer" on:click={() => viewFile(file)}>View File</td>
+                          <td class='pointer' on:click={() => viewFile(file)}>View File</td>
                         {/if}
                       </tr>
                     {/each}
@@ -111,8 +111,8 @@
             </div>
           </Tab>
           <Tab>
-            <div class="content my-5">
-              <table class="table">
+            <div class='content my-5'>
+              <table class='table'>
                 <thead>
                   <tr>
                     <th>Address</th>
@@ -136,7 +136,7 @@
                         <td>{fastPrettyBytes(wire.downloaded)}</td>
                         <td>{fastPrettyBytes(wire.downloadSpeed())}/s</td>
                         <td>{(wire.downloaded / (wire.uploaded || 1) / selected.length).toFixed(2)}</td>
-                        <td class="text-danger pointer material-icons w-50" on:click={() => wire.destroy()}>link_off</td>
+                        <td class='text-danger pointer material-icons w-50' on:click={() => wire.destroy()}>link_off</td>
                       </tr>
                     {/each}
                   {/if}

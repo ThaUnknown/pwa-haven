@@ -24,14 +24,14 @@
   ]
 </script>
 
-<div class="sidebar bg-transparent d-flex flex-column justify-content-between py-20 bg-dark-dm bg-white-lm">
+<div class='sidebar bg-transparent d-flex flex-column justify-content-between py-20 bg-dark-dm bg-white-lm'>
   <div>
     {#each buttons as button}
       <Button icon={button.icon} value={button.value} />
     {/each}
   </div>
   <div>
-    <Button icon="add" value="Add Torrent" />
-    <Button icon="tune" value="Settings" />
+    <Button icon='add' value='Add Torrent' />
+    <Button icon='tune' value='Settings' />
   </div>
 </div>
