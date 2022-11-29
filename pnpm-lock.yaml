@@ -9,7 +9,7 @@ specifiers:
   fast-blob-stream: github:ThaUnknown/fast-blob-stream
   hybrid-chunk-store: ^1.1.0
   idb-keyval: ^6.1.0
-  jassub: ^1.1.11
+  jassub: ^1.2.0
   matroska-subtitles: ^3.3.2
   mime: ^3.0.0
   mini-css-extract-plugin: ^2.5.2
@@ -41,7 +41,7 @@ dependencies:
   fast-blob-stream: github.com/ThaUnknown/fast-blob-stream/25873ffa833e162401350f81e58bc4cc944b91bb
   hybrid-chunk-store: 1.1.0
   idb-keyval: 6.2.0
-  jassub: 1.1.11
+  jassub: 1.2.0
   matroska-subtitles: 3.3.2
   mime: 3.0.0
   music-metadata-browser: 2.5.8
@@ -2641,8 +2641,8 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /jassub/1.1.11:
-    resolution: {integrity: sha512-THR9l/fUfRrwXot7Xj3hT5cp7i/0ioSG/MykHAtXwT9MyDQ6i1F9lofG/A8iWWS9a3wrE1u1ryFvFCpGtj5Sew==}
+  /jassub/1.2.0:
+    resolution: {integrity: sha512-ijYA+pGiIKhCPQtOpO+jisQbszeyTeDMQA9qvVJC1/4UbDl1sKsM1yCwqKjvv60XiGt/glyCdda5W6b/K4taFg==}
     dependencies:
       rvfc-polyfill: 1.0.4
     dev: false
