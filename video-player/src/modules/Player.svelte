@@ -603,7 +603,7 @@
       <div class='ts mr-auto'>{toTS(targetTime, safeduration > 3600 ? 2 : 3)} / {toTS(safeduration - targetTime, safeduration > 3600 ? 2 : 3)}</div>
       <TrackControls {video} {subs} {subHeaders} />
       <CastControls {video} {subs} bind:paused bind:toggleCast {container} />
-      <PopoutControls {video} {subs} bind:pip {container} />
+      <PopoutControls {video} {subs} bind:pip bind:togglePopout {container} />
       <span class='material-icons ctrl' title='Fullscreen [F]' data-name='toggleFullscreen' on:click={toggleFullscreen}>
         {isFullscreen ? 'fullscreen_exit' : 'fullscreen'}
       </span>

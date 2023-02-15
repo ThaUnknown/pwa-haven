@@ -1,1 +1,2 @@
-.sticky-alerts.svelte-fu6bq2{--sticky-alerts-top:auto;bottom:1rem}.directory.svelte-fu6bq2{padding:0 0 0 1.5em;background:url('/folder.svg') 0 0.1em no-repeat;background-size:1em 1em}.alert.svelte-1qjuqpq{display:block !important;animation:svelte-1qjuqpq-fly-in 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)}@keyframes svelte-1qjuqpq-fly-in{0%{right:-50rem}100%{right:0}}
+.alert.svelte-1qjuqpq{display:block !important;animation:svelte-1qjuqpq-fly-in 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)}@keyframes svelte-1qjuqpq-fly-in{0%{right:-50rem}100%{right:0}}
+.sticky-alerts.svelte-fu6bq2{--sticky-alerts-top:auto;bottom:1rem}.directory.svelte-fu6bq2{padding:0 0 0 1.5em;background:url('/folder.svg') 0 0.1em no-repeat;background-size:1em 1em}

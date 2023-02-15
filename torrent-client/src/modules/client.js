@@ -108,7 +108,12 @@ export async function addTorrent (torrent, createTorrent) {
       store: HybridChunkStore,
       storeOpts: {
         rootDir: sets.folder
-      }
+      },
+      announce: [
+        'wss://tracker.openwebtorrent.com',
+        'wss://spacetradersapi-chatbox.herokuapp.com:443/announce',
+        'wss://peertube.cpy.re:443/tracker/socket'
+      ]
     }, createTorrent), setTorrent)
     updateTorrents()
   } else {
@@ -117,7 +122,12 @@ export async function addTorrent (torrent, createTorrent) {
       store: HybridChunkStore,
       storeOpts: {
         rootDir: sets.folder
-      }
+      },
+      announce: [
+        'wss://tracker.openwebtorrent.com',
+        'wss://spacetradersapi-chatbox.herokuapp.com:443/announce',
+        'wss://peertube.cpy.re:443/tracker/socket'
+      ]
     }, setTorrent)
     setTorrent(tor)
   }

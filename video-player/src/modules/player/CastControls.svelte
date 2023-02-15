@@ -51,7 +51,7 @@
         },
         video: {
           bitrate: 2000000,
-          codecs: ['VP9', 'VP8', 'H264']
+          codecs: ['H264', 'VP9', 'VP8']
         }
       }
     })

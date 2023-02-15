@@ -1,22 +1,30 @@
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const path = require('path')
 const webpack = require('webpack')
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
+const info = require('webtorrent/package.json')
 
 const mode = process.env.NODE_ENV || 'development'
 const prod = mode === 'production'
 
+/** @type {import('webpack').WebpackOptionsNormalized} */
 module.exports = {
   entry: {
     'build/bundle': ['./src/main.js']
   },
   context: process.cwd() + '/torrent-client/',
   resolve: {
-    alias: {
-      svelte: path.dirname(require.resolve('svelte/package.json'))
-    },
     extensions: ['.mjs', '.js', '.svelte'],
-    mainFields: ['svelte', 'browser', 'module', 'main']
+    mainFields: ['svelte', 'browser', 'module', 'main'],
+    aliasFields: ['browser'],
+    alias: {
+      ...info.browser,
+      crypto: false,
+      http: 'stream-http',
+      https: 'stream-http',
+      stream: 'readable-stream',
+      path: 'path-browserify',
+      svelte: path.dirname(require.resolve('svelte/package.json'))
+    }
   },
   output: {
     path: process.cwd() + '/torrent-client/public',
@@ -57,9 +65,12 @@ module.exports = {
   mode,
   plugins: [
     new webpack.ProvidePlugin({
-      process: 'process-fast'
+      process: 'process-fast',
+      Buffer: ['buffer', 'Buffer']
     }),
-    new NodePolyfillPlugin(),
+    new webpack.DefinePlugin({
+      global: 'globalThis'
+    }),
     new MiniCssExtractPlugin({
       filename: '[name].css'
     })

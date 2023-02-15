@@ -6,7 +6,7 @@
   export let pip = false
   export let container
 
-  function togglePopout () {
+  export function togglePopout () {
     if (video.readyState) {
       if (!subs?.renderer) {
         if (video !== document.pictureInPictureElement) {

@@ -11,6 +11,7 @@ module.exports = {
     'build/bundle': ['./src/main.js'],
     'build/cast': ['./src/cast.js']
   },
+  cache: false,
   context: process.cwd() + '/video-player/',
   externals: {
     anitomyscript: 'anitomyscript'

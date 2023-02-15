@@ -176,7 +176,7 @@ export default class Subtitles {
     }
   }
 
-  constructSub (subtitle, isNotAss, index) {
+  constructSub (subtitle, isNotAss) {
     if (isNotAss === true) { // converts VTT or other to SSA
       const matches = subtitle.text.match(/<[^>]+>/g) // create array of all tags
       if (matches) {
@@ -202,8 +202,7 @@ export default class Subtitles {
       Effect: subtitle.effect || '',
       Text: subtitle.text || '',
       ReadOrder: 1,
-      Layer: Number(subtitle.layer) || 0,
-      _index: index
+      Layer: Number(subtitle.layer) || 0
     }
   }
 
@@ -270,7 +269,7 @@ export default class Subtitles {
         const string = JSON.stringify(subtitle)
         if (!this._tracksString[trackNumber].has(string)) {
           this._tracksString[trackNumber].add(string)
-          const assSub = this.constructSub(subtitle, this.headers[trackNumber].type !== 'ass', this.tracks[trackNumber].length)
+          const assSub = this.constructSub(subtitle, this.headers[trackNumber].type !== 'ass')
           this.tracks[trackNumber].push(assSub)
           if (this.current === trackNumber) this.renderer.createEvent(assSub)
         }

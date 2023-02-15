@@ -1,4 +1,4 @@
-import { audioRx, videoRx, imageRx, subRx, bookRx, audioExtensions, videoExtensions, imageExtensions, subtitleExtensions, bookExtensions, DOMPARSER } from './util'
+import { audioRx, videoRx, imageRx, subRx, bookRx, audioExtensions, videoExtensions, imageExtensions, subtitleExtensions, bookExtensions, DOMPARSER } from './util.js'
 import { updateRecents } from './RecentFiles.svelte'
 
 // types: image, audio, video, subtitle
