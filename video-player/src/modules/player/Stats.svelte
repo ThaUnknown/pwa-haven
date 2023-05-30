@@ -1,5 +1,6 @@
 <script>
   export let video
+  export let buffer = 0
   let stats = null
   let requestCallback = null
   export function toggleStats () {
@@ -27,20 +28,13 @@
         processing: metadata.processingDuration + ' ms',
         viewport: video.clientWidth + 'x' + video.clientHeight,
         resolution: video.videoWidth + 'x' + video.videoHeight,
-        buffer: getBufferHealth(metadata.mediaTime) + ' s',
+        buffer: (buffer - metadata.mediaTime | 0) + ' s',
         speed: video.playbackRate || 1
       }
       setTimeout(() => video.requestVideoFrameCallback((n, m) => handleStats(n, m, metadata)), 200)
     }
   }
-  function getBufferHealth (time) {
-    for (let index = video.buffered.length; index--;) {
-      if (time < video.buffered.end(index) && time > video.buffered.start(index)) {
-        return parseInt(video.buffered.end(index) - time)
-      }
-    }
-    return 0
-  }
+
 </script>
 
 {#if stats}

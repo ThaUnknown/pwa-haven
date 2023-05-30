@@ -1,4 +1,6 @@
 import throughput from 'throughput'
+import rangeParser from 'range-parser'
+
 const worker = navigator.serviceWorker.controller
 const keepAliveTime = 20000
 
@@ -55,13 +57,12 @@ function loadWorker (controller) {
 
     const [port] = event.ports
 
-    const [response, stream, raw] = file.serve(data)
-    const asyncIterator = stream && stream[Symbol.asyncIterator]()
+    const { status, headers, body } = serveFile(file, data)
+    const asyncIterator = body[Symbol.asyncIterator]?.()
 
     const cleanup = () => {
       port.onmessage = null
-      if (stream) stream.destroy()
-      if (raw) raw.destroy()
+      if (body?.destroy) body.destroy()
       workerPortCount--
       if (!workerPortCount) {
         clearInterval(workerKeepAliveInterval)
@@ -76,8 +77,7 @@ function loadWorker (controller) {
           chunk = (await asyncIterator.next()).value
           speed(chunk?.length)
         } catch (e) {
-          port.postMessage(false)
-          cleanup()
+          // chunk is yet to be downloaded or it somehow failed, should this be logged?
         }
         port.postMessage(chunk)
         if (!chunk) cleanup()
@@ -92,6 +92,62 @@ function loadWorker (controller) {
       }
     }
     workerPortCount++
-    port.postMessage(response)
+    port.postMessage({
+      status,
+      headers,
+      body: asyncIterator ? 'STREAM' : body
+    })
   })
+  fetch(`${controller.scriptURL.substr(0, controller.scriptURL.lastIndexOf('/') + 1).slice(window.location.origin.length)}server/cancel/`).then(res => {
+    res.body.cancel()
+  })
+}
+
+function serveFile (file, req) {
+  const res = {
+    status: 200,
+    headers: {
+      // Support range-requests
+      'Accept-Ranges': 'bytes',
+      'Content-Type': file.type,
+      'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+      Expires: '0'
+    },
+    body: req.method === 'HEAD' ? '' : 'STREAM'
+  }
+  // force the browser to download the file if if it's opened in a new tab
+  if (req.destination === 'document') {
+    res.headers['Content-Type'] = 'application/octet-stream'
+    res.headers['Content-Disposition'] = 'attachment'
+    res.body = 'DOWNLOAD'
+  }
+
+  // `rangeParser` returns an array of ranges, or an error code (number) if
+  // there was an error parsing the range.
+  let range = rangeParser(file.size, req.headers.range || '')
+
+  if (range.constructor === Array) {
+    res.status = 206 // indicates that range-request was understood
+
+    // no support for multi-range request, just use the first range
+    range = range[0]
+
+    res.headers['Content-Range'] = `bytes ${range.start}-${range.end}/${file.size}`
+    res.headers['Content-Length'] = `${range.end - range.start + 1}`
+  } else {
+    res.headers['Content-Length'] = file.size
+  }
+
+  if (req.method === 'GET') {
+    const iterator = file[Symbol.asyncIterator](range)
+    let transform = null
+    file.onIterator({ iterator, req, file }, target => {
+      transform = target
+    })
+
+    res.body = transform || iterator
+  } else {
+    res.body = false
+  }
+  return res
 }

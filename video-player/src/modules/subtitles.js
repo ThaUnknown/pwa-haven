@@ -1,5 +1,6 @@
-import { SubtitleParser, SubtitleStream } from 'matroska-subtitles'
+import { SubtitleParser, SubtitleStream } from './matroska.js'
 import JASSUB from 'jassub'
+import { EventEmitter } from 'events'
 import { toTS, videoRx, subRx } from '../../../shared/util.js'
 
 const defaultHeader = `[V4+ Styles]
@@ -9,40 +10,98 @@ Style: Default, Roboto Medium,26,&H00FFFFFF,&H000000FF,&H00020713,&H00000000,0,0
 
 `
 const stylesRx = /^Style:[^,]*/gm
-export default class Subtitles {
-  constructor (video, files, selected, onHeader) {
+export default class Subtitles extends EventEmitter {
+  constructor (video, files, selected) {
+    super()
     this.video = video
     this.selected = selected || null
     this.files = files || []
     this.headers = []
     this.tracks = []
     this._tracksString = []
-    this._stylesMap = {
-      Default: 0
-    }
+    this._stylesMap = []
     this.fonts = ['/Roboto.ttf']
     this.renderer = null
     this.parsed = false
     this.stream = null
     this.parser = null
     this.current = 0
-    this.onHeader = onHeader
     this.videoFiles = files.filter(file => videoRx.test(file.name))
     this.subtitleFiles = []
     this.timeout = null
 
-    if (this.selected.name.endsWith('.mkv') && this.selected.createReadStream) {
+    if (this.selected.name.endsWith('.mkv') && this.selected[Symbol.asyncIterator]) {
       this.parseFonts(this.selected)
-      this.selected.onStream = ({ stream, req }, cb) => {
+      this.selected.onIterator = ({ iterator, req }, cb) => {
         if (req.destination === 'video' && !this.parsed) {
-          this.stream = new SubtitleStream(this.stream)
+          this.stream = new SubtitleStream(this.stream, iterator)
           this.handleSubtitleParser(this.stream, true)
-          stream.pipe(this.stream)
           cb(this.stream)
         }
       }
     }
     this.findSubtitleFiles(this.selected)
+  }
+
+  handleFile ({ mimetype, data, filename }) {
+    if (mimetype === 'application/x-truetype-font' || mimetype === 'application/font-woff' || mimetype === 'application/vnd.ms-opentype' || mimetype === 'font/sfnt' || mimetype.startsWith('font/') || filename.toLowerCase().endsWith('.ttf')) {
+      this.fonts.push(data)
+      this.renderer.addFont(data)
+    }
+  }
+
+  handleSubtitle (subtitle, trackNumber) {
+    if (this.selected) {
+      const string = JSON.stringify(subtitle)
+      if (this._tracksString[trackNumber] && !this._tracksString[trackNumber].has(string)) {
+        this._tracksString[trackNumber].add(string)
+        const assSub = this.constructSub(subtitle, this.headers[trackNumber].type !== 'ass', this.tracks[trackNumber].length, trackNumber)
+        this.tracks[trackNumber].push(assSub)
+        if (this.current === trackNumber) this.renderer?.createEvent(assSub)
+      }
+    }
+  }
+
+  handleTracks (arr) {
+    if (this.selected) {
+      for (const track of arr) {
+        if (!this.tracks[track.number]) {
+          // overwrite webvtt or other header with custom one
+          if (track.type !== 'ass') track.header = defaultHeader
+          this.tracks[track.number] = []
+          this._tracksString[track.number] = new Set()
+          this.headers[track.number] = track
+          this._stylesMap[track.number] = {
+            Default: 0
+          }
+          const styleMatches = track.header.match(stylesRx)
+          for (let i = 0; i < styleMatches.length; ++i) {
+            const style = styleMatches[i].replace('Style:', '').trim()
+            this._stylesMap[track.number][style] = i + 1
+          }
+
+          this.emit('track-change')
+        }
+      }
+      if (!this.current) this.initSubtitleRenderer()
+      const tracks = this.headers?.filter(t => t)
+      if (tracks?.length) {
+        if (tracks.length === 1) {
+          this.selectCaptions(tracks[0].number)
+        } else {
+          const wantedTrack = tracks.find(({ language }) => {
+            if (language == null) language = 'eng'
+            return language === 'eng'
+          })
+          if (wantedTrack) return this.selectCaptions(wantedTrack.number)
+
+          const englishTrack = tracks.find(({ language }) => language === null || language === 'eng')
+          if (englishTrack) return this.selectCaptions(englishTrack.number)
+
+          this.selectCaptions(tracks[0].number)
+        }
+      }
+    }
   }
 
   async findSubtitleFiles (targetFile) {
@@ -71,7 +130,7 @@ export default class Subtitles {
           number: index,
           type
         }
-        this.onHeader()
+        this.emit('track-change')
         this.tracks[index] = []
         const subtitles = await Subtitles.convertSubFile(file, type)
         if (type === 'ass') {
@@ -84,7 +143,7 @@ export default class Subtitles {
         this.current = 0
         this.initSubtitleRenderer()
         this.selectCaptions(this.current)
-        this.onHeader()
+        this.emit('track-change')
       }
     }
   }
@@ -93,16 +152,16 @@ export default class Subtitles {
     if (!this.renderer) {
       this.renderer = new JASSUB({
         video: this.video,
-        subContent: this.headers[this.current].header.slice(0, -1),
+        subContent: defaultHeader,
         fonts: this.fonts,
         fallbackFont: 'roboto medium',
         availableFonts: {
           'roboto medium': './Roboto.ttf'
         },
-        useLocalFonts: true,
-        workerUrl: new URL('jassub/dist/jassub-worker.js', import.meta.url)
+        workerUrl: new URL('jassub/dist/jassub-worker.js', import.meta.url).toString(),
+        wasmUrl: new URL('jassub/dist/jassub-worker.wasm', import.meta.url).toString(),
+        modernWasmUrl: new URL('jassub/dist/jassub-worker-modern.wasm', import.meta.url).toString()
       })
-      this.selectCaptions(this.current)
     }
   }
 
@@ -176,7 +235,7 @@ export default class Subtitles {
     }
   }
 
-  constructSub (subtitle, isNotAss) {
+  constructSub (subtitle, isNotAss, subtitleIndex, trackNumber) {
     if (isNotAss === true) { // converts VTT or other to SSA
       const matches = subtitle.text.match(/<[^>]+>/g) // create array of all tags
       if (matches) {
@@ -194,7 +253,7 @@ export default class Subtitles {
     return {
       Start: subtitle.time,
       Duration: subtitle.duration,
-      Style: this._stylesMap[subtitle.style || 'Default'] || 0,
+      Style: this._stylesMap[trackNumber][subtitle.style || 'Default'] || 0,
       Name: subtitle.name || '',
       MarginL: Number(subtitle.marginL) || 0,
       MarginR: Number(subtitle.marginR) || 0,
@@ -202,34 +261,32 @@ export default class Subtitles {
       Effect: subtitle.effect || '',
       Text: subtitle.text || '',
       ReadOrder: 1,
-      Layer: Number(subtitle.layer) || 0
+      Layer: Number(subtitle.layer) || 0,
+      _index: subtitleIndex
     }
   }
 
   parseSubtitles () { // parse all existing subtitles for a file
     return new Promise((resolve) => {
       if (this.selected.name.endsWith('.mkv')) {
-        let parser = new SubtitleParser()
-        this.handleSubtitleParser(parser, true)
+        this.parser = new SubtitleParser(this.selected)
+        this.handleSubtitleParser(this.parser, true)
         const finish = () => {
           console.log('Sub parsing finished', toTS((performance.now() - t0) / 1000))
           this.parsed = true
           this.parser?.destroy()
           this.parser = undefined
-          fileStream.destroy()
           this.stream?.destroy() // this throws an error, but performance...
           this.stream = undefined
-          parser = undefined
+          this.parser = undefined
           resolve()
         }
-        parser.once('tracks', tracks => {
+        this.parser.once('tracks', tracks => {
           if (!tracks.length) finish()
         })
-        parser.once('finish', finish)
+        this.parser.once('finish', finish)
         const t0 = performance.now()
         console.log('Sub parsing started')
-        const fileStream = this.selected.createReadStream()
-        this.parser = fileStream.pipe(parser)
       } else {
         resolve()
       }
@@ -242,75 +299,40 @@ export default class Subtitles {
         this.parsed = true
         parser?.destroy()
       } else {
-        for (const track of tracks) {
-          if (!this.tracks[track.number]) {
-            // overwrite webvtt or other header with custom one
-            if (track.type !== 'ass') track.header = defaultHeader
-            if (!this.current) {
-              this.current = track.number
-            }
-            this.tracks[track.number] = []
-            this._tracksString[track.number] = new Set()
-            this.headers[track.number] = track
-            const styleMatches = track.header.match(stylesRx)
-            for (let i = 0; i < styleMatches.length; ++i) {
-              const style = styleMatches[i].replace('Style:', '').trim()
-              this._stylesMap[style] = i + 1
-            }
-
-            this.onHeader()
-          }
-        }
-        this.initSubtitleRenderer()
+        this.handleTracks(tracks)
       }
     })
-    parser.on('subtitle', async (subtitle, trackNumber) => {
-      if (!this.parsed) {
-        const string = JSON.stringify(subtitle)
-        if (!this._tracksString[trackNumber].has(string)) {
-          this._tracksString[trackNumber].add(string)
-          const assSub = this.constructSub(subtitle, this.headers[trackNumber].type !== 'ass')
-          this.tracks[trackNumber].push(assSub)
-          if (this.current === trackNumber) this.renderer.createEvent(assSub)
-        }
-      }
-    })
+    parser.on('subtitle', this.handleSubtitle.bind(this))
     if (!skipFile) {
-      parser.on('file', file => {
-        if (file.mimetype === 'application/x-truetype-font' || file.mimetype === 'application/font-woff' || file.mimetype === 'application/vnd.ms-opentype' || file.mimetype === 'font/sfnt' || file.mimetype.startsWith('font/') || file.filename.toLowerCase().endsWith('.ttf')) {
-          this.fonts.push(file.data)
-          this.renderer.addFont(file.data)
-        }
+      parser.once('chapters', chapters => {
+        this.emit('chapters', chapters)
       })
+      parser.on('file', this.handleFile.bind(this))
     }
   }
 
   parseFonts (file) {
-    const stream = new SubtitleParser()
+    const stream = new SubtitleParser(file)
     this.handleSubtitleParser(stream)
     stream.once('tracks', tracks => {
       if (!tracks.length) {
         this.parsed = true
         stream.destroy()
-        fileStreamStream.destroy()
       }
     })
     stream.once('subtitle', () => {
-      fileStreamStream.destroy()
       stream.destroy()
     })
-    const fileStreamStream = file.createReadStream()
-    fileStreamStream.pipe(stream)
   }
 
   selectCaptions (trackNumber) {
-    if (trackNumber !== undefined) {
+    if (trackNumber != null) {
       this.current = Number(trackNumber)
-      this.onHeader()
-      if (this.renderer && this.headers) {
-        this.renderer.setTrack(this.current !== -1 ? this.headers[this.current].header.slice(0, -1) : defaultHeader)
+      this.emit('track-change')
+      if (this.headers) {
+        this.renderer?.setTrack(this.current !== -1 ? this.headers[this.current].header.slice(0, -1) : defaultHeader)
         if (this.tracks[this.current]) {
-          for (const subtitle of this.tracks[this.current]) this.renderer.createEvent(subtitle)
+          if (this.renderer) for (const subtitle of this.tracks[this.current]) this.renderer.createEvent(subtitle)
         }
       }
     }
@@ -325,6 +347,6 @@ export default class Subtitles {
     this.selected = null
     this.tracks = null
     this.headers = null
-    this.onHeader()
+    this.emit('track-change')
   }
 }

@@ -32,7 +32,7 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '2.0.4',
+    version: '2.0.5',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.wasm',
@@ -141,10 +141,19 @@ self.addEventListener('fetch', event => {
 })
 
 const portTimeoutDuration = 5000
+let cancellable = false
+
 function proxyResponse (event) {
   const { url } = event.request
   if (!(url.includes(self.registration.scope) && url.includes('/server/')) || url.includes('?')) return null
   if (url.includes(self.registration.scope) && url.includes('/server/keepalive/')) return new Response()
+  if (url.includes(self.registration.scope) && url.includes('/server/cancel/')) {
+    return new Response(new ReadableStream({
+      cancel () {
+        cancellable = true
+      }
+    }))
+  }
 
   return serve(event)
 }
@@ -172,42 +181,46 @@ async function serve ({ request }) {
     }
   })
 
-  if (data.body !== 'STREAM' && data.body !== 'DOWNLOAD') return new Response(data.body, data)
-
   let timeOut = null
+  const cleanup = () => {
+    port.postMessage(false) // send a cancel request
+    clearTimeout(timeOut)
+    port.onmessage = null
+  }
+
+  if (data.body !== 'STREAM') {
+    cleanup()
+    return new Response(data.body, data)
+  }
+
   return new Response(new ReadableStream({
     pull (controller) {
       return new Promise(resolve => {
         port.onmessage = ({ data }) => {
           if (data) {
-            if (port.onmessage) controller.enqueue(data) // event.data is Uint8Array
+            controller.enqueue(data) // data is Uint8Array
           } else {
-            clearTimeout(timeOut)
-            controller.close() // event.data is null, means the stream ended
-            port.onmessage = null
+            cleanup()
+            controller.close() // data is null, means the stream ended
           }
           resolve()
         }
-
-        // 'media player' does NOT signal a close on the stream and we cannot close it because it's locked to the reader,
-        // so we just empty it after 5s of inactivity, the browser will request another port anyways
-        clearTimeout(timeOut)
-        if (data.body === 'STREAM') {
-          timeOut = setTimeout(() => {
-            controller.close()
-            port.postMessage(false) // send timeout
-            port.onmessage = null
-            resolve()
-          }, portTimeoutDuration)
+        if (!cancellable) {
+          // firefox doesn't support cancelling of Readable Streams in service workers,
+          // so we just empty it after 5s of inactivity, the browser will request another port anyways
+          clearTimeout(timeOut)
+          if (destination !== 'document') {
+            timeOut = setTimeout(() => {
+              cleanup()
+              resolve()
+            }, portTimeoutDuration)
+          }
         }
-
         port.postMessage(true) // send a pull request
       })
     },
     cancel () {
-      clearTimeout(timeOut)
-      port.postMessage(false) // send a cancel request
-      port.onmessage = null
+      cleanup()
     }
   }), data)
 }

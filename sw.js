@@ -1,6 +1,6 @@
 const cacheList = {
   shared: {
-    version: '1.0.5',
+    version: '1.0.6',
     resources: [
       'https://cdn.jsdelivr.net/npm/quartermoon@latest/css/quartermoon-variables.min.css',
       'https://fonts.googleapis.com/icon?family=Material+Icons',
@@ -8,7 +8,7 @@ const cacheList = {
     ]
   },
   'img-viewer': {
-    version: '1.4.1',
+    version: '1.4.2',
     resources: [
       '../img-viewer/public/build/bundle.js',
       '../img-viewer/public/build/bundle.css',
@@ -19,7 +19,7 @@ const cacheList = {
     ]
   },
   'audio-player': {
-    version: '1.8.4',
+    version: '1.8.5',
     resources: [
       '../audio-player/public/build/bundle.js',
       '../audio-player/public/build/bundle.css',
@@ -32,12 +32,13 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '2.0.5',
+    version: '2.0.6',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.wasm',
       '../video-player/public/lib/jassub-worker.js',
       '../video-player/public/lib/jassub-worker.wasm',
+      '../video-player/public/lib/jassub-worker-modern.wasm',
       '../video-player/public/lib/Roboto.ttf',
       '../video-player/public/build/bundle.js',
       '../video-player/public/build/bundle.css',
@@ -50,7 +51,7 @@ const cacheList = {
     ]
   },
   'torrent-client': {
-    version: '1.2.11',
+    version: '1.2.12',
     resources: [
       '../torrent-client/public/build/bundle.js',
       '../torrent-client/public/build/bundle.css',
@@ -61,7 +62,7 @@ const cacheList = {
     ]
   },
   'screen-recorder': {
-    version: '1.2.0',
+    version: '1.2.1',
     resources: [
       '../screen-recorder/public/build/bundle.js',
       '../screen-recorder/public/build/bundle.css',
@@ -72,7 +73,7 @@ const cacheList = {
     ]
   },
   'manga-reader': {
-    version: '1.3.1',
+    version: '1.3.2',
     resources: [
       '../manga-reader/public/site.webmanifest',
       '../manga-reader/public/128.png',
@@ -141,10 +142,19 @@ self.addEventListener('fetch', event => {
 })
 
 const portTimeoutDuration = 5000
+let cancellable = false
+
 function proxyResponse (event) {
   const { url } = event.request
   if (!(url.includes(self.registration.scope) && url.includes('/server/')) || url.includes('?')) return null
   if (url.includes(self.registration.scope) && url.includes('/server/keepalive/')) return new Response()
+  if (url.includes(self.registration.scope + '/server/cancel/')) {
+    return new Response(new ReadableStream({
+      cancel () {
+        cancellable = true
+      }
+    }))
+  }
 
   return serve(event)
 }
@@ -172,42 +182,46 @@ async function serve ({ request }) {
     }
   })
 
-  if (data.body !== 'STREAM' && data.body !== 'DOWNLOAD') return new Response(data.body, data)
-
   let timeOut = null
+  const cleanup = () => {
+    port.postMessage(false) // send a cancel request
+    clearTimeout(timeOut)
+    port.onmessage = null
+  }
+
+  if (data.body !== 'STREAM') {
+    cleanup()
+    return new Response(data.body, data)
+  }
+
   return new Response(new ReadableStream({
     pull (controller) {
       return new Promise(resolve => {
         port.onmessage = ({ data }) => {
           if (data) {
-            if (port.onmessage) controller.enqueue(data) // event.data is Uint8Array
+            controller.enqueue(data) // data is Uint8Array
           } else {
-            clearTimeout(timeOut)
-            controller.close() // event.data is null, means the stream ended
-            port.onmessage = null
+            cleanup()
+            controller.close() // data is null, means the stream ended
           }
           resolve()
         }
-
-        // 'media player' does NOT signal a close on the stream and we cannot close it because it's locked to the reader,
-        // so we just empty it after 5s of inactivity, the browser will request another port anyways
-        clearTimeout(timeOut)
-        if (data.body === 'STREAM') {
-          timeOut = setTimeout(() => {
-            controller.close()
-            port.postMessage(false) // send timeout
-            port.onmessage = null
-            resolve()
-          }, portTimeoutDuration)
+        if (!cancellable) {
+          // firefox doesn't support cancelling of Readable Streams in service workers,
+          // so we just empty it after 5s of inactivity, the browser will request another port anyways
+          clearTimeout(timeOut)
+          if (destination !== 'document') {
+            timeOut = setTimeout(() => {
+              cleanup()
+              resolve()
+            }, portTimeoutDuration)
+          }
         }
-
         port.postMessage(true) // send a pull request
       })
     },
     cancel () {
-      clearTimeout(timeOut)
-      port.postMessage(false) // send a cancel request
-      port.onmessage = null
+      cleanup()
     }
   }), data)
 }

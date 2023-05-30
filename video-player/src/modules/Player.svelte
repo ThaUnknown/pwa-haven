@@ -131,6 +131,7 @@
         interval: undefined,
         video: undefined
       })
+      if (subs) subs.destroy()
       if (file instanceof File || file instanceof URLFile) {
         setFile(file)
         src = `server/${file.name}`
@@ -143,14 +144,11 @@
       currentTime = 0
       targetTime = 0
       video.load()
-      initSubs()
+      subs = new Subtitles(video, files, current)
+      subs.on('track-change', handleHeaders)
     }
   }
 
-  function initSubs () {
-    if (subs) subs.destroy()
-    subs = new Subtitles(video, files, current, handleHeaders)
-  }
   function cycleSubtitles () {
     if (current && subs?.headers) {
       const tracks = subs.headers.filter(header => header)
@@ -520,6 +518,19 @@
     }
   }
 
+  function getBufferedTime (buffered, time) {
+    for (const { start, end } of buffered) {
+      if (time < end && time > start) {
+        return end
+      }
+    }
+    return 0
+  }
+
+  let buffered = []
+
+  $: buffer = getBufferedTime(buffered, targetTime)
+
 </script>
 
 <svelte:window bind:innerWidth bind:innerHeight />
@@ -556,6 +567,7 @@
     bind:volume
     bind:duration
     bind:currentTime
+    bind:buffered
     bind:paused
     bind:ended
     bind:muted
@@ -572,7 +584,7 @@
     on:loadedmetadata={initThumbnails}
     on:loadedmetadata={autoPlay}
     on:leavepictureinpicture={() => (pip = false)} />
-  <Stats {video} bind:toggleStats />
+  <Stats {video} {buffer} bind:toggleStats />
   <div class='top z-40 d-flex justify-content-between'>
     <div />
     <div />
@@ -590,7 +602,7 @@
     <div data-name='bufferingDisplay' class='position-absolute' />
   </div>
   <div class='bottom d-flex z-40 flex-column px-20'>
-    <SeekControls bind:currentTime bind:targetTime {safeduration} {thumbnailData} bind:paused />
+    <SeekControls bind:currentTime bind:targetTime {safeduration} {thumbnailData} bind:paused {buffer} />
     <div class='d-flex'>
       <span class='material-icons ctrl' title='Play/Pause [Space]' data-name='playPause' on:click={playPause}> {ended ? 'replay' : paused ? 'play_arrow' : 'pause'} </span>
       {#if videos?.length > 1}
