@@ -1,7 +1,7 @@
 <script context='module'>
   import { get, set, createStore } from 'idb-keyval'
 
-  const supported = 'FileSystemFileHandle' in window
+  const supported = 'showOpenFilePicker' in window || DataTransferItem.prototype.getAsFileSystemHandle
 
   const asyncSome = async (arr, predicate) => {
     for (const e of arr) {

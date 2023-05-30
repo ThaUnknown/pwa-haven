@@ -91,7 +91,7 @@ async function processItem (item, types) {
   }
 }
 export async function filePopup (types = []) {
-  if ('FileSystemFileHandle' in window) {
+  if ('showOpenFilePicker' in window) {
     const handles = await window.showOpenFilePicker({
       types: [{
         description: types.join(', '),
