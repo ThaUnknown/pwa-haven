@@ -45,7 +45,7 @@ async function processItem (item, types) {
           if (url && type) {
             return {
               url: string,
-              name: url.pathname.substring(string.lastIndexOf('/') + 1),
+              name: url.pathname.slice(url.pathname.lastIndexOf('/') + 1),
               type
             }
           }
@@ -123,9 +123,10 @@ export function getSearchFiles (types) {
   if (!search.length) return null
   const files = []
   for (const param of search) {
-    const type = types.find(type => new URL(param[1]).pathname.match(rxMap[type]))
+    const url = new URL(param[1])
+    const type = types.find(type => url.pathname.match(rxMap[type]))
     if (type) {
-      const name = param[1].substring(Math.max(param[1].lastIndexOf('\\') + 2, param[1].lastIndexOf('/') + 1))
+      const name = url.pathname.substring(Math.max(url.pathname.lastIndexOf('\\') + 2, url.pathname.lastIndexOf('/') + 1))
       files.push({
         name,
         url: param[1],
