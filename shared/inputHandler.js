@@ -41,11 +41,11 @@ async function processItem (item, types) {
         try {
           // URL might be invalid
           const url = new URL(string)
-          const type = types.find(type => string.match(rxMap[type]))
+          const type = types.find(type => url.pathname.match(rxMap[type]))
           if (url && type) {
             return {
               url: string,
-              name: string.substring(string.lastIndexOf('/') + 1),
+              name: url.pathname.substring(string.lastIndexOf('/') + 1),
               type
             }
           }
@@ -107,15 +107,12 @@ export async function filePopup (types = []) {
     return await Promise.all(handles.map(handle => handle.getFile()))
   } else {
     return new Promise(resolve => {
-      let input = document.createElement('input')
+      const input = document.createElement('input')
       input.type = 'file'
-      input.multiple = 'multiple'
-      input.accept = types.map(type => '.' + exMap[type].join(',.')).flat()
+      input.multiple = true
+      input.accept = types.map(type => '.' + exMap[type].join(',.')).flat().join(',.')
 
-      input.onchange = async ({ target }) => {
-        resolve([...target.files])
-        input = null
-      }
+      input.onchange = () => resolve([...input.files])
       input.click()
     })
   }
@@ -126,7 +123,7 @@ export function getSearchFiles (types) {
   if (!search.length) return null
   const files = []
   for (const param of search) {
-    const type = types.find(type => param[1].match(rxMap[type]))
+    const type = types.find(type => new URL(param[1]).pathname.match(rxMap[type]))
     if (type) {
       const name = param[1].substring(Math.max(param[1].lastIndexOf('\\') + 2, param[1].lastIndexOf('/') + 1))
       files.push({
@@ -141,9 +138,8 @@ export function getSearchFiles (types) {
 export async function getLaunchFiles () {
   return new Promise(resolve => {
     launchQueue.setConsumer(async launchParams => {
-      if (!launchParams.files.length) {
-        return
-      }
+      if (!launchParams.files.length) return
+
       const promises = launchParams.files.map(file => {
         updateRecents([file])
         return file.getFile()

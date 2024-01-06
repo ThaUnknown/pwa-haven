@@ -1,7 +1,7 @@
-import { SubtitleParser, SubtitleStream } from './matroska.js'
 import JASSUB from 'jassub'
 import { EventEmitter } from 'events'
 import { toTS, videoRx, subRx } from '../../../shared/util.js'
+import Parser from './parser.js'
 
 const defaultHeader = `[V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
@@ -24,30 +24,23 @@ export default class Subtitles extends EventEmitter {
     this.renderer = null
     this.parsed = false
     this.stream = null
-    this.parser = null
+    if (selected[Symbol.asyncIterator]) {
+      this.parser = new Parser(selected)
+      this.parser.on('file', file => this.handleFile(file))
+      this.parser.on('subtitle', ({ subtitle, trackNumber }) => this.handleSubtitle(subtitle, trackNumber))
+      this.parser.on('tracks', tracks => this.handleTracks(tracks))
+    }
     this.current = 0
     this.videoFiles = files.filter(file => videoRx.test(file.name))
     this.subtitleFiles = []
     this.timeout = null
 
-    if (this.selected.name.endsWith('.mkv') && this.selected[Symbol.asyncIterator]) {
-      this.parseFonts(this.selected)
-      this.selected.onIterator = ({ iterator, req }, cb) => {
-        if (req.destination === 'video' && !this.parsed) {
-          this.stream = new SubtitleStream(this.stream, iterator)
-          this.handleSubtitleParser(this.stream, true)
-          cb(this.stream)
-        }
-      }
-    }
     this.findSubtitleFiles(this.selected)
   }
 
-  handleFile ({ mimetype, data, filename }) {
-    if (mimetype === 'application/x-truetype-font' || mimetype === 'application/font-woff' || mimetype === 'application/vnd.ms-opentype' || mimetype === 'font/sfnt' || mimetype.startsWith('font/') || filename.toLowerCase().endsWith('.ttf')) {
-      this.fonts.push(data)
-      this.renderer.addFont(data)
-    }
+  handleFile ({ data }) {
+    this.fonts.push(data)
+    this.renderer.addFont(data)
   }
 
   handleSubtitle (subtitle, trackNumber) {
@@ -266,63 +259,11 @@ export default class Subtitles extends EventEmitter {
     }
   }
 
-  parseSubtitles () { // parse all existing subtitles for a file
-    return new Promise((resolve) => {
-      if (this.selected.name.endsWith('.mkv')) {
-        this.parser = new SubtitleParser(this.selected)
-        this.handleSubtitleParser(this.parser, true)
-        const finish = () => {
-          console.log('Sub parsing finished', toTS((performance.now() - t0) / 1000))
-          this.parsed = true
-          this.parser?.destroy()
-          this.parser = undefined
-          this.stream?.destroy() // this throws an error, but performance...
-          this.stream = undefined
-          this.parser = undefined
-          resolve()
-        }
-        this.parser.once('tracks', tracks => {
-          if (!tracks.length) finish()
-        })
-        this.parser.once('finish', finish)
-        const t0 = performance.now()
-        console.log('Sub parsing started')
-      } else {
-        resolve()
-      }
-    })
-  }
-
-  handleSubtitleParser (parser, skipFile) {
-    parser.once('tracks', tracks => {
-      if (!tracks.length) {
-        this.parsed = true
-        parser?.destroy()
-      } else {
-        this.handleTracks(tracks)
-      }
-    })
-    parser.on('subtitle', this.handleSubtitle.bind(this))
-    if (!skipFile) {
-      parser.once('chapters', chapters => {
-        this.emit('chapters', chapters)
-      })
-      parser.on('file', this.handleFile.bind(this))
-    }
-  }
-
-  parseFonts (file) {
-    const stream = new SubtitleParser(file)
-    this.handleSubtitleParser(stream)
-    stream.once('tracks', tracks => {
-      if (!tracks.length) {
-        this.parsed = true
-        stream.destroy()
-      }
-    })
-    stream.once('subtitle', () => {
-      stream.destroy()
-    })
+  async parseSubtitles () { // parse all existing subtitles for a file
+    if (!this.parser || this.parsed) return
+    await this.parser.parseSubtitles()
+    this.parser.destroy()
+    this.parsed = true
   }
 
   selectCaptions (trackNumber) {
@@ -339,7 +280,6 @@ export default class Subtitles extends EventEmitter {
   }
 
   destroy () {
-    this.stream?.destroy()
     this.parser?.destroy()
     this.renderer?.destroy()
     this.files = null

@@ -1,5 +1,6 @@
 <script>
   import Seekbar from 'perfect-seekbar'
+
   export let currentTime = 0
   export let safeduration = 0
   export let targetTime = 0

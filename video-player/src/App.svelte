@@ -2,7 +2,7 @@
   import Player from './modules/Player.svelte'
   import InstallPrompt from '../../shared/InstallPrompt.svelte'
   import { filePopup, handleItems, getSearchFiles, getLaunchFiles } from '../../shared/inputHandler.js'
-  import { URLFile } from '../../shared/URLFile.js'
+  import { fromURL } from '@thaunknown/url-file'
   import RecentFiles, { initDb } from '../../shared/RecentFiles.svelte'
 
   initDb('video-player')
@@ -39,11 +39,12 @@
         await Promise.all(
           newfiles.map(async file => {
             if (file instanceof File) return file
-            const urlfile = new URLFile(file)
-            if (!((await urlfile.ready) instanceof Error)) {
-              return urlfile
+            try {
+              return await fromURL(file.url)
+            } catch (e) {
+              console.warn('Failed to use remote URL as a file:', e)
+              return file
             }
-            return file
           })
         )
       )

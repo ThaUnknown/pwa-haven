@@ -13,6 +13,9 @@ export const imageRx = new RegExp(`.(${imageExtensions.join('|')})$`, 'i')
 export const bookExtensions = ['epub', 'cbr', 'cba', 'cbt', 'cbz', 'cb7', 'zip']
 export const bookRx = new RegExp(`.(${bookExtensions.join('|')})$`, 'i')
 
+export const fontExtensions = ['ttf', 'ttc', 'woff', 'woff2', 'otf', 'cff', 'otc', 'pfa', 'pfb', 'pcf', 'fnt', 'bdf', 'pfr', 'eot']
+export const fontRx = new RegExp(`.(${fontExtensions.join('|')})$`, 'i')
+
 export function toTS (sec, full) {
   if (isNaN(sec) || sec < 0) {
     switch (full) {

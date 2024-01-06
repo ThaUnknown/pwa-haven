@@ -7,44 +7,43 @@
   export let container
 
   export function togglePopout () {
-    if (video.readyState) {
-      if (!subs?.renderer) {
-        if (video !== document.pictureInPictureElement) {
-          video.requestPictureInPicture()
-          pip = true
-        } else {
-          document.exitPictureInPicture()
-          pip = false
-        }
+    if (!video.readyState) return
+
+    if (!subs?.renderer) {
+      pip = video !== document.pictureInPictureElement
+      if (pip) {
+        video.requestPictureInPicture()
       } else {
-        if (document.pictureInPictureElement && !document.pictureInPictureElement.id) {
-          // only exit if pip is the custom one, else overwrite existing pip with custom
-          document.exitPictureInPicture()
+        document.exitPictureInPicture()
+      }
+    } else {
+      if (document.pictureInPictureElement && !document.pictureInPictureElement.id) {
+        // only exit if pip is the custom one, else overwrite existing pip with custom
+        document.exitPictureInPicture()
+        pip = false
+      } else {
+        const canvasVideo = document.createElement('video')
+        const { stream, destroy, canvas } = getBurnIn(video, subs)
+        container.append(canvas)
+        const cleanup = () => {
           pip = false
-        } else {
-          const canvasVideo = document.createElement('video')
-          const { stream, destroy, canvas } = getBurnIn(video, subs)
-          container.append(canvas)
-          const cleanup = () => {
-            pip = false
-            destroy()
-            canvasVideo.remove()
-          }
-          pip = true
-          canvasVideo.srcObject = stream
-          canvasVideo.onloadedmetadata = () => {
-            canvasVideo.play()
-            if (pip) {
-              canvasVideo.requestPictureInPicture().catch(e => {
-                cleanup()
-                console.warn('Failed To Burn In Subtitles ' + e)
-              })
-            } else {
-              cleanup()
-            }
-          }
-          canvasVideo.onleavepictureinpicture = cleanup
+          destroy()
+          canvasVideo.remove()
         }
+        pip = true
+        canvasVideo.srcObject = stream
+        canvasVideo.onloadedmetadata = () => {
+          canvasVideo.play()
+          if (pip) {
+            canvasVideo.requestPictureInPicture().catch(e => {
+              cleanup()
+              console.warn('Failed To Burn In Subtitles ' + e)
+            })
+          } else {
+            cleanup()
+          }
+        }
+        canvasVideo.onleavepictureinpicture = cleanup
       }
     }
   }

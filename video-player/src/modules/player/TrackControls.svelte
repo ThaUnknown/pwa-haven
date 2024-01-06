@@ -1,5 +1,6 @@
 <script>
   import { toggleDropdown } from './common.js'
+
   export let subHeaders = null
   export let video = null
   let subDelay = 0
@@ -26,7 +27,7 @@
   }
 
 </script>
-<!-- svelte-ignore missing-declaration -->
+
 {#if 'audioTracks' in HTMLVideoElement.prototype && video?.audioTracks?.length > 1}
   <div class='dropdown dropup with-arrow' on:click={toggleDropdown}>
     <span class='material-icons ctrl' title='Audio Tracks'>
@@ -42,7 +43,6 @@
     </div>
   </div>
 {/if}
-<!-- svelte-ignore missing-declaration -->
 {#if 'videoTracks' in HTMLVideoElement.prototype && video?.videoTracks?.length > 1}
   <div class='dropdown dropup with-arrow' on:click={toggleDropdown}>
     <span class='material-icons ctrl' title='Video Tracks'>

@@ -17,6 +17,7 @@ module.exports = {
     anitomyscript: 'anitomyscript'
   },
   resolve: {
+    aliasFields: ['svelte', 'browser', 'module', 'main'],
     alias: {
       svelte: path.dirname(require.resolve('svelte/package.json'))
     },
