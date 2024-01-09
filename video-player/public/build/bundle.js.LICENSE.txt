@@ -1,3 +1,9 @@
+/* Common package for dealing with hex/string/uint8 conversions (and sha1 hashing)
+*
+* @author   Jimmy Wärting <jimmy@warting.se> (https://jimmy.warting.se/opensource)
+* @license  MIT
+*/
+
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -13,3 +19,5 @@
  */
 
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
+
+/*! pako 2.1.0 https://github.com/nodeca/pako @license (MIT AND Zlib) */

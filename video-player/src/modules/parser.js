@@ -33,7 +33,6 @@ export default class Parser extends EventEmitter {
       if (this.destroyed) return
       for (const file of files) {
         if (fontRx.test(file.filename) || file.mimetype.toLowerCase().includes('font')) {
-          // this is cursed, but required, as capacitor-node's IPC hangs for 2mins when runnig on 32bit android when sending uint8's
           this.emit('file', file)
         }
       }
