@@ -1,5 +1,6 @@
 <script>
   import { tick } from 'svelte'
+  import { click } from './click.js'
   import { setFile, speed } from './server.js'
   import './File.js'
   import Subtitles from './subtitles.js'
@@ -13,7 +14,6 @@
   import SeekControls from './player/SeekControls.svelte'
   import Stats from './player/Stats.svelte'
 
-  export let set = {}
   export let files = []
   $: updateFiles(files)
   export let name = null
@@ -169,7 +169,7 @@
   }
   let visibilityPaused = true
   document.addEventListener('visibilitychange', () => {
-    if (!video?.ended && set.playerPause && !pip) {
+    if (!video?.ended && !pip) {
       if (document.visibilityState === 'hidden') {
         visibilityPaused = paused
         paused = true
@@ -179,7 +179,7 @@
     }
   })
   function tryPlayNext () {
-    if (set.playerAutoplay) playNext()
+    playNext()
   }
   function playNext () {
     handleCurrent(videos[(videos.indexOf(current) + 1) % videos.length])
@@ -535,7 +535,7 @@
 
 <svelte:window bind:innerWidth bind:innerHeight />
 {#if showKeybinds}
-  <div class='position-absolute bg-tp w-full h-full z-50 font-size-12 p-20 d-flex align-items-center justify-content-center' on:click|self={() => (showKeybinds = false)}>
+  <div class='position-absolute bg-tp w-full h-full z-50 font-size-12 p-20 d-flex align-items-center justify-content-center' use:click={() => (showKeybinds = false)}>
     <button class='close' type='button' on:click={() => (showKeybinds = false)}><span>×</span></button>
     <Keybinds let:prop={item} autosave={true} clickable={true}>
       <div class:material-icons={item?.type} class='bind'>{item?.id || ''}</div>

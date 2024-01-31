@@ -1,4 +1,5 @@
 <script>
+  import { click } from '../click.js'
   import { getBurnIn } from './common.js'
 
   export let video
@@ -50,7 +51,7 @@
 </script>
 
 {#if 'pictureInPictureEnabled' in document}
-  <span class='material-icons ctrl' title='Popout Window [P]' on:click={togglePopout}>
+  <span class='material-icons ctrl' title='Popout Window [P]' use:click={togglePopout}>
     {pip ? 'featured_video' : 'picture_in_picture'}
   </span>
 {/if}

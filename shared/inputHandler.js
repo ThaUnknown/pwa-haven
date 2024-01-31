@@ -145,7 +145,7 @@ export async function getLaunchFiles () {
         updateRecents([file])
         return file.getFile()
       })
-      // for some fucking reason, the same file can get passed multiple times, why? I still want to future-proof multi-files
+      // for some reason, the same file can get passed multiple times, why?
       resolve((await Promise.all(promises)).filter((file, index, all) => {
         return all.findIndex(search => {
           return search.name === file.name && search.size === file.size && search.lastModified === file.lastModified

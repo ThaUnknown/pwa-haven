@@ -1,5 +1,6 @@
 <script>
   import Peer from '../../../../shared/Peer.js'
+  import { click } from '../click.js'
   import { getBurnIn } from './common.js'
 
   export let video = null
@@ -93,7 +94,7 @@
 </script>
 
 {#if 'PresentationRequest' in window && canCast && video.readyState}
-  <span class='material-icons ctrl' title='Cast Video [D]' data-name='toggleCast' on:click={toggleCast}>
+  <span class='material-icons ctrl' title='Cast Video [D]' data-name='toggleCast' use:click={toggleCast}>
     {presentationConnection ? 'cast_connected' : 'cast'}
   </span>
 {/if}
