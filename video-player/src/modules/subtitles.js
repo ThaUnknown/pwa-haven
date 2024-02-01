@@ -40,7 +40,7 @@ export default class Subtitles extends EventEmitter {
 
   handleFile ({ data }) {
     this.fonts.push(data)
-    this.renderer.addFont(data)
+    this.renderer?.addFont(data)
   }
 
   handleSubtitle (subtitle, trackNumber) {

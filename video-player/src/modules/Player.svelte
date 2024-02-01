@@ -6,7 +6,7 @@
   import Subtitles from './subtitles.js'
   import { toTS, videoRx } from '../../../shared/util.js'
   import anitomyscript from 'anitomyscript'
-  import { URLFile } from '../../../shared/URLFile.js'
+  import URLFile from '@thaunknown/url-file'
   import Keybinds, { loadWithDefaults } from 'svelte-keybinds'
   import TrackControls from './player/TrackControls.svelte'
   import CastControls from './player/CastControls.svelte'
@@ -588,35 +588,35 @@
   <div class='top z-40 d-flex justify-content-between'>
     <div />
     <div />
-    <span class='material-icons ctrl' title='Keybinds [`]' on:click={() => (showKeybinds = true)}> help_outline </span>
+    <span class='material-icons ctrl' title='Keybinds [`]' use:click={() => (showKeybinds = true)}> help_outline </span>
   </div>
   <div class='middle d-flex align-items-center justify-content-center flex-grow-1 z-40 position-relative'>
     <div class='position-absolute w-full h-full' on:dblclick={toggleFullscreen}>
-      <div class='play-overlay w-full h-full' on:click={playPause} />
+      <div class='play-overlay w-full h-full' use:click={playPause} />
     </div>
-    <span class='material-icons ctrl' class:text-muted={!videos?.length > 1} class:disabled={!videos?.length > 1} data-name='playLast' on:click={playLast}> skip_previous </span>
-    <span class='material-icons ctrl' data-name='rewind' on:click={rewind}> fast_rewind </span>
-    <span class='material-icons ctrl' data-name='playPause' on:click={playPause}> {ended ? 'replay' : paused ? 'play_arrow' : 'pause'} </span>
-    <span class='material-icons ctrl' data-name='forward' on:click={forward}> fast_forward </span>
-    <span class='material-icons ctrl' class:text-muted={!videos?.length > 1} class:disabled={!videos?.length > 1} data-name='playNext' on:click={playNext}> skip_next </span>
+    <span class='material-icons ctrl' class:text-muted={!videos?.length > 1} class:disabled={!videos?.length > 1} data-name='playLast' use:click={playLast}> skip_previous </span>
+    <span class='material-icons ctrl' data-name='rewind' use:click={rewind}> fast_rewind </span>
+    <span class='material-icons ctrl' data-name='playPause' use:click={playPause}> {ended ? 'replay' : paused ? 'play_arrow' : 'pause'} </span>
+    <span class='material-icons ctrl' data-name='forward' use:click={forward}> fast_forward </span>
+    <span class='material-icons ctrl' class:text-muted={!videos?.length > 1} class:disabled={!videos?.length > 1} data-name='playNext' use:click={playNext}> skip_next </span>
     <div data-name='bufferingDisplay' class='position-absolute' />
   </div>
   <div class='bottom d-flex z-40 flex-column px-20'>
     <SeekControls bind:currentTime bind:targetTime {safeduration} {thumbnailData} bind:paused {buffer} />
     <div class='d-flex'>
-      <span class='material-icons ctrl' title='Play/Pause [Space]' data-name='playPause' on:click={playPause}> {ended ? 'replay' : paused ? 'play_arrow' : 'pause'} </span>
+      <span class='material-icons ctrl' title='Play/Pause [Space]' data-name='playPause' use:click={playPause}> {ended ? 'replay' : paused ? 'play_arrow' : 'pause'} </span>
       {#if videos?.length > 1}
-        <span class='material-icons ctrl' title='Next [N]' data-name='playNext' on:click={playNext}> skip_next </span>
+        <span class='material-icons ctrl' title='Next [N]' data-name='playNext' use:click={playNext}> skip_next </span>
       {/if}
       <div class='d-flex w-auto volume'>
-        <span class='material-icons ctrl' title='Mute [M]' data-name='toggleMute' on:click={toggleMute}> {muted ? 'volume_off' : 'volume_up'} </span>
+        <span class='material-icons ctrl' title='Mute [M]' data-name='toggleMute' use:click={toggleMute}> {muted ? 'volume_off' : 'volume_up'} </span>
         <input class='ctrl' type='range' min='0' max='1' step='any' data-name='setVolume' bind:value={volume} style='--value: {volume * 100}%' />
       </div>
       <div class='ts mr-auto'>{toTS(targetTime, safeduration > 3600 ? 2 : 3)} / {toTS(safeduration - targetTime, safeduration > 3600 ? 2 : 3)}</div>
       <TrackControls {video} {subs} {subHeaders} />
       <CastControls {video} {subs} bind:paused bind:toggleCast {container} />
       <PopoutControls {video} {subs} bind:pip bind:togglePopout {container} />
-      <span class='material-icons ctrl' title='Fullscreen [F]' data-name='toggleFullscreen' on:click={toggleFullscreen}>
+      <span class='material-icons ctrl' title='Fullscreen [F]' data-name='toggleFullscreen' use:click={toggleFullscreen}>
         {isFullscreen ? 'fullscreen_exit' : 'fullscreen'}
       </span>
     </div>

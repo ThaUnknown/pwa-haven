@@ -1,8 +1,6 @@
 let lastTapElement = null
 let lastHoverElement = null
 
-const noop = _ => {}
-
 document.addEventListener('pointerup', () => {
   setTimeout(() => {
     lastTapElement?.(false)
@@ -12,7 +10,7 @@ document.addEventListener('pointerup', () => {
   })
 })
 
-export function click (node, cb = noop) {
+export function click (node, cb = _ => {}) {
   node.tabIndex = 0
   node.role = 'button'
   node.addEventListener('click', e => {
