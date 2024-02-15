@@ -32,7 +32,7 @@ const cacheList = {
     ]
   },
   'video-player': {
-    version: '2.0.8',
+    version: '2.0.9',
     resources: [
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.bundle.min.js',
       'https://cdn.jsdelivr.net/npm/anitomyscript@2.0.4/dist/anitomyscript.wasm',

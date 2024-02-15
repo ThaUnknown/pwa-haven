@@ -8,9 +8,9 @@ dependencies:
   '@thaunknown/url-file':
     specifier: ^1.0.5
     version: 1.0.5
-  ebml-iterator:
-    specifier: ^1.0.2
-    version: 1.0.2
+  events:
+    specifier: ^3.3.0
+    version: 3.3.0
   fast-readable-async-iterator:
     specifier: ^2.0.0
     version: 2.0.0
@@ -26,9 +26,6 @@ dependencies:
   jassub:
     specifier: ^1.7.15
     version: 1.7.15
-  join-async-iterator:
-    specifier: ^1.1.1
-    version: 1.1.1
   matroska-metadata:
     specifier: ^1.0.5
     version: 1.0.5
@@ -38,9 +35,6 @@ dependencies:
   music-metadata-browser:
     specifier: ^2.5.9
     version: 2.5.9
-  pako:
-    specifier: ^2.1.0
-    version: 2.1.0
   perfect-seekbar:
     specifier: ^1.1.0
     version: 1.1.0
@@ -1627,10 +1621,6 @@ packages:
     resolution: {integrity: sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==}
     engines: {node: '>=10'}
     dev: true
-
-  /ebml-iterator@1.0.2:
-    resolution: {integrity: sha512-MUppqZ23PSke2t+/rBAwNdI+kE3+L3S9Sn3JF2hPG1bqPj8UsUY3b24anKCG9U3Fd1Nkyj84/xov9dTz00BOpw==}
-    dev: false
 
   /ebml-iterator@1.0.5:
     resolution: {integrity: sha512-UsZ8EEk8vAIgYYX9a6Wqwy/cJEd/fKiCVHOXJIpwJBdcQxSHi9llKNxALl5mw2WaqZAhiir0feahWfEY5dj4+Q==}
